@@ -1,9 +1,38 @@
 {
   "name": "taisto",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Taisto",
   "main": "server.js",
   "author": {
-    "name": "pusan"
-  }
+    "name": "Jaska"
+  },
+  "scripts": {
+    "start": "babel-node ./server.js"
+  },
+  "dependencies": {
+    "babel-core": "^6.13.2",
+		"babel-loader": "^6.2.5",
+		"babel-plugin-transform-runtime": "^6.12.0",
+    "babel-preset-es2015": "^6.13.2",
+    "babel-preset-react": "^6.11.1",
+    "babel-preset-stage-0": "^6.5.0",
+		"babel-runtime": "^6.11.6",
+		"webpack": "1.13.2",
+		"webpack-dev-server": "1.15.0",
+		"react": "^15.3.1",
+		"react-dom": "^15.3.1",
+		"express": "4.14.0",
+		"react-bootstrap": "*",
+		"react-responsive": "1.1.4",
+		"react-router": "2.7.0",
+		"express-graphql": "0.5.3",
+    "graphql": "0.6.2",
+    "sequelize": "*",
+    "mysql": "2.11.1",
+    "body-parser": "1.15.2",
+    "graphql-sequelize": "3.0.0-0"
+  },
+		"devDependencies": {
+		"babel-cli": "6.11.4"
+  	}
 }
