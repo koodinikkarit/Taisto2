@@ -21,6 +21,7 @@ ReactDOM.render(
         <Route history={hashHistory} path="/talukko/:id" component={MatrixTable} />
         <Route history={hashHistory} path="/valikot" component={MatrixTablesMobiles} />
         <Route history={hashHistory} path="/matriisit" component={Matrixs} />
+        <Route history={hashHistory} path="/matriisi" component={Matrix} />
         <Route history={hashHistory} path="/matriisi/:id" component={Matrix} />
         <Route history={hashHistory} path="/matriisitilat" component={MatrixStatuses} />
         <Route history={hashHistory} path="/matriisitila" component={MatrixStatus} />

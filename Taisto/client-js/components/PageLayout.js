@@ -13,7 +13,10 @@ class PageLayout extends React.Component {
         return (
             <div style={{ width: "100%" }}>
                 <Header />
-                <Button className="pull-right">Nappi</Button>
+                <select className="pull-right">
+                    <option>Suomi</option>
+                    <option>Englanti</option>
+                </select>
                 <h5>{this.props.header}</h5>
                 <MainNavigation />
                 {this.props.children}
