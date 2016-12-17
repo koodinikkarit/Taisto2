@@ -14,7 +14,8 @@ const APP_PORT = 3000;
 //graphQLServer.use('/api', graphQLHTTP({ schema, graphiql: true, pretty: true }));
 
 const compiler = webpack({
-    entry: path.resolve(__dirname, 'client-js', 'app.js'),
+    devtool: 'eval',
+    entry: path.resolve(__dirname, 'js', 'app.js'),
     module: {
         loaders: [
             {
