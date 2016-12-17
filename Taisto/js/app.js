@@ -17,6 +17,7 @@ import {
 
 import store from "./store";
 
+console.log(Promode);
 
 ReactDOM.render(
     <Provider store={store}>

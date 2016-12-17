@@ -18,16 +18,13 @@ MeasureIt({ getWidth, getHeight })(class extends React.Component {
             <div style={{ padding: "10%" }}>
                 <h3>Kappa</h3>
                 <div>
-                    <img src="kappa.png" style={{ width: "100%" }} />
-                </div>
-                <div>
                     {this.props.links.map(link => {
                         return <button style={{ height: buttonHeight, width: "100%", marginBottom: "2px" }}>Yläsali</button>
                     })
                     }        
                 </div>
                 <div>
-                <a href="#/promode" style={{ height: buttonHeight, width: "32%", marginRight: "2%" }}>
+                <a href="#/promode" style={{ height: buttonHeight, width: "32%", marginRight: "2%", fontSize: "30px" }}>
                     Promode
                 </a>
                 <a href="#" style={{ height: buttonHeight, width: "32%" }}>
