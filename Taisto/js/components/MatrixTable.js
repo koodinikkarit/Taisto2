@@ -31,22 +31,25 @@ export default
 
 
             return (
-                <div style={{ display: "inline-block", position: "absolute" }}>
+                <div>
                     <div style={{ width: table1Width, float: "left" }}>
                         <table>
+                            <tbody>
                             <tr style={{ maxWidth: "50px", height: "50px" }}></tr>
                             {
                                 this.props.cons.map(con => {
-                                    return (<tr style={{ height: "50px" }}><th>{con.name}</th></tr>);
+                                    return (<tr key={con.id} style={{ height: "50px" }}><th>{con.name}</th></tr>);
                                 })
                             }
+                            </tbody>
                         </table>
                     </div>
                     <div style={{ width: table2Width, float: "left", overflowX: "auto" }}>
-                    <table style={{ width: table2Width }}>
+                        <table style={{ width: table2Width }}>
+                            <tbody>
                         <tr style={{ height: conHeight, minWidth: minButtonWidth, maxWidth: maxButtonWidth }}>
                             {this.props.cpus.map(cpu => {
-                                return (<td style={
+                                    return (<td key={cpu.id} style={
                                     {
                                         minHeight: minButtonHeight,
                                         minWidth: minButtonWidth,
@@ -57,9 +60,9 @@ export default
                         </tr>
                         {this.props.cons.map(( con, index ) => {
                             return (
-                                <tr>
-                                    {this.props.cpus.map(cpus => {
-                                        return (<td style={
+                                <tr key={con.id}>
+                                    {this.props.cpus.map((cpu, index) => {
+                                        return (<td key={cpu.id} style={
                                             {
                                                 minHeight: minButtonHeight,
                                                 minWidth: minButtonWidth,
@@ -68,11 +71,12 @@ export default
                                                 border: "solid white 1px",
                                                 backgroundColor: (con.value == index) ? "red" : "rgb(179, 229, 220)",
                                                 height: "50px"
-                                            }}></td>);
+                                            }} onClick={() => { if (onVideoConnectionChange) onVideoConnectionChange(cpu.id, index); }}></td>);
                                     }) }
                                 </tr>
                             );
-                        })}
+                        }) }
+                                </tbody>
                     </table>
                     </div>
                

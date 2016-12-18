@@ -1,6 +1,9 @@
 ﻿import React from 'react';
 import ReactDOM from 'react-dom';
-import MeasureIt from 'react-measure-it'
+import MeasureIt from 'react-measure-it';
+import {
+    Link
+} from "react-router";
 
 function getWidth(element) {
     return ReactDOM.findDOMNode(element).parentNode.getBoundingClientRect().width
@@ -19,12 +22,12 @@ MeasureIt({ getWidth, getHeight })(class extends React.Component {
                 <h3>Kappa</h3>
                 <div>
                     {this.props.links.map(link => {
-                        return <button style={{ height: buttonHeight, width: "100%", marginBottom: "2px" }}>Yläsali</button>
+                        return <Link to={`/diagram/${link.name}`}><button style={{ height: buttonHeight, width: "100%", marginBottom: "2px" }}>Yläsali</button></Link>
                     })
                     }        
                 </div>
                 <div>
-                <a href="#/promode" style={{ height: buttonHeight, width: "32%", marginRight: "2%", fontSize: "30px" }}>
+                <a href="/promode" style={{ height: buttonHeight, width: "32%", marginRight: "2%", fontSize: "30px" }}>
                     Promode
                 </a>
                 <a href="#" style={{ height: buttonHeight, width: "32%" }}>
