@@ -34,13 +34,19 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
 
+app.get("/*", function (req, res) {
+    res.sendFile(__dirname + "/public/" + '/index.html');
+});
+
 
 const webPackApp = new WebpackDevServer(compiler, {
     contentBase: '/public/',
     publicPath: '/js/'
 });
 
-webPackApp.use('/', express.static(path.resolve(__dirname, 'public')));
+//webPackApp.use('/*', express.static(path.resolve(__dirname, 'public') + "/index.html"));
+
+webPackApp.use("/", app);
 
 //webPackApp.use("/api", graphQLHTTP({
 //    schema, graphiql: true, pretty: true
