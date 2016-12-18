@@ -10,12 +10,48 @@ function getHeight(element) {
     return ReactDOM.findDOMNode(element).parentNode.getBoundingClientRect().height
 }
 
+var styles = {
+    matrixBoard: {
+
+    },
+    matrixBoardConList: {
+
+    },
+    matrixBoardConListSelect: {
+        width: "100%",
+        height: "50px"
+
+    },
+    matrixBoardCpuList: {
+    },
+    matrixBoardItem: {
+
+    },
+    matrixBoardItemButton: {
+        width: "100%",
+        height: "50px"
+    }
+};
+
 export default
     MeasureIt({ getWidth, getHeight })(class extends React.Component {
         render() {
             return (
                 <div>
-
+                    <div style={styles.matrixBoardConList}>
+                        <select style={styles.matrixBoardConListSelect}>
+                            {this.props.cons.map(con => {
+                                return (<option key={con.id}>{con.name}</option>);
+                            })}
+                        </select>
+                    </div>
+                    <div style={styles.matrixBoardCpuList}>
+                        {this.props.cpus.map((cpu, index) => {
+                            return (<div key={cpu.id} style={styles.matrixBoardItem}>
+                                <button onClick={() => { if (onVideoConnectionChange) onVideoConnectionChange(cpu.id, index); }} style={styles.matrixBoardItemButton}>{cpu.name}</button>
+                            </div>);
+                        })}
+                    </div>
                 </div>
             );
         }
