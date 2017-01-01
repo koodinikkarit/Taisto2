@@ -63,6 +63,7 @@
     <Compile Include="server.js" />
     <Content Include="package.json" />
     <Content Include="public\index.html" />
+    <Content Include="public\styles.css" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>

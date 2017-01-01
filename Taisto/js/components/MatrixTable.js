@@ -13,6 +13,7 @@ function getHeight(element) {
 export default
     MeasureIt({ getWidth, getHeight })(class extends React.Component {
         render() {
+            var that = this;
             //var cpuLenght = (this.props.containerWidth / (this.props.cpus.length+1)) - 15 + "px";
             var cpuLenght = 100 / this.props.cpus.length + "%";
             var conHeight = "50px";
@@ -71,7 +72,7 @@ export default
                                                 border: "solid white 1px",
                                                 backgroundColor: (con.value == index) ? "red" : "rgb(179, 229, 220)",
                                                 height: "50px"
-                                            }} onClick={() => { if (onVideoConnectionChange) onVideoConnectionChange(cpu.id, index); }}></td>);
+                                            }} onClick={() => { if (that.props.onVideoConnectionChange) that.props.onVideoConnectionChange(cpu.id, index); }}></td>);
                                     }) }
                                 </tr>
                             );

@@ -7,7 +7,7 @@
     "name": "Jaska"
   },
   "scripts": {
-    "start": "babel-node ./server.js"
+    "start": "babel-node ./server.js -- --d --p 3000"
   },
   "dependencies": {
     "babel-core": "^6.13.2",
@@ -35,7 +35,8 @@
     "react-redux": "5.0.1",
     "redux-thunk": "2.1.0",
     "redux-logger": "2.7.4",
-    "react-measure-it": "0.1.1"
+    "react-measure-it": "0.1.1",
+    "static-site-generator-webpack-plugin": "3.1.0"
   },
 		"devDependencies": {
 		"babel-cli": "6.11.4"
