@@ -23,6 +23,7 @@ process.argv.forEach(function (arg, index) {
 const APP_PORT = 3000;
 
 if (development) {
+    
     const develop = require("./routes/develop");
     const compiler = webpack({
         devtool: 'eval',
@@ -40,22 +41,25 @@ if (development) {
         },
         output: {
             filename: '[name].js',
-            path: '/'
+            path: '/',
+            libraryTarget: 'umd'
         }
     });
 
+    app.use(develop);
+
     const webPackApp = new WebpackDevServer(compiler, {
         historyApiFallback: false,
-        contentBase: '/public/',
+        contentBase: './public/',
         publicPath: '/js/'
      });
     webPackApp.use("/api", graphQLHTTP({
         schema, graphiql: true, pretty: true
     }))
-    webPackApp.use("/", develop);
+    webPackApp.use("/", app);
 
-    webPackApp.listen(APP_PORT, () => {
-        console.log("server running");
+    webPackApp.listen(port || APP_PORT, () => {
+        console.log("serveri on käynnissä");
     });
 } else {
     const production = require("./routes/production");
