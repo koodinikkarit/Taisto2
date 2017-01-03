@@ -11,8 +11,6 @@ const app = express();
 var port;
 var development = false;
 
-console.log(process.argv);
-
 process.argv.forEach(function (arg, index) {
     if (arg === "--p") {
         port = process.argv[index+1];

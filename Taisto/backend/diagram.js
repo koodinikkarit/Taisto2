@@ -30,7 +30,6 @@ function createDiagram(name, screens) {
 function createDiagramScreens(screenCount, diagram) {
     var screens = [];
     for (var i = 0; i < screenCount; i++) {
-        console.log("length", cons.length);
         var newScreen = {
             id: nextDiagramScreenId,
             conPort: cons[getRandomInt(0, cons.length)],
@@ -38,9 +37,7 @@ function createDiagramScreens(screenCount, diagram) {
         };
         diagramScreens.push(newScreen);   
         screens.push(newScreen);
-        console.log("newScreen ", newScreen);
     }
-    console.log("screenit luodut ", screens);
     return screens;
 }
 

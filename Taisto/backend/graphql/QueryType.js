@@ -7,8 +7,6 @@ const fetchDiagrams = require("../diagram").fetchDiagrams;
 
 import Matrix from "./Matrix";
 
-console.log("matrixon", Matrix);
-
 module.exports = new GraphQLObjectType({
     name: "QueryType",
     fields: () => ({
@@ -16,7 +14,6 @@ module.exports = new GraphQLObjectType({
             name: "Matrixs",
             type: new GraphQLList(Matrix),
             resolve: function (_, args) {
-                console.log("palautetaan matrix");
                 return new Promise(function (resolve, reject) {
                     resolve(fetchMatrixs());
                 });

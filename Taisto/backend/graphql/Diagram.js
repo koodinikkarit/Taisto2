@@ -15,7 +15,6 @@ module.exports = new GraphQLObjectType({
             diagramScreens: {
                 type: new GraphQLList(DiagramScreen),
                 resolve: function (that, args) {
-					console.log(that);
                     return new Promise((resolve, reject) => {
 						resolve(that.diagramScreens);
                     });

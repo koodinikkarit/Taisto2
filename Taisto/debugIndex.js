@@ -1,7 +1,6 @@
 
 
 module.exports = function render(locals) {
-	console.log(locals.path);
   return Promise.resolve(
 `<!DOCTYPE>
 <html>

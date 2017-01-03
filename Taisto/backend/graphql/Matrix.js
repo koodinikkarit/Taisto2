@@ -7,8 +7,6 @@ const GraphQLList = require("graphql").GraphQLList;
 import ConPort from "./ConPort";
 import CpuPort from "./CpuPort";
 
-console.log("matrix conport", ConPort, "CpuPort", CpuPort);
-
 export default new GraphQLObjectType({
     name: "Matrix",
     fields: () => ({

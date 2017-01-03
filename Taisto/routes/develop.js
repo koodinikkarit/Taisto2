@@ -7,12 +7,12 @@ import PageFrame from "../js/components/PageFrame";
 import Etusivu from "../js/containers/EtusivuContainer";
 
 function createPageString(component) {
-    console.log(component);
     return `
 <!DOCTYPE>
 ${ReactDOMServer.renderToStaticMarkup(component)}
 `;
 }
+
 
 router.get('/', function (req, res, next) {
     res.set({
