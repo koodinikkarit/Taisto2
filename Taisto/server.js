@@ -6,10 +6,6 @@ const path = require('path');
 const graphQLHTTP = require('express-graphql');
 const schema = require("./backend/graphql/RootTypes");
 
-// Routes
-const index = require("./routes/");
-
-//import {schema} from './data/schema';
 const app = express();
 
 var port;
@@ -28,34 +24,12 @@ process.argv.forEach(function (arg, index) {
 
 const APP_PORT = 3000;
 
-app.use(index);
-
-// app.get("/api", function (req,res) {
-//     res.end("Tämä on api");
-// });
-
-// app.get("/", function (req, res) {
-//     res.end(
-// `
-// <html>
-//     <head>
-//         <title>Taisto</title>
-//     </head>
-//     <body>
-//         <div id="root"></div>
-//         <script src="/js/app.js"></script>
-//         <script src="/webpack-dev-server.js"></script>
-//     </body>
-// </html>
-// `);
-// });
-
 if (development) {
+    const develop = require("./routes/develop");
     const compiler = webpack({
         devtool: 'eval',
         entry: {
             app: path.resolve(__dirname, 'js', 'app.js'),
-            //main: "./debugIndex.js"
         },
         module: {
             loaders: [
@@ -68,17 +42,8 @@ if (development) {
         },
         output: {
             filename: '[name].js',
-            path: '/',
-            libraryTarget: 'umd'
-        },
-        // plugins: [
-        //     new StaticSiteGeneratorPlugin('main', [
-        //         "/",
-        //         "/diagram/*",
-        //         "/promode/index.html",
-        //         "/settings/index.html",
-        //     ], { })
-        // ]
+            path: '/'
+        }
     });
 
     const webPackApp = new WebpackDevServer(compiler, {
@@ -89,13 +54,46 @@ if (development) {
     webPackApp.use("/api", graphQLHTTP({
         schema, graphiql: true, pretty: true
     }))
-    webPackApp.use("/", app);
+    webPackApp.use("/", develop);
 
     webPackApp.listen(APP_PORT, () => {
         console.log("server running");
     });
 } else {
+    const production = require("./routes/production");
+    const compiler = webpack({
+        devtool: "cheap-module-source-map",
+        entry: {
+            app: path.resolve(__dirname, 'js', 'app.js'),
+        },
+        module: {
+            loaders: [
+                {
+                    exclude: /node_modules/,
+                    loader: 'babel',
+                    test: /\.js$/,
+                },
+            ],
+        },
+        output: {
+            filename: '[name].js',
+            path: './public/'
+        }
 
+    });
+
+    compiler.run(function (err, stats) {
+        app.use("/api", graphQLHTTP({
+            schema, graphiql: false, pretty: false
+        }))
+        app.use("/", production);
+        app.get("/app.js", function (req, res, next) {
+            res.sendFile(__dirname + '/public/app.js');
+        });
+        app.listen(port, () => {
+            console.log("serveri on käynnissä");
+        });
+    });
 }
 
 

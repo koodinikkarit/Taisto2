@@ -221,3 +221,6 @@ Taisto/config.js
 Taisto/node_modules/*
 Taisto/typings/*
 .vscode/*
+Taisto/app.js
+Taisto/appsi.js
+Taisto/webpack.config.js
