@@ -7,7 +7,7 @@
     "name": "Jaska"
   },
   "scripts": {
-    "start": "babel-node ./server.js -- --p 1337",
+    "start": "babel-node ./server.js -- -p 1337",
     "debug": "babel-node ./server.js -- -d -p 1337"
   },
   "dependencies": {

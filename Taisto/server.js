@@ -12,10 +12,10 @@ var port;
 var development = false;
 
 process.argv.forEach(function (arg, index) {
-    if (arg === "--p") {
+    if (arg === "-p") {
         port = process.argv[index+1];
     }
-    if (arg === "--d") {
+    if (arg === "-d") {
         development = true;
     }
 });
