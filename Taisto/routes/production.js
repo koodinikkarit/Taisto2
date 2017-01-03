@@ -39,6 +39,7 @@ router.get('/settings', function(req, res, next) {
     res.set({
         "content-type": "text/html"
     });
-    res.end(createPageString(<PageFrame title="Taisto" />));
+    res.end(createPageString(<PageFrame title="Taisto"/>));
 });
+
 module.exports = router;
