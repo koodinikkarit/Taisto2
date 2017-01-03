@@ -224,3 +224,5 @@ Taisto/typings/*
 Taisto/app.js
 Taisto/appsi.js
 Taisto/webpack.config.js
+Taisto/public/app.js
+Taisto/public/app.js.map
