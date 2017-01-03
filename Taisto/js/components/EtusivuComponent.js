@@ -19,7 +19,7 @@ MeasureIt({ getWidth, getHeight })(class extends React.Component {
             var buttonHeight = "60px";
         return (
             <div style={{ padding: "10%" }}>
-                <h3>Kappa</h3>
+                <h3>Kappaa</h3>
                 <div>
                     {this.props.links.map(link => {
                         return <Link to={`/diagram/${link.name}`}><button style={{ height: buttonHeight, width: "100%", marginBottom: "2px" }}>Yläsali</button></Link>
