@@ -88,11 +88,11 @@ if (development) {
         app.use("/api", graphQLHTTP({
             schema, graphiql: false, pretty: false
         }))
-        app.use("/", production);
+        app.use(production);
         app.get("/app.js", function (req, res, next) {
             res.sendFile(__dirname + '/public/app.js');
         });
-        app.listen(port, () => {
+        app.listen(port || APP_PORT, () => {
             console.log("serveri on käynnissä");
         });
     });
