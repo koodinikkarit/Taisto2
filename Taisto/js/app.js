@@ -3,28 +3,21 @@ import React from 'react';
 import {
     Router,
     Route,
-    hashHistory,
     browserHistory
 } from 'react-router';
 import { Provider } from 'react-redux'
+import ApolloClient from 'apollo-client';
+import { ApolloProvider } from 'react-apollo';
 
-import {
-    CustomDiagram,
-    Etusivu,
-    Promode,
-    Settings
-} from "./containers/";
+import routes from "./routes";
 
 import store from "./store";
 
+import client from "./client";
+
 ReactDOM.render(
-    <Provider store={store}>
-        <Router history={browserHistory}>
-            <Route history={browserHistory} path="/" component={Etusivu} />
-            <Route history={browserHistory} path="/diagram/:diagramid" component={CustomDiagram} />
-            <Route history={browserHistory} path="/promode" component={Promode} />
-            <Route history={browserHistory} path="/settings" component={Settings} />
-        </Router>
-    </Provider>,
+    <ApolloProvider client={client}>
+        <Router history={browserHistory} routes={routes} />
+    </ApolloProvider>,
     document.getElementById('root')
 );
