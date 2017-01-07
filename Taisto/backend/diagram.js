@@ -18,10 +18,10 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-function createDiagram(name, screens) {
+function createDiagram(slug, screens) {
     var newDiagram = {
         id: nextDiagramId++,
-        name
+        slug
     };
     newDiagram.diagramScreens = createDiagramScreens(screens, newDiagram);
     diagrams.push(newDiagram);
@@ -31,7 +31,7 @@ function createDiagramScreens(screenCount, diagram) {
     var screens = [];
     for (var i = 0; i < screenCount; i++) {
         var newScreen = {
-            id: nextDiagramScreenId,
+            id: nextDiagramScreenId++,
             conPort: cons[getRandomInt(0, cons.length)],
             cpuPorts: chooseRandomCpus(10)
         };
@@ -43,16 +43,27 @@ function createDiagramScreens(screenCount, diagram) {
 
 function chooseRandomCpus(count) {
     var ports = [];
-    for (var i = 0; i < count.lenght; i++) {
-        ports.push(getRandomInt(0, cpus.length));
+    for (var i = 0; i < count; i++) {
+        ports.push(cpus[getRandomInt(0, cpus.length)]);
     }
     return ports;
 }
 
-createDiagram("Ylasali", 7);
-createDiagram("Alasali", 3);
+createDiagram("ylasali", 7);
+createDiagram("alasali", 3);
 
 
 exports.fetchDiagrams = function () {
     return diagrams;
+}
+
+export const fetchDiagram = (slug) => {
+    var diagram;
+    diagrams.forEach(d => {
+        if (d.slug == slug) {
+            diagram = d;
+            return true;
+        }
+    });
+    return diagram;
 }
