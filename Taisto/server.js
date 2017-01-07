@@ -1,19 +1,35 @@
-﻿const StaticSiteGeneratorPlugin = require('static-site-generator-webpack-plugin');
-const express = require('express');
+﻿const express = require('express');
 const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
+var webpackMiddleware = require("webpack-dev-middleware");
 const path = require('path');
 const graphQLHTTP = require('express-graphql');
-const schema = require("./backend/graphql/RootTypes");
 
-const app = express();
+const React = require('react');
+
+import schema from "./backend/graphql/RootTypes";
+
+import PageFrame from "./js/components/PageFrame";
+import ReactDOMServer from "react-dom/server";
+const graphql = require('graphql');
+import ApolloClient, { createNetworkInterface } from 'apollo-client';
+import {createLocalInterface} from 'apollo-local-query';
+import { 
+    ApolloProvider, 
+    renderToStringWithData 
+} from 'react-apollo';
+import { match, RouterContext } from 'react-router';
+
+import routes from "./js/routes";
+
+var app = express();  
 
 var port;
 var development = false;
 
 process.argv.forEach(function (arg, index) {
     if (arg === "-p") {
-        port = process.argv[index+1];
+        port = process.argv[index + 1];
     }
     if (arg === "-d") {
         development = true;
@@ -23,9 +39,11 @@ process.argv.forEach(function (arg, index) {
 const APP_PORT = 3000;
 
 if (development) {
-    
-    const develop = require("./routes/develop");
-    const compiler = webpack({
+    app.use("/api", graphQLHTTP({
+        schema, graphiql: true, pretty: true
+    }))
+
+    app.use(webpackMiddleware(webpack({
         devtool: 'eval',
         entry: {
             app: path.resolve(__dirname, 'js', 'app.js'),
@@ -41,28 +59,14 @@ if (development) {
         },
         output: {
             filename: '[name].js',
-            path: '/',
-            libraryTarget: 'umd'
+            path: '/'
         }
-    });
-
-    app.use(develop);
-
-    const webPackApp = new WebpackDevServer(compiler, {
-        historyApiFallback: false,
+    }), {
         contentBase: './public/',
         publicPath: '/js/'
-     });
-    webPackApp.use("/api", graphQLHTTP({
-        schema, graphiql: true, pretty: true
-    }))
-    webPackApp.use("/", app);
-
-    webPackApp.listen(port || APP_PORT, () => {
-        console.log("serveri on käynnissä");
-    });
+     }));
+     ssr();
 } else {
-    const production = require("./routes/production");
     const compiler = webpack({
         devtool: "cheap-module-source-map",
         entry: {
@@ -77,50 +81,71 @@ if (development) {
                 },
             ],
         },
+        plugins: [
+            new webpack.DefinePlugin({
+                'process.env': {
+                    'NODE_ENV': JSON.stringify('production')
+                }
+            })
+        ],
         output: {
             filename: '[name].js',
             path: './public/'
         }
-
     });
 
-    compiler.run(function (err, stats) {
-        app.use("/api", graphQLHTTP({
-            schema, graphiql: false, pretty: false
-        }))
-        app.use(production);
-        app.get("/app.js", function (req, res, next) {
-            res.sendFile(__dirname + '/public/app.js');
-        });
-        app.listen(port || APP_PORT, () => {
-            console.log("serveri on käynnissä");
-        });
+     compiler.run(function (err, stats) {
+         app.use("/api", graphQLHTTP({
+             schema, graphiql: false, pretty: false
+         }))
+         app.get("/js/app.js", function (req, res, next) {
+             res.sendFile(__dirname + '/public/app.js');
+         });
+         ssr();
+     });
+}
+
+function ssr() {
+    app.use((req, res) => {
+        match({ routes, location: req.originalUrl }, (error, redirectLocation, renderProps) => {
+            console.log("renderProps", renderProps);
+            const client = new ApolloClient({
+                ssrMode: true,
+                // Remember that this is the interface the SSR server will use to connect to the
+                // API server, so we need to ensure it isn't firewalled, etc
+                networkInterface: createLocalInterface(graphql, schema),
+            });
+            const app = (
+                <ApolloProvider client={client}>
+                    <RouterContext {...renderProps} />
+                </ApolloProvider>
+            );
+
+
+            renderToStringWithData(app).then((content) => {
+                console.log("routes", routes, "originalUrl", req.originalUrl, graphql);
+                const initialState = {
+                    [client.reduxRootKey]: {
+                        data: client.store.getState()[client.reduxRootKey].data
+                    }
+                };
+
+                //const html = <Html content={content} state={initialState} />;
+
+                res.status(200);
+                res.send(`<!doctype html>\n${ReactDOMServer.renderToString(<PageFrame content={content} state={initialState} />)}`);
+                res.end();
+            });
+        })
     });
 }
 
+var server = app.listen(port || APP_PORT, () => {
+    console.log("serveri on käynnissä");
+});
 
-// var bodyParser = require('body-parser');
+var io = require('socket.io')(server);
 
-
-
-
-//const graphQLServer = express();
-//graphQLServer.use('/api', graphQLHTTP({ schema, graphiql: true, pretty: true }));
-
-
-
-// const app = express();
-
-// app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-//     extended: true
-// }));
-
-// app.get("/*", function (req, res) {
-//     res.sendFile(__dirname + "/public/" + '/index.html');
-// });
-
-
-
-
-//webPackApp.use('/*', express.static(path.resolve(__dirname, 'public') + "/index.html"));
-
+io.on("connection", function () {
+    console.log("uusi yhteus");
+});

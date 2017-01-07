@@ -30,6 +30,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="app.js" />
     <Compile Include="client-js\app.js" />
     <Compile Include="client-js\components\Filter.js" />
     <Compile Include="client-js\components\Footer.js" />
@@ -43,7 +44,7 @@
     <Compile Include="client-js\components\MatrixTables.js" />
     <Compile Include="client-js\components\MatrixStatuses.js" />
     <Compile Include="client-js\components\PageLayout.js" />
-    <Compile Include="config.js" />
+    <Compile Include="js\actions\MatrixsMocs.js" />
     <Compile Include="js\app.js" />
     <Compile Include="js\components\ActionShortcut.js" />
     <Compile Include="js\components\CustomableDiagram.js" />
@@ -51,14 +52,15 @@
     <Compile Include="js\components\index.js" />
     <Compile Include="js\components\MatrixBoard.js" />
     <Compile Include="js\components\MatrixTable.js" />
+    <Compile Include="js\components\PageFrame.js" />
     <Compile Include="js\components\SlideContainer.js" />
     <Compile Include="js\containers\CustomDiagramContainer.js" />
     <Compile Include="js\containers\EtusivuContainer.js" />
     <Compile Include="js\containers\index.js" />
+    <Compile Include="js\containers\MatrixsMock.js" />
     <Compile Include="js\containers\PromodeContainer.js" />
     <Compile Include="js\containers\SettingsContainer.js" />
     <Compile Include="js\reducers\AppData.js" />
-    <Compile Include="js\reducers\index.js" />
     <Compile Include="js\store.js" />
     <Compile Include="server.js" />
     <Content Include="package.json" />
@@ -90,12 +92,14 @@
     <Folder Include="typings\globals\node\" />
     <Folder Include="typings\globals\react-bootstrap\" />
     <Folder Include="typings\globals\react-dom\" />
+    <Folder Include="typings\globals\react-measure\" />
     <Folder Include="typings\globals\react-responsive\" />
     <Folder Include="typings\globals\react-router\" />
     <Folder Include="typings\globals\react\" />
     <Folder Include="typings\globals\redux-thunk\" />
     <Folder Include="typings\globals\redux\" />
     <Folder Include="typings\globals\sequelize\" />
+    <Folder Include="typings\globals\socket.io\" />
     <Folder Include="typings\globals\webpack-dev-server\" />
     <Folder Include="typings\globals\webpack\" />
   </ItemGroup>
@@ -109,12 +113,14 @@
     <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\react-bootstrap\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\react-dom\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\react-measure\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\react-responsive\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\react-router\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\react\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\redux-thunk\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\redux\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\sequelize\index.d.ts" />
+    <TypeScriptCompile Include="typings\globals\socket.io\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\webpack-dev-server\index.d.ts" />
     <TypeScriptCompile Include="typings\globals\webpack\index.d.ts" />
     <TypeScriptCompile Include="typings\index.d.ts" />

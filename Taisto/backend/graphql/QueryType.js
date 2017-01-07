@@ -1,9 +1,18 @@
-const GraphQLObjectType = require("graphql").GraphQLObjectType;
-const GraphQLList = require("graphql").GraphQLList;
+import {
+    GraphQLObjectType,
+    GraphQLList,
+    GraphQLString,
+    GraphQLNonNull
+} from "graphql";
 
-const Diagram = require("./Diagram");
 const fetchMatrixs = require("../matrix").fetchMatrixs;
-const fetchDiagrams = require("../diagram").fetchDiagrams;
+
+import {
+    fetchDiagrams,
+    fetchDiagram
+} from "../diagram";
+
+import Diagram from "./Diagram";
 
 import Matrix from "./Matrix";
 
@@ -27,6 +36,18 @@ module.exports = new GraphQLObjectType({
                     resolve(fetchDiagrams());
                 });
             }
+        },
+        diagram: {
+            name: "Diagram",
+            type: Diagram,
+            args: {
+                slug: {
+                    type: GraphQLString
+                }
+            },
+            resolve: (_, args) => new Promise((resolve, reject) => {
+                resolve(fetchDiagram(args.slug));
+            })
         }
     })
 });

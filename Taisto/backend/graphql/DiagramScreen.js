@@ -13,6 +13,9 @@ module.exports = new GraphQLObjectType({
             id: {
                 type: GraphQLString
             },
+            name: {
+                type: GraphQLString
+            },
             conPort: {
                 type: ConPort
             },
