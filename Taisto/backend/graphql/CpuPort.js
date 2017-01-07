@@ -2,7 +2,7 @@ const GraphQLObjectType = require("graphql").GraphQLObjectType;
 const GraphQLString = require("graphql").GraphQLString;
 const GraphQLInt = require("graphql").GraphQLInt;
 
-import Matrix from "./MatrixParent";
+import Matrix from "./Matrix";
 
 export default new GraphQLObjectType({
     name: "CpuPort",
