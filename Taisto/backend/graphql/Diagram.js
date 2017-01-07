@@ -5,21 +5,22 @@ const GraphQLList = require("graphql").GraphQLList;
 
 const DiagramScreen = require("./DiagramScreen");
 
-module.exports = new GraphQLObjectType({
+export default new GraphQLObjectType({
     name: "Diagram",
-    fields: function() {
-        return {
-            id: {
-                type: GraphQLString
-            },
-            diagramScreens: {
-                type: new GraphQLList(DiagramScreen),
-                resolve: function (that, args) {
-                    return new Promise((resolve, reject) => {
-						resolve(that.diagramScreens);
-                    });
-                }
+    fields: () => ({
+        id: {
+            type: GraphQLString
+        },
+        slug: {
+            type: GraphQLString
+        },
+        diagramScreens: {
+            type: new GraphQLList(DiagramScreen),
+            resolve: function (that, args) {
+                return new Promise((resolve, reject) => {
+                    resolve(that.diagramScreens);
+                });
             }
         }
-    }
+    })
 });
