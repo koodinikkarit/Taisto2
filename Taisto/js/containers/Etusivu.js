@@ -1,5 +1,4 @@
 ﻿import React from 'react';
-import ReactDOM from 'react-dom';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
@@ -18,32 +17,3 @@ query {
         diagrams
     })
 })(Etusivu);
-
-// export default connect(
-//     store => {
-//         return {
-
-//         };
-//     }
-// )(
-//     class extends React.Component {
-//         componentDidMount() {
-//             console.log(`http://${location.hostname}:${location.port}/.`);
-//             var socket = io(`http://${location.hostname}:${location.port}`);
-//             socket.on("connect", function () {
-
-//             });
-//         }
-//     render() {
-//         return (
-//             <EtusivuComponent links={[
-//                 {
-//                     name: "Ylasali"
-//                 },
-//                 {
-//                     name: "Alasali"
-//                 }
-//             ]} />
-//         )
-//     }
-// });

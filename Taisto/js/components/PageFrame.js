@@ -49,7 +49,7 @@ export default class extends React.Component {
                             </form>
                         </div>
                     </nav>
-                    <div className="container-fuid" id="root" dangerouslySetInnerHTML={{__html: this.props.content}}></div>
+                    <div className="container-fluid" id="root" dangerouslySetInnerHTML={{__html: this.props.content}}></div>
                     <script dangerouslySetInnerHTML={{
                         __html: `window.__APOLLO_STATE__=${JSON.stringify(this.props.state)};`,
                     }} />                  

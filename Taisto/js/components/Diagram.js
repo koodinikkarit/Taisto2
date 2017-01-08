@@ -28,7 +28,6 @@ export default class extends React.Component {
         }
     }
     render() {
-        console.log(this.props.diagram);
         styles.customDiagramContainer.paddingBottom = (100 / this.props.aspectRatio) + "%";
         return (
             <div style={styles.customDiagramContainer}>

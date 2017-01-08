@@ -1,23 +1,44 @@
 ﻿import React from 'react';
-import { connect } from 'react-redux';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
-import MatrixTable from "../components/MatrixTable";
-import MatrixBoard from "../components/MatrixBoard";
+import Promode from "../components/Promode";
 
-export default connect(
-    store => {
-        return {
-
-        };
+export default graphql(gql`
+query {
+    matrixs {
+        id
+        slug
+        conPorts {
+            id
+            portNum
+        }
+        cpuPorts {
+            id
+            portNum
+        }
     }
-)(class extends React.Component {
-    render() {
-        return (
-            <div>
-                <h2 id="matriisitaulu">Matriisitaulu</h2>
-            </div>
-        )
-    }
-    });
+}
+`, {
+        props: ({ ownProps, data: { matrixs }}) => ({
+            matrixs
+        })
+})(Promode);
 
-//<MatrixTable />
+
+// export default connect(
+//     store => {
+//         return {
+
+//         };
+//     }
+// )(class extends React.Component {
+//     render() {
+//         return (
+//             <div>
+//                 <Promode />
+//             </div>
+//         )
+//     }
+//     });
+
