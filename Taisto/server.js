@@ -38,6 +38,8 @@ process.argv.forEach(function (arg, index) {
 
 const APP_PORT = 3000;
 
+app.use('/static', express.static('public'));
+
 if (development) {
     app.use("/api", graphQLHTTP({
         schema, graphiql: true, pretty: true
@@ -108,7 +110,6 @@ if (development) {
 function ssr() {
     app.use((req, res) => {
         match({ routes, location: req.originalUrl }, (error, redirectLocation, renderProps) => {
-            console.log("renderProps", renderProps);
             const client = new ApolloClient({
                 ssrMode: true,
                 // Remember that this is the interface the SSR server will use to connect to the
@@ -123,14 +124,11 @@ function ssr() {
 
 
             renderToStringWithData(app).then((content) => {
-                console.log("routes", routes, "originalUrl", req.originalUrl, graphql);
                 const initialState = {
                     [client.reduxRootKey]: {
                         data: client.store.getState()[client.reduxRootKey].data
                     }
                 };
-
-                //const html = <Html content={content} state={initialState} />;
 
                 res.status(200);
                 res.send(`<!doctype html>\n${ReactDOMServer.renderToString(<PageFrame content={content} state={initialState} />)}`);
