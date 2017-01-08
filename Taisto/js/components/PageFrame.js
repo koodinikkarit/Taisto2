@@ -57,7 +57,7 @@ export default class extends React.Component {
                     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" crossOrigin="anonymous"></script>
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" crossOrigin="anonymous"></script>
                     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" crossOrigin="anonymous"></script>
-                    <script src="./js/app.js"></script>
+                    <script src="/js/app.js"></script>
                 </body>
             </html>
         )
