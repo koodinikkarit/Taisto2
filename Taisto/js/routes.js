@@ -5,6 +5,7 @@ import Diagram from "./containers/Diagram";
 import Etusivu from "./containers/Etusivu";
 import Promode from "./containers/Promode";
 import Settings from "./containers/Settings";
+import NotFound from "./components/404";
 
 export default (
 	<Route>
@@ -12,5 +13,6 @@ export default (
 		<Route path="/promode" component={Promode} />
 		<Route path="/settings" component={Settings} />
 		<Route path="/"  component={Etusivu}/>
+		<Route path="*" component={NotFound} />
 	</Route>
 );
