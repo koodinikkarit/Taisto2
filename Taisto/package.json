@@ -41,7 +41,8 @@
     "react-apollo": "0.8.1",
     "graphql-tag": "1.2.1",
     "apollo-client": "0.6.0",
-    "apollo-local-query": "0.2.0"
+    "apollo-local-query": "0.2.0",
+    "react-measure": "1.4.5"
   },
   "devDependencies": {
     "babel-cli": "6.11.4"
