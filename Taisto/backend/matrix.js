@@ -8,10 +8,11 @@ var cpuPorts = [];
 
 
 
-function createMatrix(ip, port, cons, cpus) {
+function createMatrix(ip, slug, port, cons, cpus) {
     var id = nextMatrixId++;
     var newMatrix = {
         id,
+        slug,
         ip,
         port
     };
@@ -25,7 +26,7 @@ function createConsForMatrix(count, matrix) {
     for (var i = 0; i < count; i++) {
         var conPort = {
             id: nextConPortId++,
-            conNum: i+1,
+            portNum: i+1,
             matrix
         }
         ports.push(conPort);
@@ -39,7 +40,7 @@ function createCpusForMatrix(count, matrix) {
     for (var i = 0; i < count; i++) {
         var cpuPort = {
             id: nextCpuPortId++,
-            cpuNum: i+1,
+            portNum: i+1,
             matrix
         };
         ports.push(cpuPort);
@@ -48,8 +49,8 @@ function createCpusForMatrix(count, matrix) {
     return ports;
 }
 
-createMatrix("192.168.180.19", 5555, 16, 16);
-createMatrix("192.168.180.20", 5555, 16, 16);
+createMatrix("192.168.180.19", "matriisi1", 5555, 16, 16);
+createMatrix("192.168.180.20", "matriisi2", 5555, 16, 16);
 
 
 exports.fetchMatrixs = function () {

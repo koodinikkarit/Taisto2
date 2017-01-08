@@ -18,7 +18,7 @@ export default new GraphQLObjectType({
                 });
             }
         },
-        conNum: {
+        portNum: {
             type: GraphQLInt
         }
     })

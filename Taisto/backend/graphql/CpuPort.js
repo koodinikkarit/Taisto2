@@ -18,7 +18,7 @@ export default new GraphQLObjectType({
                 });
             }
         },
-        cpuNum: {
+        portNum: {
             type: GraphQLInt
         }
     })

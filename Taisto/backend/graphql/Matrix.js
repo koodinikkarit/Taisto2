@@ -13,6 +13,9 @@ export default new GraphQLObjectType({
         id: {
             type: GraphQLString
         },
+        slug: {
+            type: GraphQLString
+        },
         ip: {
             type: GraphQLString
         },
