@@ -3,7 +3,7 @@ import {
 	setKwmConnection,
 	turnOffVideoConnection,
 	turnOffKwmConnection
-} from "./Matrix";
+} from "./matrix";
 
 export {
 	setVideoConnection,
