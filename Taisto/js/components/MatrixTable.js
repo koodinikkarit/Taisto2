@@ -11,6 +11,10 @@ export default class extends React.Component {
         };
     }
 
+    checkForConnection() {
+
+    }
+
     render() {
         var that = this;
         if (this.props.conPorts && this.props.cpuPorts) {
@@ -50,9 +54,13 @@ export default class extends React.Component {
                 },
                 matrixColumn: {
                     border: "solid white 1px",
-                    backgroundColor: "red"
+                    backgroundColor: "rgb(179, 229, 220)",
+                    cursor: "pointer"
                 }
             }
+            var videoConnectionColor = "rgb(244, 158, 66)";
+            var kwmConnectionColor = "red";
+            var videoConnectionAndKwmConnectionColor = "rgb(0, 153, 0)";
 
             return (
                 <Measure style={{ width: "100%" }} onMeasure={(dimensions) => this.setState({ containerWidth: dimensions.width })}>
@@ -78,9 +86,54 @@ export default class extends React.Component {
                             <tbody style={styles.cpuTable.body}>
                                 {this.props.conPorts.map(conPort => (
                                     <tr style={styles.matrixRow}>
-                                        {this.props.cpuPorts.map(cpuPort => (
-                                            <td style={styles.matrixColumn}></td>
-                                        ))}
+                                        {this.props.cpuPorts.map(cpuPort => {
+                                            var videoConnectionPort = this.props.videoConnections ? this.props.videoConnections[conPort.id] : null;
+                                            var kwmConnectionPort = this.props.kwmConnections ? this.props.kwmConnections[conPort.id] : null;
+                                            var newStyle;
+                                            var leftClickAction;
+                                            var rightClickAction;
+                                            if (videoConnectionPort === cpuPort.id && kwmConnectionPort === cpuPort.id) {
+                                                 newStyle = {...styles.matrixColumn, backgroundColor: videoConnectionAndKwmConnectionColor};
+                                                 leftClickAction = () => {
+                                                    if (this.props.onTurnOffVideoConnection) this.props.onTurnOffVideoConnection(conPort.id, cpuPort.id);
+                                                 };
+                                                 rightClickAction = () => {
+                                                     if (this.props.onTurnOffKwmConnection) this.props.onTurnOffKwmConnection(conPort.id, cpuPort.id);
+                                                 }
+                                            } else if (videoConnectionPort === cpuPort.id) {
+                                                  newStyle = {...styles.matrixColumn, backgroundColor: videoConnectionColor};
+                                                  leftClickAction = () => {
+                                                      if (this.props.onTurnOffVideoConnection) this.props.onTurnOffVideoConnection(conPort.id, cpuPort.id);
+                                                  };
+                                                  rightClickAction = () => {
+                                                      if (this.props.onNewKwmConnection) this.props.onNewKwmConnection(conPort.id, cpuPort.id);
+                                                  };
+
+                                            } else if (kwmConnectionPort === cpuPort.id) {
+                                                newStyle = { ...styles.matrixColumn, backgroundColor: kwmConnectionColor };
+                                                leftClickAction = () => {
+                                                    if (this.props.onNewVideoConnection) this.props.onNewVideoConnection(conPort.id, cpuPort.id);
+                                                };
+                                                rightClickAction = () => {
+                                                    if (this.props.onTurnOffKwmConnection) this.props.onTurnOffKwmConnection(conPort.id, cpuPort.id);
+                                                };
+                                            } else {
+                                                newStyle = styles.matrixColumn;
+                                                leftClickAction = () => {
+                                                    if (this.props.onNewVideoConnection) this.props.onNewVideoConnection(conPort.id, cpuPort.id);
+                                                };
+                                                rightClickAction = () => {
+                                                    if (this.props.onNewKwmConnection) this.props.onNewKwmConnection(conPort.id, cpuPort.id);
+                                                };
+                                            }
+                                            return <td style={newStyle} onClick={(e) => {
+												e.preventDefault();
+												leftClickAction();
+                                            }} onContextMenu={e => {
+												e.preventDefault();
+												rightClickAction();
+											}}></td>
+                                        })}
                                     </tr>
                                 ))}
                             </tbody>
