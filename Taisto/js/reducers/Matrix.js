@@ -2,6 +2,8 @@
 import {
 	NEW_VIDEO_CONNECTION,
 	NEW_KWM_CONNECTION,
+	NEW_KWM_CONNECTIONS,
+	NEW_VIDEO_CONNECTIONS,
 	VIDEO_CONNECTION_TURN_OFF,
 	KWM_CONNECTION_TURN_OFF
 } from "../constants/actionconstants";
@@ -24,6 +26,14 @@ export default function (state = initialState, action) {
 		case NEW_KWM_CONNECTION:
 			return Object.assign(state, {}, {
 				kwmConnections: state.kwmConnections.set(action.con, action.cpu)
+			});
+		case NEW_VIDEO_CONNECTIONS:
+			return Object.assign(state, {}, {
+				videoConnections: state.videoConnections.merge(action.videoConnections)
+			});
+		case NEW_KWM_CONNECTIONS:
+			return Object.assign(state, {}, {
+				kwmConnections: state.kwmConnections.merge(action.kwmConnections)
 			});
 		case VIDEO_CONNECTION_TURN_OFF:
 			return Object.assign(state, {}, {

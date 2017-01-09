@@ -28,8 +28,19 @@ import {
     TURN_OFF_VIDEO_CONNECTION,
     TURN_OFF_KWM_CONNECTION,
     VIDEO_CONNECTION_TURN_OFF,
-    KWM_CONNECTION_TURN_OFF
+    KWM_CONNECTION_TURN_OFF,
+    NEW_VIDEO_CONNECTIONS,
+    NEW_KWM_CONNECTIONS
 } from "./js/constants/actionconstants";
+
+import {
+    setVideoConnection,
+    setKwmConnection,
+    turnOffVideoConnection,
+    turnOffKwmConnection,
+    getVideoConnections,
+    getKwmConnections
+} from "./backend/matrix";
 
 import routes from "./js/routes";
 
@@ -156,16 +167,22 @@ var server = app.listen(port || APP_PORT, () => {
 var io = require('socket.io')(server);
 
 io.on("connection", function (socket) {
+    io.emit(NEW_VIDEO_CONNECTIONS, getVideoConnections());
+    io.emit(NEW_KWM_CONNECTIONS, getKwmConnections());
     socket.on(SET_VIDEO_CONNECTION, (connection) => {
+        setVideoConnection(connection.con, connection.cpu);
         io.emit(NEW_VIDEO_CONNECTION, connection);
     });
     socket.on(SET_KWM_CONNECTION, connection => {
+        setKwmConnection(connection.con, connection.cpu);
         io.emit(NEW_KWM_CONNECTION, connection);
     });
     socket.on(TURN_OFF_VIDEO_CONNECTION, connection => {
+        turnOffVideoConnection(connection.con);
         io.emit(VIDEO_CONNECTION_TURN_OFF, connection);
     });
     socket.on(TURN_OFF_KWM_CONNECTION, connection => {
+        turnOffKwmConnection(connection.cpu);
         io.emit(KWM_CONNECTION_TURN_OFF, connection);
     });
 });

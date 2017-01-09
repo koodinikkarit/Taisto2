@@ -2,6 +2,8 @@
 import {
 	NEW_KWM_CONNECTION,
 	NEW_VIDEO_CONNECTION,
+	NEW_VIDEO_CONNECTIONS,
+	NEW_KWM_CONNECTIONS,
 	SET_VIDEO_CONNECTION,
 	SET_KWM_CONNECTION,
 	VIDEO_CONNECTION_TURN_OFF,
@@ -45,12 +47,18 @@ export default () => {
 			});
 		});
 
-		socket.on("NEW_VIDEO_CONNECTIONS", (videoConnections) => {
-
+		socket.on(NEW_VIDEO_CONNECTIONS, (videoConnections) => {
+			store.dispatch({
+				type: NEW_VIDEO_CONNECTIONS,
+				videoConnections
+			});
 		});
 
-		socket.on("NEW_KWM_CONNECTIONS", (kwmConnections) => {
-
+		socket.on(NEW_KWM_CONNECTIONS, (kwmConnections) => {
+			store.dispatch({
+				type: NEW_KWM_CONNECTIONS,
+				kwmConnections
+			});
 		});
 		
 		return next => action => {

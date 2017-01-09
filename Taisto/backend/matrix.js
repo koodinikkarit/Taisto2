@@ -65,3 +65,27 @@ exports.fetchConPorts = function () {
 exports.fetchCpuPorts = function () {
     return cpuPorts;
 }
+
+export const setVideoConnection = (con, cpu) => {
+    videoConnections[con] = cpu;
+}
+
+export const setKwmConnection = (con, cpu) => {
+    kwmConnections[con] = cpu;
+}
+
+export const turnOffVideoConnection = (con) => {
+    videoConnections[con] = null;
+}
+
+export const turnOffKwmConnection = (cpu) => {
+    kwmConnections[cpu] = null;
+}
+
+export const getVideoConnections = () => {
+    return videoConnections;
+}
+
+export const getKwmConnections = () => {
+    return kwmConnections;
+}
