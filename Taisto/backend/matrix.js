@@ -6,7 +6,8 @@ var matrixs = [];
 var conPorts = [];
 var cpuPorts = [];
 
-
+var videoConnections = { };
+var kwmConnections = { }
 
 function createMatrix(ip, slug, port, cons, cpus) {
     var id = nextMatrixId++;
