@@ -1,10 +1,14 @@
 ﻿import React from 'react';
+import { bindActionCreators } from 'redux'
+import { connect } from 'react-redux'
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 import Promode from "../components/Promode";
 
-export default graphql(gql`
+import * as actions from "../actions/Promode";
+
+const PromodeWithData = graphql(gql`
 query {
     matrixs {
         id
@@ -25,20 +29,12 @@ query {
         })
 })(Promode);
 
-
-// export default connect(
-//     store => {
-//         return {
-
-//         };
-//     }
-// )(class extends React.Component {
-//     render() {
-//         return (
-//             <div>
-//                 <Promode />
-//             </div>
-//         )
-//     }
-//     });
-
+export default connect(
+    store => {
+        return {
+            videoConnections: store.matrix && store.matrix.videoConnections ? store.matrix.videoConnections.toJS() : { },
+            kwmConnections: store.matrix && store.matrix.kwmConnections ? store.matrix.kwmConnections.toJS() : { }
+        }
+    },
+    dispatch => bindActionCreators(actions, dispatch)
+)(PromodeWithData);
