@@ -20,6 +20,17 @@ import {
 } from 'react-apollo';
 import { match, RouterContext } from 'react-router';
 
+import {
+    SET_VIDEO_CONNECTION,
+    SET_KWM_CONNECTION,
+    NEW_VIDEO_CONNECTION,
+    NEW_KWM_CONNECTION,
+    TURN_OFF_VIDEO_CONNECTION,
+    TURN_OFF_KWM_CONNECTION,
+    VIDEO_CONNECTION_TURN_OFF,
+    KWM_CONNECTION_TURN_OFF
+} from "./js/constants/actionconstants";
+
 import routes from "./js/routes";
 
 var app = express();  
@@ -144,6 +155,19 @@ var server = app.listen(port || APP_PORT, () => {
 
 var io = require('socket.io')(server);
 
-io.on("connection", function () {
-    console.log("uusi yhteus");
+io.on("connection", function (socket) {
+    socket.on(SET_VIDEO_CONNECTION, (connection) => {
+        io.emit(NEW_VIDEO_CONNECTION, connection);
+    });
+    socket.on(SET_KWM_CONNECTION, connection => {
+        io.emit(NEW_KWM_CONNECTION, connection);
+    });
+    socket.on(TURN_OFF_VIDEO_CONNECTION, connection => {
+        io.emit(VIDEO_CONNECTION_TURN_OFF, connection);
+    });
+    socket.on(TURN_OFF_KWM_CONNECTION, connection => {
+        io.emit(KWM_CONNECTION_TURN_OFF, connection);
+    });
 });
+
+
