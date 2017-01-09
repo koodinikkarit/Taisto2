@@ -3,6 +3,7 @@ import React from 'react';
 import MatrixTable from "./MatrixTable";
 import MatrixBoard from "./MatrixBoard";
 
+
 export default class extends React.Component {
 
 	changeMatrix(slug) {
@@ -14,12 +15,9 @@ export default class extends React.Component {
 	}
 
 	render() {
-		//this.props.history.push("/promode/matriisi1/matriisi");
-
 		var slug = null;
 		var selectedMatrix = null;
 		var mode = null;
-
 		if (this.props.params.slug) {
 			if (this.props.matrixs) {
 				this.props.matrixs.some(matrix => {
@@ -71,7 +69,12 @@ export default class extends React.Component {
 						</div>
 					</div>
 					<div className="row">
-						<MatrixTable conPorts={selectedMatrix.conPorts} cpuPorts={selectedMatrix.cpuPorts} />
+						<MatrixTable conPorts={selectedMatrix.conPorts} cpuPorts={selectedMatrix.cpuPorts}
+						videoConnections={this.props.videoConnections} kwmConnections={this.props.kwmConnections}
+						onNewVideoConnection={(conId, cpuId) => this.props.setVideoConnection(conId, cpuId)}
+						onNewKwmConnection={(conId, cpuId) => this.props.setKwmConnection(conId, cpuId)}
+						onTurnOffVideoConnection={(con, cpu) => this.props.turnOffVideoConnection(con, cpu)}
+						onTurnOffKwmConnection={(con, cpu) => this.props.turnOffKwmConnection(con, cpu)} />			
 					</div>
 				</div>
 			);
