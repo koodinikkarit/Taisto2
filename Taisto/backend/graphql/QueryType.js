@@ -5,12 +5,15 @@ import {
     GraphQLNonNull
 } from "graphql";
 
-const fetchMatrixs = require("../matrix").fetchMatrixs;
-
 import {
     fetchDiagrams,
     fetchDiagram
 } from "../diagram";
+
+import {
+    fetchMatrixs,
+    fetchMatrix
+} from "../matrix";
 
 import Diagram from "./Diagram";
 import Matrix from "./Matrix";
@@ -22,14 +25,24 @@ import Translation from "./Translation";
 module.exports = new GraphQLObjectType({
     name: "QueryType",
     fields: () => ({
+        matrix: {
+            name: "Matrix",
+            type: Matrix,
+            args: {
+                slug: {
+                    type: new GraphQLNonNull(GraphQLString)
+                }
+            },
+            resolve: (_, args) => new Promise((resolve, reject) => {
+                resolve(fetchMatrix(args.slug));
+            })
+        },
         matrixs: {
             name: "Matrixs",
             type: new GraphQLList(Matrix),
-            resolve: function (_, args) {
-                return new Promise(function (resolve, reject) {
-                    resolve(fetchMatrixs());
-                });
-            }
+            resolve: (_, args) => new Promise((resolve, reject) => {
+                resolve(fetchMatrixs());
+            })
         },
         diagrams: {
             name: "Diagrams",

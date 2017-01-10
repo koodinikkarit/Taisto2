@@ -52,7 +52,17 @@ function createCpusForMatrix(count, matrix) {
 
 createMatrix("192.168.180.19", "matriisi1", 5555, 16, 16);
 createMatrix("192.168.180.20", "matriisi2", 5555, 16, 16);
-
+ 
+export const fetchMatrix = (slug) => {
+    var matrix;
+    matrixs.some(m => {
+        if (m.slug === slug) {
+             matrix = m;
+             return true;
+        }
+    });
+    return matrix;
+}
 
 exports.fetchMatrixs = function () {
     return matrixs;
