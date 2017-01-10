@@ -7,6 +7,7 @@ import Promode from "./containers/Promode";
 import Settings from "./containers/Settings";
 import NotFound from "./components/404";
 
+import MatrixSettings from "./containers/MatrixSettings";
 import MatrixList from "./containers/MatrixList";
 import TimerList from "./containers/TimerList";
 import LockList from "./containers/LockList";
@@ -25,6 +26,7 @@ export default (
 		</Route>
 		<Route>
 			<Route path="/settings" component={MatrixList} />
+			<Route path="/settings/matriisi/:slug" component={MatrixSettings} />
 			<Route path="/settings/matriisit" component={MatrixList} />
 			<Route path="/settings/timers" component={TimerList} />
 			<Route path="/settings/locks" component={LockList} />
