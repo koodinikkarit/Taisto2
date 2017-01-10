@@ -24,6 +24,7 @@ export default (
 			</Route>
 		</Route>
 		<Route>
+			<Route path="/settings" component={MatrixList} />
 			<Route path="/settings/matriisit" component={MatrixList} />
 			<Route path="/settings/timers" component={TimerList} />
 			<Route path="/settings/locks" component={LockList} />
