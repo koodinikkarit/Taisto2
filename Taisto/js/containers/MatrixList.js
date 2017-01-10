@@ -8,7 +8,11 @@ export default graphql(gql`
 query {
 	matrixs {
 		id
+		slug
 	}
 }
 `, {
+	props: ({ ownProps, data: { matrixs } }) => ({
+		matrixs
+	})
 })(MatrixList);
