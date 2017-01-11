@@ -13,9 +13,13 @@ query ($slug: String!) {
         port
         conPorts {
             id
+            slug
+            portNum
         }
         cpuPorts {
             id
+            slug
+            portNum
         }
     }
 }`, {
