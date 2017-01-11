@@ -10,6 +10,9 @@ export default new GraphQLObjectType({
         id: {
             type: GraphQLString
         },
+        slug: {
+            type: GraphQLString
+        },
         matrix: {
             type: Matrix,
             resolve: function (that, args) {
