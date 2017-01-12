@@ -99,3 +99,45 @@ export const getVideoConnections = () => {
 export const getKwmConnections = () => {
     return kwmConnections;
 }
+
+export const editMatrix = (props) => {
+    var matrix = matrixs.find(p => p.id == props.id);
+    if (matrix) {
+        if (props.slug) {
+            matrix.slug = props.slug;
+        }
+        if (props.ip) {
+            matrix.ip = props.ip;
+        }
+        if (props.port) {
+            matrix.port = props.port;
+        }
+        if (props.conPortAmount) {
+            matrix.conPortAmount = props.conPortAmount;
+        }
+        if (props.cpuPortAmount) {
+            matrix.cpuPortAmount = props.cpuPortAmount;
+        }
+        return matrix;
+    }
+}
+
+export const editConPort = (props) => {
+    var conPort = conPorts.find(p => p.id == props.id);
+    if (conPort) {
+        if (props.slug) {
+            conPort.slug = props.slug;
+        }
+        return conPort;
+    }
+}
+
+export const editCpuPort = (props) => {
+    var cpuPort = cpuPorts.find(p => p.id == props.id);
+    if (cpuPort) {
+        if (props.slug) {
+            cpuPort.slug = props.slug;
+        }
+        return cpuPort;
+    }
+}

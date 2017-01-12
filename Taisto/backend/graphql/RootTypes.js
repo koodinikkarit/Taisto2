@@ -1,9 +1,11 @@
-const GraphQLSchema = require("graphql").GraphQLSchema;
+import {
+    GraphQLSchema
+} from "graphql";
 
-const QueryType = require("./QueryType");
-const MutationType = require("./MutationType");
+import QueryType from "./QueryType";
+import MutationType from "./MutationType";
 
 export default new GraphQLSchema({
-    query: QueryType
-    //mutation: MutationType
+    query: QueryType,
+    mutation: MutationType
 });

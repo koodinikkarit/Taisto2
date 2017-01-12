@@ -40,7 +40,7 @@ import {
     turnOffKwmConnection,
     getVideoConnections,
     getKwmConnections
-} from "./backend/matrix";
+} from "./backend/MatrixManager";
 
 import routes from "./js/routes";
 

@@ -15,10 +15,12 @@ query {
         slug
         conPorts {
             id
+            slug
             portNum
         }
         cpuPorts {
             id
+            slug
             portNum
         }
     }

@@ -1,8 +1,9 @@
-
-const GraphQLObjectType = require("graphql").GraphQLObjectType;
-const GraphQLString = require("graphql").GraphQLString;
-const GraphQLInt = require("graphql").GraphQLInt;
-const GraphQLList = require("graphql").GraphQLList;
+import {
+    GraphQLObjectType,
+    GraphQLString,
+    GraphQLList,
+    GraphQLInt
+} from "graphql";
 
 import ConPort from "./ConPort";
 import CpuPort from "./CpuPort";
@@ -20,6 +21,12 @@ export default new GraphQLObjectType({
             type: GraphQLString
         },
         port: {
+            type: GraphQLInt
+        },
+        conPortAmount: {
+            type: GraphQLInt
+        },
+        cpuPortAmount: {
             type: GraphQLInt
         },
         conPorts: {

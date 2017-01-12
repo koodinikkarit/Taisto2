@@ -13,7 +13,7 @@ import {
 import {
     fetchMatrixs,
     fetchMatrix
-} from "../matrix";
+} from "../MatrixManager";
 
 import Diagram from "./Diagram";
 import Matrix from "./Matrix";
@@ -22,7 +22,7 @@ import Lock from "./Lock";
 import DefaultState from "./DefaultState";
 import Translation from "./Translation";
 
-module.exports = new GraphQLObjectType({
+export default new GraphQLObjectType({
     name: "QueryType",
     fields: () => ({
         matrix: {

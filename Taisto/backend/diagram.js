@@ -4,8 +4,10 @@ var nextDiagramScreenId = 1;
 var diagrams = [];
 var diagramScreens = [];
 
-var fetchConPorts = require("./matrix").fetchConPorts;
-var fetchCpuPorts = require("./matrix").fetchCpuPorts;
+import {
+    fetchConPorts,
+    fetchCpuPorts
+} from "./MatrixManager";
 
 var cons = fetchConPorts();
 var cpus = fetchCpuPorts();
