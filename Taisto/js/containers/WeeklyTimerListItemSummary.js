@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, compose } from 'react-apollo';
 import gql from 'graphql-tag';
 
-import WeeklyTimerListItemSummary from "../components/WeeklyTImerListItemSummary";
+import WeeklyTimerListItemSummary from "../components/WeeklyTimerListItemSummary";
 
 export default compose(
 	graphql(gql`
