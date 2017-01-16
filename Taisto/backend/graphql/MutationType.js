@@ -16,7 +16,7 @@ import ConPort from "./ConPort";
 import CpuPort from "./CpuPort";
 import WeeklyTimerGraphqlObject from "./WeeklyTimerGraphqlObject";
 import CronTimerGraphqlObject from "./CronTimerGraphqlObject";
-import VideoConnectionGraphqlObject from "./videoConnection";
+import VideoConnectionGraphqlObject from "./VideoConnectionGraphqlObject";
 
 /**
  * Business objects
