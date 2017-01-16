@@ -9,7 +9,14 @@ export default class extends React.Component {
         };
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            on: nextProps.on ? nextProps.on : false
+        });
+    }
+
     render() {
+        var on = this.props.on ? this.props.on : false;
         var styles = {
             container: {
                 cursor: "pointer",
@@ -21,8 +28,8 @@ export default class extends React.Component {
                 borderRadius: "15px",
                 width: "70px",
                 height: "15px",
-                marginTop: "7.5px",
-                backgroundColor: this.state.on ? "#609dff" : "#dee0e2" 
+                marginTop: "6px",
+                backgroundColor: on ? "#609dff" : "#dee0e2" 
             },
             indicator: {
                 position: "absolute",
@@ -30,14 +37,18 @@ export default class extends React.Component {
                 width: "40px",
                 height: "25px",
                 marginTop: "1px",
-                marginLeft: this.state.on ? "30px" : "0px",
-                backgroundColor: this.state.on ? "#8eb9ff" : "#adadad"
+                marginLeft: on ? "30px" : "0px",
+                backgroundColor: on ? "#8eb9ff" : "#adadad"
             }
         }
 
         return (
             <div style={styles.container}
-            onClick={e => this.setState({ on: !this.state.on })}>
+            onClick={e => {
+                e.stopPropagation();
+                if (this.props.onSwitch) this.props.onSwitch(!this.state.on);
+                this.setState({ on: !this.state.on });           
+            }}>
                 <div style={styles.slide}></div>
                 <div style={styles.indicator}></div>
             </div>

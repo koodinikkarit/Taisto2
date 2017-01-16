@@ -4,7 +4,6 @@ import Settings from "../containers/Settings";
 
 export default class extends React.Component {
 	render() {
-		console.log(this.props.matrixs);
 		return (
 			<Settings active="matriisit">
 				<h1>MatrixList</h1>

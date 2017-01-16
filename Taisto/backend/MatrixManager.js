@@ -64,6 +64,14 @@ export const fetchMatrix = (slug) => {
     return matrix;
 }
 
+export const fetchMatrixById = (id) => {
+    return matrixs.find(p => {
+        if (p.id == id) {
+            return p;
+        }
+    })
+}
+
 exports.fetchMatrixs = function () {
     return matrixs;
 }

@@ -31,7 +31,6 @@ export default class extends React.Component {
     }
 
     render() {
-        console.log("propsit", this.props);
         if (this.props.matrix) {
             return (
                 <Settings active="matriisit">
@@ -45,12 +44,10 @@ export default class extends React.Component {
                                 value={this.state.slug}
                                 onBlur={e => {
                                     this.props.editMatrixMutation({ variables: { id: this.props.matrix.id, slug: e.target.value } })
-                                        .then(({data}) => console.log("got data ", data));
                                 } }
                                 onKeyPress={e => {
                                     if (e.key === "Enter") {
                                         this.props.editMatrixMutation({ variables: { id: this.props.matrix.id, slug: e.target.value } })
-                                            .then(({data}) => console.log("got data ", data));
                                     }
                                 } } />
                         </div>
@@ -65,7 +62,6 @@ export default class extends React.Component {
                                     value={this.state.ip}
                                     onBlur={e => {
                                         this.props.editMatrixMutation({ variables: { id: this.props.matrix.id, ip: e.target.value } })
-                                            .then(({data}) => console.log("got data ", data));
                                     } }
                                     onKeyPress={e => {
                                         if (e.key === "Enter") {

@@ -6,9 +6,36 @@ import TimerList from "../components/TimerList";
 
 export default graphql(gql`
 query {
-	timers {
+	weeklyTimers {
+		id
+		slug
+		minutes
+		hours
+		active
+		monday
+		tuesday
+		wednesday
+		thursday
+		friday
+		saturday
+		sunday
+	}
+}
+`, {
+	props: ({ ownProps, data: { weeklyTimers, refetch } }) => ({
+		weeklyTimers,
+		refetchWeeklyTimers: refetch
+	})
+})(
+graphql(gql`
+query {
+	cronTimers {
 		id
 		slug
 	}
-}
-`)(TimerList);
+}`, {
+	props: ({ ownProps, data: { cronTimers, refetch } }) => ({
+		cronTimers,
+		refetchCronTimers: refetch
+	})
+})(TimerList));

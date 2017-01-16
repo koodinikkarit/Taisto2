@@ -12,7 +12,8 @@ import {
 
 import {
     fetchMatrixs,
-    fetchMatrix
+    fetchMatrix,
+    fetchMatrixById
 } from "../MatrixManager";
 
 import Diagram from "./Diagram";
@@ -22,9 +23,35 @@ import Lock from "./Lock";
 import DefaultState from "./DefaultState";
 import Translation from "./Translation";
 
+/**
+ * GraphqlObjects
+ */
+
+import WeeklyTimerGraphqlObject from "./WeeklyTimerGraphqlObject";
+import CronTimerGraphqlObject from "./CronTimerGraphqlObject";
+
+/**
+ * Business logic objects
+ */
+
+import WeeklyTimersList from "../businessObjects/WeeklyTimersList";
+import CronTimersList from "../businessObjects/CronTimersList";
+
 export default new GraphQLObjectType({
     name: "QueryType",
     fields: () => ({
+        matrixById: {
+            name: "MatrixById",
+            type: Matrix,
+            args: {
+                id: {
+                    type: new GraphQLNonNull(GraphQLString)
+                }
+            },
+            resolve: (_, args) => new Promise((resolve, reject) => {
+                resolve(fetchMatrixById(args.id));
+            })
+        },
         matrix: {
             name: "Matrix",
             type: Matrix,
@@ -119,6 +146,20 @@ export default new GraphQLObjectType({
                         }
                     ]
                 )
+            })
+        },
+        weeklyTimers: {
+            name: "WeeklyTimers",
+            type: new GraphQLList(WeeklyTimerGraphqlObject),
+            resolve: (_, args) => new Promise((resolve, reject) => {
+                resolve(WeeklyTimersList.gen());
+            })  
+        },
+        cronTimers: {
+            name: "CronTimers",
+            type: new GraphQLList(CronTimerGraphqlObject),
+            resolve: (_, args) => new Promise((resolve, reject) => {
+                resolve(CronTimersList.gen());
             })
         }
     })

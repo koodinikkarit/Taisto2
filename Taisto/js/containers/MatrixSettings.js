@@ -24,11 +24,13 @@ query matrixs($slug: String!) {
     }
 }
 `, {
-    options: (ownProps) => ({
-        variables: {
-            slug: ownProps.params.slug
+    options: (ownProps) =>  {
+        return {
+            variables: {
+                slug: ownProps.params.slug
+            }
         }
-    }),
+    },
     props: ({ ownProps, data: { matrix } }) => ({
         matrix
     })
