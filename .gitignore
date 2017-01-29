@@ -217,12 +217,9 @@ pip-log.txt
 
 config.js
 
-Taisto/config.js
-Taisto/node_modules/*
-Taisto/typings/*
+config.js
+node_modules/*
+typings/*
 .vscode/*
-Taisto/app.js
-Taisto/appsi.js
-Taisto/webpack.config.js
-Taisto/public/app.js
-Taisto/public/app.js.map
+public/app.js
+public/app.js.map

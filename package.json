@@ -1,0 +1,52 @@
+{
+  "name": "taisto",
+  "version": "0.0.4",
+  "description": "Taisto",
+  "main": "server.js",
+  "author": {
+    "name": "Jaska"
+  },
+  "scripts": {
+    "start": "babel-node ./server.js -- -p 1337",
+    "dev": "babel-node ./server.js -- -d -p 1337",
+    "watch": "babel-watch --plugins transform-regenerator ./server.js -- -d -p 1337"
+  },
+  "dependencies": {
+    "babel-cli": "6.11.4",
+    "babel-core": "^6.13.2",
+    "babel-loader": "^6.2.5",
+    "babel-plugin-transform-async-to-generator": "6.16.0",
+    "babel-plugin-transform-runtime": "^6.12.0",
+    "babel-preset-es2015": "^6.13.2",
+    "babel-preset-react": "^6.11.1",
+    "babel-preset-stage-0": "^6.5.0",
+    "babel-runtime": "^6.11.6",
+    "body-parser": "1.15.2",
+    "express": "^4.14.0",
+    "express-graphql": "0.5.3",
+    "graphql": "0.6.2",
+    "graphql-sequelize": "3.0.0-0",
+    "react": "^15.3.1",
+    "react-bootstrap": "*",
+    "react-dom": "^15.3.1",
+    "react-redux": "5.0.1",
+    "react-router": "2.7.0",
+    "redux": "^3.6.0",
+    "redux-logger": "2.7.4",
+    "redux-thunk": "2.1.0",
+    "socket.io": "^1.7.2",
+    "webpack": "1.13.2",
+    "react-apollo": "0.8.1",
+    "graphql-tag": "1.2.1",
+    "apollo-client": "0.7.3",
+    "apollo-local-query": "0.2.0",
+    "react-measure": "1.4.5",
+    "immutable": "3.8.1",
+    "node-schedule": "1.2.0"
+  },
+  "devDependencies": {
+    "babel-watch": "2.0.5",
+    "webpack-dev-server": "1.15.0",
+    "webpack-dev-middleware": "1.9.0",
+  }
+}
