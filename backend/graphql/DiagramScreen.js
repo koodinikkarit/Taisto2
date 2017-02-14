@@ -7,11 +7,12 @@ import {
 	GraphQLNonNull
 } from "graphql";
 
+import MatrixGraphqlObject from "./Matrix";
 import ConPortGraphqlObject from "./ConPort";
 import CpuPortGraphqlObject from "./CpuPort";
 
 export default new GraphQLObjectType({
-	name: "DiagramScreens",
+	name: "DiagramScreen",
 	fields: () => ({
 		id: {
 			type: GraphQLString
@@ -19,10 +20,13 @@ export default new GraphQLObjectType({
 		slug: {
 			type: GraphQLString
 		},
+		matrix: {
+			type: MatrixGraphqlObject
+		},
 		conPort: {
 			type: ConPortGraphqlObject
 		},
-		cpoPorts: {
+		cpuPorts: {
 			type: new GraphQLList(CpuPortGraphqlObject)
 		}
 	})
