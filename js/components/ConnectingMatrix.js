@@ -92,7 +92,7 @@ class ConnectingMatrix extends React.Component {
 export default compose(
 	graphql(gql`
 	mutation ($slug: String!, $ip: String!, $port: Int!, $conPortAmount: Int!, $cpuPortAmount: Int!) { 
-		connectNewMatrix(slug: $slug, ip: $ip, port: $port, conPortAmount: $conPortAmount, cpuPortAmount: $cpuPortAmount) {
+		connectMatrix(slug: $slug, ip: $ip, port: $port, conPortAmount: $conPortAmount, cpuPortAmount: $cpuPortAmount) {
 			id
 			slug
 		}
