@@ -1,10 +1,12 @@
 import DataSaver from "./DataSaver";
 import ConPort from "./ConPort";
+import Diagram from "./Diagram";
+import Matrix from "./Matrix";
 
 var nextId = 1;
 
 const diagramScreenSaver = new DataSaver({
-	path: "diagramscreens",
+	path: "./saves/diagramscreens",
 	interval: 1000
 });
 
@@ -27,20 +29,24 @@ export default class DiagramScreen {
 		diagramScreens = await diagramScreens;
 		if (diagramScreens[id]) {
 			delete diagramScreens[id];
-			diagramSaver.remove(id);
+			diagramScreenSaver.remove(id);
 		} else return false;
 	}
 
-	static async new ({slug, conPort, cpuPorts}) {
+	static async new ({slug, diagramId, conPort, cpuPorts}) {
 		diagramScreens = await diagramScreens;
 		var id = nextId++;
-		console.log("conPort", conPort);
+		console.log("conPort", conPort, slug, diagram);
 		var newItem = {
 			slug,
 			conPort,
 			cpuPorts
 		};
 		diagramScreens[id] = newItem;
+		var diagram = Diagram.gen(diagramId)
+		diagram.then(diagram => {
+			diagram.addDiagramScreen(id);
+		});
 		diagramScreenSaver.save(id, newItem);
 		return new DiagramScreen(id);
 	}
@@ -55,11 +61,20 @@ export default class DiagramScreen {
 		return diagramScreens[this.id].slug;
 	}
 
+	get matrix() {
+		return Matrix.gen(diagramScreens[this.id].matrix);
+	}
+
 	set slug(slug) {
 		diagramScreens[this.id].slug = slug;
 		diagramScreenSaver.save(this.id, {
 			slug
 		});
+	}
+
+	set matrix(matrix) {
+		var diagramScreen = diagramsScreens[this.id];
+		if (diagramScreen) diagramScreen.matrix = matrix;
 	}
 
 	set conPort(conPort) {
@@ -70,7 +85,6 @@ export default class DiagramScreen {
 	}
 
 	get conPort() {
-		console.log("diagrams", diagramScreens[this.id].conPort);
 		return ConPort.gen(diagramScreens[this.id].conPort);
 	}
 }

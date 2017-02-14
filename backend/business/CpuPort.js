@@ -4,7 +4,7 @@ import Matrix from "./Matrix";
 var nextId = 1;
 
 const cpuPortSaver = new DataSaver({
-	path: "cpuPort",
+	path: "./saves/cpuPort",
 	interval: 1000
 });
 

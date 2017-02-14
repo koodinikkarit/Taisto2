@@ -7,7 +7,7 @@ var cronTimers = { };
 var nextId = 1;
 
 const cronTimerSaver = new DataSaver({
-	path: "crontimer",
+	path: "./saves/crontimer",
 	interval: 1000
 });
 

@@ -5,14 +5,20 @@ import CpuPort from "./CpuPort";
 var nextId = 1;
 
 const matrixSaver = new DataSaver({
-	path: "matrixs",
+	path: "./saves/matrixs",
 	interval: 1000
 });
 
 var matrixs = matrixSaver.load();
+var slugToIds = {};
 
 matrixs.then(matrixs => {
 	Object.keys(matrixs).forEach(id => {
+		var matrix = matrixs[id];
+		if (matrix) {
+			slugToIds[matrix.slug] = id;
+		}
+
 		if (id > nextId) nextId = parseInt(id)+1;
 	});
 });
@@ -22,6 +28,16 @@ export default class Matrix {
 		matrixs = await matrixs;
 		if (matrixs[id]) return new Matrix(id);
 		else return null;
+	}
+
+	static async genBySlug(slug) {
+		matrixs = await matrixs;
+		var id = slugToIds[slug];
+		if (id) {
+			var matrix = matrixs[id];
+			if (matrix) return new Matrix(id);
+		}
+		return null;
 	}
 
 	static async genAll() {
@@ -63,6 +79,7 @@ export default class Matrix {
 			videoConnections: {},
 			kwmConnections: {}
 		};
+		slugToIds[slug] = id;
 		matrixs[id] = newItem;
 		matrixSaver.save(id, newItem);
 

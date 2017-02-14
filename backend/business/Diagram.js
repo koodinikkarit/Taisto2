@@ -1,18 +1,26 @@
 import DataSaver from "./DataSaver";
 import ConPort from "./ConPort";
 import CpuPort from "./CpuPort";
+import DiagramScreen from "./DiagramScreen";
 
 var nextId = 1;
 
 const diagramSaver = new DataSaver({
-	path: "diagrams",
+	path: "./saves/diagrams",
 	interval: 1000
 });
 
 var diagrams = diagramSaver.load();
+var slugToIds = {};
 
-diagrams.then(diagram => {
+diagrams.then(diagrams => {
 	Object.keys(diagrams).forEach(id => {
+		var diagram = diagrams[id];
+		console.log("diagram", diagram);
+		if (diagram) {
+			
+			slugToIds[diagram.slug] = id;
+		}
 		if (id > nextId) nextId = parseInt(id) + 1;
 	});
 });
@@ -26,6 +34,12 @@ export default class Diagram {
 
 	static async genBySlug(slug) {
 		diagrams = await diagrams;
+		var id = slugToIds[slug];
+		console.log("id on", id);
+		if (id ) {
+			if (diagrams[id]) return new Diagram(id);
+		}
+		return null;
 	}
 
 	static async genAll() {
@@ -35,14 +49,19 @@ export default class Diagram {
 		Object.keys(diagrams).forEach(id => {
 			d.push(Diagram.gen(id));
 		});
+		//console.log(this.diagramScreens);
 		return d;
 	}
 
 	static async del(id) {
 		diagrams = await diagrams;
 		if (diagrams[id]) {
+			diagrams[id].diagramScreens.forEach(id => {
+				DiagramScreen.del(id);
+			});
 			delete diagrams[id];
 			diagramSaver.remove(id);
+
 		} else return false;
 	}
 	
@@ -50,9 +69,10 @@ export default class Diagram {
 		diagrams = await diagrams;
 		var id = nextId++;
 		var newItem = {
-			slug,
-			diagramScreens
+			slug: slug ? slug : "",
+			diagramScreens: diagramScreens ? diagramScreens : []
 		};
+		slugToIds[slug] = id;
 		diagrams[id] = newItem;
 		diagramSaver.save(id, newItem);
 		return new Diagram(id);
@@ -68,6 +88,18 @@ export default class Diagram {
 		return diagrams[this.id].slug;
 	}
 
+	get diagramScreens() {
+		var screens = diagrams[this.id].diagramScreens;
+		var diagramScreens = [];
+		console.log("screens", screens);
+		if (screens) {
+			screens.forEach(id => {
+				diagramScreens.push(DiagramScreen.gen(id));
+			});
+		}
+		return diagramScreens;
+	}
+
 	set slug(slug) {
 		var diagram = diagrams[this.id];
 		if (diagram) {
@@ -76,5 +108,14 @@ export default class Diagram {
 				slug
 			});
 		}
+	}
+
+	addDiagramScreen(id) {
+		var diagram = diagrams[this.id];
+		console.log("DIAGRAM", id, this.id, diagram);
+		diagram.diagramScreens.push(id);
+		diagramSaver.save(this.id, {
+			diagramsScreens: [...diagram.diagramScreens, id]
+		});
 	}
 }

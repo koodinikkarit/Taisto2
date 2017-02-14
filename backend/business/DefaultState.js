@@ -4,7 +4,7 @@ import Matrix from "./Matrix";
 var nextId = 1;
 
 const defaultStateSaver = new DataSaver({
-	path: "DefaultState",
+	path: "./saves/DefaultState",
 	interval: 1000
 });
 

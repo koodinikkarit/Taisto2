@@ -4,7 +4,7 @@ import Matrix from "./Matrix";
 var nextId = 1;
 
 const conPortSaver = new DataSaver({
-	path: "conPort",
+	path: "./saves/conPort",
 	interval: 1000
 });
 

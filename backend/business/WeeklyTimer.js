@@ -7,7 +7,7 @@ var weeklyTimers = { };
 var nextId = 1;
 
 const weeklyTimerSaver = new DataSaver({
-	path: "weeklytimers",
+	path: "./saves/weeklytimers",
 	interval: 1000
 });
 
