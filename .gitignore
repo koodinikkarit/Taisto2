@@ -219,7 +219,7 @@ config.js
 
 config.js
 node_modules/*
-typings/*
 .vscode/*
 public/app.js
 public/app.js.map
+saves/*
