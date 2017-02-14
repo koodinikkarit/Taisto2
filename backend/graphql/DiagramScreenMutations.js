@@ -35,10 +35,9 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			console.log("args", args);
 			resolve(DiagramScreen.new({
 				slug: args.slug,
-				diagram: args.diagram,
+				diagramId: args.diagram,
 				conPort: args.conPort
 			}));
 		})
@@ -56,7 +55,10 @@ export default {
 			conPort: {
 				type: GraphQLString
 			}
-		}
+		},
+		resolve: (_, args) => new Promise((resolve, reject) => {
+			
+		})
 	},
 	addCpuToDiagramScreen: {
 		name: "AddCpuToDiagramScreen",
@@ -69,5 +71,23 @@ export default {
 				type: GraphQLString
 			}
 		}
+	},
+	changeMatrixOfDiagramScreen: {
+		name: "ChangeMatrixOfDiagramScreen",
+		type: DiagramScreenGraphqlObject,
+		args: {
+			id: {
+				type: new GraphQLNonNull(GraphQLString)
+			},
+			matrix: {
+				type: new GraphQLNonNull(GraphQLString)
+			}
+		},
+		resolve: (_, args) => new Promise((resolve, reject) => {
+			var diagramScreen = DiagramScreen.gen(args.id);
+			diagramScreen.then(diagramScreen => {
+				diagramScreen.matrix = args.matrix;
+			})
+		})
 	}
 }

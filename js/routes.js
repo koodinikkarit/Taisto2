@@ -1,7 +1,8 @@
 import React from "react";
 import {Route, IndexRoute} from "react-router";
 
-import Diagram from "./containers/Diagram";
+import DiagramSettings from "./components/DiagramSettings";
+import Diagram from "./components/Diagram";
 import Etusivu from "./containers/Etusivu";
 import Promode from "./containers/Promode";
 import Settings from "./containers/Settings";
@@ -12,7 +13,7 @@ import MatrixList from "./containers/MatrixList";
 import TimerList from "./containers/TimerList";
 import LockList from "./containers/LockList";
 import DefaultStates from "./containers/DefaultStates";
-import DiagramList from "./containers/DiagramList";
+import DiagramList from "./components/DiagramList";
 import TranslationList from "./containers/TranslationList";
 
 export default (
@@ -31,6 +32,7 @@ export default (
 			<Route path="/settings/timers" component={TimerList} />
 			<Route path="/settings/locks" component={LockList} />
 			<Route path="/settings/oletustilat" component={DefaultStates} />
+			<Route path="/settings/diagram/:slug" component={DiagramSettings} />
 			<Route path="/settings/diagrams" component={DiagramList} />
 			<Route path="/settings/translations" component={TranslationList} />
 		</Route>

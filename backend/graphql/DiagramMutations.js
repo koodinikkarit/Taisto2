@@ -53,5 +53,16 @@ export default {
 			}
 		}
 	},
-
+	removeDiagram: {
+		name: "RemoveDiagram",
+		type: GraphQLBoolean,
+		args: {
+			id: {
+				type: new GraphQLNonNull(GraphQLString)
+			}
+		},
+		resolve: (_, args) => new Promise((resolve, reject) => {
+			resolve(Diagram.del(args.id));
+		})
+	}
 }
