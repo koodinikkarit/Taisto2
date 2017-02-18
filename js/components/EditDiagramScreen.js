@@ -34,7 +34,7 @@ class EditDiagramScreen extends React.Component {
 						<div className="col">
 							<label>Matriisi:</label>
 							<select value={this.props.diagramScreen.matrix ?
-								 		   this.props.diagramScreen.matrix.id : null}>
+								this.props.diagramScreen.matrix.id : null}>
 								<option></option>
 								{this.props.matrixs.map(matrix => (
 									<option>{matrix.slug}</option>
@@ -44,15 +44,15 @@ class EditDiagramScreen extends React.Component {
 					</div>
 					<div className="row">
 						{matrix ?
-						<div className="col">
-							<label>Näyttö:</label>
-							<select value={this.props.diagramScreen.conPort ? 
-										   this.props.diagramScreen.conPort.id : null}>
-								{conPorts.map(conPort => (
-									<option value={conPort.id}>{conPort.slug}</option>
-								))}
-							</select>
-						</div> : "" }
+							<div className="col">
+								<label>Näyttö:</label>
+								<select value={this.props.diagramScreen.conPort ?
+									this.props.diagramScreen.conPort.id : null}>
+									{conPorts.map(conPort => (
+										<option value={conPort.id}>{conPort.slug}</option>
+									))}
+								</select>
+							</div> : ""}
 					</div>
 				</div>
 			)
@@ -78,10 +78,10 @@ export default compose(
 			}
 		}
 	}`, {
-		props: ({ ownProps, data: { matrixs }}) => ({
-			matrixs
-		})
-	}),
+			props: ({ ownProps, data: { matrixs }}) => ({
+				matrixs
+			})
+		}),
 	graphql(gql`
 	query DiagramScreen($id: String!) {
 		diagramScreen: diagramScreenById(id: $id) {
@@ -98,18 +98,44 @@ export default compose(
 			}
 		}
 	}`, {
-		options: (ownProps) => {
-			return {
-				variables: {
-					id: ownProps.id
+			options: (ownProps) => {
+				return {
+					variables: {
+						id: ownProps.id
+					}
+				}
+			},
+			props: ({ ownProps, data: { diagramScreen } }) => ({
+				diagramScreen
+			})
+		}),
+	graphql(gql`
+	mutation ($id: String!, $slug: String!, $conPort: String!, $matrix: String!) {
+		diagramScreen: editDiagramScreen(id: $id, slug: $slug, conPort: $conPort, matrix: $matrix) {
+			id,
+			slug,
+			conPort,
+			matrix
+		}
+	}`, {
+			props: ({ownProps, mutate}) => {
+				return {
+					editDiagramScreen({ id, slug, conPort, matrix }) {
+						return mutate({
+							variables: { id, slug, conPort, matrix },
+							updateQueries: {
+								DiagramScreen: (prev, { mutationResult }) => Object.assign({}, state, {
+									diagramScreens: prev.diagram.diagramScreens.map(p => {
+										if (p.id === mutationResult.data.diagramScreen.id) {
+											return mutationResult.data.diagramScreen;
+										}
+										return p;
+									})
+								})
+							}
+						});
+					}
 				}
 			}
-		},
-		props: ({ ownProps, data: { diagramScreen } }) => ({
-			diagramScreen
 		})
-	}),
-	graphql(gql`
-	mutation ($id: String!, $slug: String!, $conPort: String!, $matrix: String!)
-	`)
 )(EditDiagramScreen);
