@@ -9,7 +9,8 @@
   "scripts": {
     "start": "babel-node ./server.js -- -p 1337",
     "dev": "babel-node ./server.js -- -d -p 1337",
-    "watch": "babel-watch --plugins transform-regenerator ./server.js -- -d -p 1337"
+    "watch": "babel-watch --plugins transform-regenerator ./server.js -- -d -p 1337",
+    "testmatrix": "babel-node ./matrixTest"
   },
   "dependencies": {
     "babel-cli": "6.11.4",

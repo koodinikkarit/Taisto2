@@ -1,0 +1,15 @@
+{
+  "passPerPreset": true,
+  "plugins": [
+
+  ],
+  "presets": [
+    {
+      "plugins": [
+
+      ]
+    },
+    "es2015",
+    "stage-0"
+  ]
+}
