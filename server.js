@@ -65,7 +65,7 @@ app.use('/static', express.static('public'));
 if (development) {
     app.use("/api", graphQLHTTP({
         schema, graphiql: true, pretty: true
-    }))
+    }));
 
     app.use(webpackMiddleware(webpack({
         devtool: 'eval',

@@ -1,5 +1,9 @@
 import Immutable from "immutable";
 
+import {
+    db
+} from "../TaistoService";
+
 export default class extends Immutable.Record({
 	id: null,
     slug: "",
@@ -7,5 +11,25 @@ export default class extends Immutable.Record({
     portNum: null
 }) {
 
+    setValue(cpuId) {
+        var matrix = this.matrix;
+        var cpuPort = db.cpuPorts.get(cpuId);
+        if (matrix && cpuPort) {
+            matrix.setVideoConnection(this.portNum, cpuPort.portNum);
+        }
+    }
 
+    turnOffPort() {
+        var matrix = this.matrix;
+        if (matrix) {
+            matrix.turnOffVideoConnection(this.portNum);
+        }
+    }
+
+    get matrix() {
+        var matrix = db.matrixs.get(this.matrixId);
+        if (matrix) {
+            return matrix;
+        }
+    }
 }

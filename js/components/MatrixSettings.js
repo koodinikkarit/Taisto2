@@ -18,7 +18,9 @@ export default class extends React.Component {
         var conPorts = {};
         var cpuPorts = {};
 
+        if (nextProps.matrix.conPorts)
         nextProps.matrix.conPorts.forEach(conPort => conPorts[conPort.id] = conPort.slug );
+        if (nextProps.matrix.cpuPorts)
         nextProps.matrix.cpuPorts.forEach(cpuPort => cpuPorts[cpuPort.id] = cpuPort.slug );
 
         this.setState({
@@ -112,7 +114,7 @@ export default class extends React.Component {
                             <div className="col-sm-6">
                                 <h5>Cpu ports</h5>
                                 {this.props.matrix.cpuPorts ? this.props.matrix.cpuPorts.map(cpuPort => (
-                                    <input key={cpuPort.id} type="text" className="form-control" value={cpuPort.slug}
+                                    <input key={cpuPort.id} type="text" className="form-control" value={this.state.cpuPorts[cpuPort.id]}
                                         onChange={e => {
                                             this.state.cpuPorts[cpuPort.id] = e.target.value;
                                             this.forceUpdate();

@@ -36,7 +36,6 @@ export default class DiagramScreen {
 	static async new ({slug, diagramId, conPort, cpuPorts}) {
 		diagramScreens = await diagramScreens;
 		var id = nextId++;
-		console.log("conPort", conPort, slug, diagram);
 		var newItem = {
 			slug,
 			conPort,

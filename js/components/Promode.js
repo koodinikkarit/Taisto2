@@ -73,8 +73,8 @@ export default class extends React.Component {
 						videoConnections={this.props.videoConnections} kwmConnections={this.props.kwmConnections}
 						onNewVideoConnection={(conId, cpuId) => this.props.setVideoConnection(conId, cpuId)}
 						onNewKwmConnection={(conId, cpuId) => this.props.setKwmConnection(conId, cpuId)}
-						onTurnOffVideoConnection={(con, cpu) => this.props.turnOffVideoConnection(con, cpu)}
-						onTurnOffKwmConnection={(con, cpu) => this.props.turnOffKwmConnection(con, cpu)} />			
+						onTurnOffVideoConnection={con => this.props.turnOffVideoConnection(con)}
+						onTurnOffKwmConnection={cpu => this.props.turnOffKwmConnection(cpu)} />			
 					</div>
 				</div>
 			);

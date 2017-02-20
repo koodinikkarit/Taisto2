@@ -1,5 +1,9 @@
 import Immutable from "immutable";
 
+import {
+    db
+} from "../TaistoService";
+
 export default class extends Immutable.Record({
 	id: null,
     slug: "",
@@ -7,5 +11,24 @@ export default class extends Immutable.Record({
     portNum: null
 }) {
 
+    setValue(conNum) {
+        var matrix = this.matrix;
+        if (matrix) {
+            matrix.setKwmConnection(this.portNum, conNum);
+        }
+    }
 
+    turnOffPort() {
+        var matrix = this.matrix;
+        if (matrix) {
+            matrix.turnOffKwmConnection(this.portNum);
+        }
+    }
+
+    get matrix() {
+        var matrix = db.matrixs.get(this.matrixId);
+        if (matrix) {
+            return matrix;
+        }
+    }
 }

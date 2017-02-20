@@ -12,9 +12,6 @@ mutation ($id: String!) {
 					variables: { id },
 					updateQueries: {
 						Diagrams: (prev, { mutationResult }) => {
-							console.log("poistetaan",Object.assign({}, prev, {
-								diagrams: [...prev.diagrams.filter(p => p.id != id)]
-							}));
 							return Object.assign({}, prev, {
 								diagrams: [...prev.diagrams.filter(p => p.id != id)]
 							});

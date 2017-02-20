@@ -8,6 +8,12 @@ import {
 } from "graphql";
 
 
+import {
+	getDb,
+	db,
+	setDb
+} from "../TaistoService";
+
 /**
  * Business objects
  */
@@ -111,9 +117,18 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			var conPort = ConPort.gen(args.id);
-			if (args.slug) conPort.slug = args.slug;
-			resolve(conPort);
+			setDb(db.withMutations(db => {
+				db.conPorts = db.conPorts.withMutations(conPorts => {
+					var conPort = conPorts.get(parseInt(args.id));
+					if (conPort) {
+						conPort = conPort.withMutations(conPort => {
+							if (args.slug) conPort.set("slug", args.slug);
+							resolve(conPort);
+						});
+						conPorts.set(parseInt(args.id), conPort);
+					}
+				});
+			}));		
 		})
 	},
 	editCpuPort: {
@@ -128,9 +143,18 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			var cpuPort = CpuPort.gen(args.id);
-			if (args.slug) cpuPort.slug = args.slug;
-			resolve(cpuPort);
+			setDb(db.withMutations(db => {
+				db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
+					var cpuPort = cpuPorts.get(parseInt(args.id));
+					if (cpuPort) {
+						cpuPort = cpuPort.withMutations(cpuPort => {
+							if (args.slug) cpuPort.set("slug", args.slug);
+							resolve(cpuPort);
+						});
+						cpuPorts.set(parseInt(args.id), cpuPort);
+					}
+				});
+			}));
 		})
 	}
-}	
+}

@@ -31,19 +31,17 @@ export default () => {
 			});
 		});
 
-		socket.on(VIDEO_CONNECTION_TURN_OFF, (videoConnection) => {
+		socket.on("CON_PORT_TURN_OFF", con => {
 			store.dispatch({
 				type: VIDEO_CONNECTION_TURN_OFF,
-				con: videoConnection.con,
-				cpu: videoConnection.cpu
+				con
 			});
 		});
 
-		socket.on(KWM_CONNECTION_TURN_OFF, (kwmConnection) => {
+		socket.on("CPU_PORT_TURN_OFF", (cpu) => {
 			store.dispatch({
 				type: KWM_CONNECTION_TURN_OFF,
-				con: kwmConnection.con,
-				cpu: kwmConnection.cpu
+				cpu
 			});
 		});
 
@@ -76,16 +74,10 @@ export default () => {
 					})
 					break;
 				case TURN_OFF_VIDEO_CONNECTION:
-					socket.emit(TURN_OFF_VIDEO_CONNECTION, {
-						con: action.con,
-						cpu: action.cpu
-					});
+					socket.emit(TURN_OFF_VIDEO_CONNECTION, action.con);
 					break;
 				case TURN_OFF_KWM_CONNECTION:
-					socket.emit(TURN_OFF_KWM_CONNECTION, {
-						con: action.con,
-						cpu: action.cpu
-					});
+					socket.emit(TURN_OFF_KWM_CONNECTION, action.cpu);
 					break;
 			}
 			next(action);

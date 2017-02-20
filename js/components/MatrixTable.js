@@ -88,34 +88,34 @@ export default class extends React.Component {
                                     <tr style={styles.matrixRow}>
                                         {this.props.cpuPorts.map(cpuPort => {
                                             var videoConnectionPort = this.props.videoConnections ? this.props.videoConnections[conPort.id] : null;
-                                            var kwmConnectionPort = this.props.kwmConnections ? this.props.kwmConnections[conPort.id] : null;
+                                            var kwmConnectionPort = this.props.kwmConnections ? this.props.kwmConnections[cpuPort.id] : null;
                                             var newStyle;
                                             var leftClickAction;
                                             var rightClickAction;
-                                            if (videoConnectionPort === cpuPort.id && kwmConnectionPort === cpuPort.id) {
+                                            if (videoConnectionPort === cpuPort.id && kwmConnectionPort === conPort.id) {
                                                  newStyle = {...styles.matrixColumn, backgroundColor: videoConnectionAndKwmConnectionColor};
                                                  leftClickAction = () => {
-                                                    if (this.props.onTurnOffVideoConnection) this.props.onTurnOffVideoConnection(conPort.id, cpuPort.id);
+                                                    if (this.props.onTurnOffVideoConnection) this.props.onTurnOffVideoConnection(conPort.id);
                                                  };
                                                  rightClickAction = () => {
-                                                     if (this.props.onTurnOffKwmConnection) this.props.onTurnOffKwmConnection(conPort.id, cpuPort.id);
+                                                     if (this.props.onTurnOffKwmConnection) this.props.onTurnOffKwmConnection(cpuPort.id);
                                                  }
                                             } else if (videoConnectionPort === cpuPort.id) {
                                                   newStyle = {...styles.matrixColumn, backgroundColor: videoConnectionColor};
                                                   leftClickAction = () => {
-                                                      if (this.props.onTurnOffVideoConnection) this.props.onTurnOffVideoConnection(conPort.id, cpuPort.id);
+                                                      if (this.props.onTurnOffVideoConnection) this.props.onTurnOffVideoConnection(conPort.id);
                                                   };
                                                   rightClickAction = () => {
                                                       if (this.props.onNewKwmConnection) this.props.onNewKwmConnection(conPort.id, cpuPort.id);
                                                   };
 
-                                            } else if (kwmConnectionPort === cpuPort.id) {
+                                            } else if (kwmConnectionPort === conPort.id) {
                                                 newStyle = { ...styles.matrixColumn, backgroundColor: kwmConnectionColor };
                                                 leftClickAction = () => {
                                                     if (this.props.onNewVideoConnection) this.props.onNewVideoConnection(conPort.id, cpuPort.id);
                                                 };
                                                 rightClickAction = () => {
-                                                    if (this.props.onTurnOffKwmConnection) this.props.onTurnOffKwmConnection(conPort.id, cpuPort.id);
+                                                    if (this.props.onTurnOffKwmConnection) this.props.onTurnOffKwmConnection(cpuPort.id);
                                                 };
                                             } else {
                                                 newStyle = styles.matrixColumn;

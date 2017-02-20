@@ -14,7 +14,6 @@ class DiagramList extends React.Component {
 	}
 
 	render() {
-		console.log(this.props);
 		return (
 			<Settings active="diagrams">
 				<div className="row">

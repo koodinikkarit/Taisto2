@@ -11,9 +11,15 @@ import {
 	TURN_OFF_CPU_PORT
 } from "./MatrixCommands";
 
+import {
+	db
+} from "../TaistoService";
+
 
 var connections = {};
 var emitters = {};
+
+var requestAllStatesPromises = {};
 
 export default class extends Immutable.Record({
 	id: null,
@@ -33,7 +39,6 @@ export default class extends Immutable.Record({
 
 	setVideoConnection(con, cpu) {
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
-			console.log("setting video connection", 128+con, 128+cpu);
 			connection.write(new Buffer([2, SET_VIDEO_CONNECTION, 128+con, 128+cpu, 3]));
 		});
 	}
@@ -56,7 +61,7 @@ export default class extends Immutable.Record({
 		});
 	}
 
-	setKwmConnection(con, cpu) {
+	setKwmConnection(cpu, con) {
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
 			connection.write(new Buffer([2, SET_KWM_CONNECTION, 128+cpu, 128+con, 3]));
 		});
@@ -80,6 +85,11 @@ export default class extends Immutable.Record({
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
 			connection.write(new Buffer([2, REQUEST_ALL_STATES, 3]));
 		});
+		// var requestStatesPromise = requestAllStatesPromises[this.id];
+		// if (requestStatesPromise) return requestStatesPromise;
+		// else {
+
+		// }
 	}
 
     on(eventType, callback) {
@@ -92,6 +102,14 @@ export default class extends Immutable.Record({
             emitters[this.id] = emitter;
         }
     }
+
+	get conPorts() {
+		return db.conPorts.filter(p => p.matrixId === this.id);
+	}
+
+	get cpuPorts() {
+		return db.cpuPorts.filter(p => p.matrixId === this.id);
+	}
 }
 
 function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
@@ -110,46 +128,37 @@ function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
 					connections[id] = client
 					setTimeout(() => {
 						delete connections[id];
-                        delete emitters[id];
 					}, 60000);
                     client.on("data", (data) => {
-                        console.log("Viesti matriisilta", data);
                         if (data[0] === 2) {
                             switch(data[1]) {
                                 case SET_KWM_CONNECTION:
                                     emitter.emit("SET_KWM_CONNECTION", data[3]-128, data[2]-128);
-                                    console.log("kwm connection setted");
                                     break;
                                 case SET_VIDEO_CONNECTION:
                                     emitter.emit("SET_VIDEO_CONNECTION", data[2]-128, data[3]-128);
-                                    console.log("video connections setted");
                                     break;
                                 case TURN_OFF_CON_PORT:
                                     emitter.emit("TURN_OFF_CON_PORT", data[2]-128);
-                                    console.log("tunr off con");
                                     break;
                                 case TURN_OFF_CPU_PORT:
                                     emitter.emit("TURN_OFF_CPU_PORT", data[2]-128);
-                                    console.log("turn off cpu");
                                     break;
                                 case REQUEST_ALL_STATES:
-                                    var conConnections = [];
-                                    var cpuConnections = [];
-                                    for (var i = 2; i < 3 + numberOfConPorts;i++) {
-                                        conConnections.push({
-                                            con: i - 1,
-                                            cpu: data[i]-128
-                                        });
+                                    var conConnections = {}
+                                    var cpuConnections = {};
+                                    for (var i = 2; i < 2 + numberOfConPorts;i++) {
+										var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === i - 1);
+										var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === data[i]-128);
+										conConnections[String(conPort.id)] = cpuPort ? String(cpuPort.id) : 0;
                                     }
-                                    for (var i = 3 + numberOfConPorts; i < 3 + numberOfConPorts + numberOfCpuPorts; i++) {
-                                        cpuConnections.push({
-                                            con: data[i] -128,
-                                            cpu: i - (2 + numberOfConPorts)
-                                        });
+                                    for (var i = 2 + numberOfConPorts; i < 2 + numberOfConPorts + numberOfCpuPorts; i++) {
+										var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === data[i] -128);
+										var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === i - (1 + numberOfConPorts));
+										cpuConnections[String(cpuPort.id)] = conPort ? String(conPort.id) : 0;
                                     }
 
                                     emitter.emit("REQUEST_ALL_STATES", conConnections, cpuConnections);
-                                    console.log("request allstates");
                                     break;
                             }
                         }

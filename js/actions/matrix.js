@@ -14,11 +14,10 @@ export const setVideoConnection = (con, cpu) => {
 	}	
 }
 
-export const turnOffVideoConnection = (con, cpu) => {
+export const turnOffVideoConnection = (con) => {
 	return {
 		type: TURN_OFF_VIDEO_CONNECTION,
-		con,
-		cpu
+		con
 	}
 }
 
@@ -30,10 +29,9 @@ export const setKwmConnection = (con, cpu) => {
 	}
 }
 
-export const turnOffKwmConnection = (con, cpu) => {
+export const turnOffKwmConnection = (cpu) => {
 	return {
 		type: TURN_OFF_KWM_CONNECTION,
-		con,
 		cpu
 	}
 }

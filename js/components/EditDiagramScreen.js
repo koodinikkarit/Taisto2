@@ -14,7 +14,6 @@ class EditDiagramScreen extends React.Component {
 		var conPorts = [];
 		var cpuPorts = [];
 		if (this.props.matrixs && this.props.diagramScreen) {
-			console.log("matrixs", this.props.matrixs, this.props.diagramScreen);
 			var matrix = this.props.matrixs.find(p => this.props.diagramScreen.matrix && p.id === this.props.diagramScreen.matrix.id);
 			if (matrix) {
 				matrix.conPorts.forEach(conPort => conPorts.push(conPort));

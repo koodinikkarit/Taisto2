@@ -19,7 +19,6 @@ class DiagramSettings extends React.Component {
 	
 	render() {
 		if (this.props.diagram) {
-			console.log("ssss", this.props.diagram);
 			return (
 				<Settings>
 					<div className="row-fluid">
@@ -30,7 +29,6 @@ class DiagramSettings extends React.Component {
 								 this.props.removeDiagram({ 
 									 id: this.props.diagram.id 
 								 }).then(data => {
-									 console.log("poistettu");
 									 this.props.history.push("/Settings/diagrams");
 								 })
 							 }}>

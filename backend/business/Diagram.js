@@ -16,7 +16,6 @@ var slugToIds = {};
 diagrams.then(diagrams => {
 	Object.keys(diagrams).forEach(id => {
 		var diagram = diagrams[id];
-		console.log("diagram", diagram);
 		if (diagram) {
 			
 			slugToIds[diagram.slug] = id;
@@ -35,7 +34,6 @@ export default class Diagram {
 	static async genBySlug(slug) {
 		diagrams = await diagrams;
 		var id = slugToIds[slug];
-		console.log("id on", id);
 		if (id ) {
 			if (diagrams[id]) return new Diagram(id);
 		}
@@ -44,12 +42,10 @@ export default class Diagram {
 
 	static async genAll() {
 		diagrams = await diagrams;
-		
 		var d = [];
 		Object.keys(diagrams).forEach(id => {
 			d.push(Diagram.gen(id));
 		});
-		//console.log(this.diagramScreens);
 		return d;
 	}
 
@@ -91,7 +87,6 @@ export default class Diagram {
 	get diagramScreens() {
 		var screens = diagrams[this.id].diagramScreens;
 		var diagramScreens = [];
-		console.log("screens", screens);
 		if (screens) {
 			screens.forEach(id => {
 				diagramScreens.push(DiagramScreen.gen(id));
@@ -112,7 +107,6 @@ export default class Diagram {
 
 	addDiagramScreen(id) {
 		var diagram = diagrams[this.id];
-		console.log("DIAGRAM", id, this.id, diagram);
 		diagram.diagramScreens.push(id);
 		diagramSaver.save(this.id, {
 			diagramsScreens: [...diagram.diagramScreens, id]

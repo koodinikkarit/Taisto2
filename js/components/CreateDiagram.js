@@ -11,7 +11,6 @@ class CreateDiagram extends React.Component {
 	}
 
 	render() {
-		console.log("propsitt", this.props);
 		return (
 			<div>
 				<div className="row">
@@ -58,12 +57,10 @@ mutation createDiagram($slug: String!)  {
 	props: ({ownPorts, mutate }) => {
 		return {
 			createDiagram({ slug }) {
-				console.log("createDiagram");
 				return mutate({
 					variables: { slug },
 					updateQueries: {
 						Diagrams: (prev, { mutationResult}) => {
-							console.log("mutationResult", mutationResult, prev);
 							const newDiagram = mutationResult.data.diagram;
 							return Object.assign({}, prev, {
 								diagrams: [...prev.diagrams, newDiagram]

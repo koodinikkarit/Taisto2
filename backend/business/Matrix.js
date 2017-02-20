@@ -46,7 +46,6 @@ export default class Matrix {
 		Object.keys(matrixs).forEach(id => {
 			m.push(Matrix.gen(id));
 		});
-		console.log();
 		return m;
 	}
 
@@ -112,7 +111,7 @@ export default class Matrix {
 	}
 
 	get slug() {
-		console.log("get slug", matrixs[this.id].slug);
+
 		return matrixs[this.id].slug;
 	}
 
@@ -184,23 +183,18 @@ export default class Matrix {
 
 	setVideoConnection(conPortNum, value) {
 		matrixs[this.id].videoConnections[conPortNum] = value;
-		console.log("Setting videoConnection", conPortNum, value);
 	}
 
 	setKwmConnection(cpuPortNum, value) {
 		matrixs[this.id].kwmConnections[cpuPortNum] = value;
-		console.log("Setting kwmConnection", cpuPortNum, value);
 	}
 
 	setFullVideoConnections(videoConnections) {
-		console.log("setting fullVideoConnections", videoConnections);
 	}
 
 	setFullKwmConnections(kwmConnections) {
-		console.log("setting fullKwmConnections", kwmConnections);
 	}
 
 	setFullConnections(videoConnections, kwmConnections) {
-		console.log("settings fullConnections", videoConnections, kwmConnections);
 	}
 }

@@ -5,6 +5,10 @@ import {
     GraphQLNonNull
 } from "graphql";
 
+import {
+	db
+} from "../TaistoService";
+
 /**
  * Business objects
  */
@@ -23,7 +27,7 @@ export default {
 		name: "Matrixs",
 		type: new GraphQLList(MatrixGraphqlObject),
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Matrix.genAll());
+			resolve(db.matrixs);
 		})
 	},
 	matrixById: {
@@ -35,7 +39,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Matrix.gen(args.id));
+			resolve(db.matrixs.get(args.id));
 		})
 	},
 	matrixBySlug: {
@@ -47,7 +51,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Matrix.genBySlug(args.slug));
+			resolve(db.matrixs.find(p => p.slug === args.slug));
 		})
 	},
 }
