@@ -9,9 +9,9 @@ import {
 
 
 import {
-	getDb,
 	db,
-	setDb
+	setDb,
+	connectMarix
 } from "../TaistoService";
 
 /**
@@ -53,13 +53,15 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Matrix.new({
-				slug: args.slug,
-				ip: args.ip,
-				port: args.port,
-				conPortAmount: args.conPortAmount,
-				cpuPortAmount: args.cpuPortAmount
-			}));
+			resolve(connectMarix(args.ip, args.port, args.slug,
+			args.conPortAmount, args.cpuPortAmount));
+			// resolve(Matrix.new({
+			// 	slug: args.slug,
+			// 	ip: args.ip,
+			// 	port: args.port,
+			// 	conPortAmount: args.conPortAmount,
+			// 	cpuPortAmount: args.cpuPortAmount
+			// }));
 		})
 	},
 	editMatrix: {

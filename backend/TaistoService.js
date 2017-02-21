@@ -30,12 +30,16 @@ var tcpServer = net.createServer(function (socket) {
 	});
 });
 
-export const setDb = (d) => db = d;
+export const setDb = (d) => {
+	if (d !== db) console.log("uuutta dataa");
+	db = d;
+}
 
 export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts) => {
 	var id = matrixId++;
+	var matrix;
 	db = db.withMutations(db => {
-		var matrix = new Matrix({
+		matrix = new Matrix({
 			id,
 			ip,
 			port,
@@ -90,6 +94,7 @@ export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts)
 
 		matrix.requestAllStates();
 	});
+	return matrix;
 } 
 
 export const listen = (port) => {
