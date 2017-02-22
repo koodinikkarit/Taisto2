@@ -5,7 +5,7 @@ import gql from 'graphql-tag';
 import MatrixList from "../components/MatrixList";
 
 export default graphql(gql`
-query {
+query matrixs {
 	matrixs {
 		id
 		slug

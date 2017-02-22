@@ -30,6 +30,11 @@ export default class extends React.Component {
 						<div>
 							{this.state.connectingNewMatrix ?
 							<ConnectingMatrix 
+							 onMatrixCreated={() => {
+								 this.setState({
+									 connectingNewMatrix: false
+								 });
+							 }}
 							/> : ""}
 						</div>
 						<div className="list-group">

@@ -70,17 +70,15 @@ class ConnectingMatrix extends React.Component {
 					<div className="col" style={{ marginTop: "20px" }}>
 						<button className="btn btn-success"
 						 onClick={e => {
-							 this.props.connectMatrix({
-								 variables: {
-									slug: this.state.slug,
-									ip: this.state.ip,
-									port: this.state.port,
-									conPortAmount: this.state.conPortAmount,
-									cpuPortAmount: this.state.cpuPortAmount
-								 }
-							 }).then(matrix => {
-								 
-							 });
+							this.props.connectMatrix({
+								slug: this.state.slug,
+								ip: this.state.ip,
+								port: this.state.port,
+								conPortAmount: this.state.conPortAmount,
+								cpuPortAmount: this.state.cpuPortAmount
+							}).then(matrix => {
+								 if (this.props.onMatrixCreated) this.props.onMatrixCreated();
+							});
 						 }}>Yhdistä</button>
 					</div>
 				</div>
@@ -91,12 +89,31 @@ class ConnectingMatrix extends React.Component {
 
 export default compose(
 	graphql(gql`
-	mutation ($slug: String!, $ip: String!, $port: Int!, $conPortAmount: Int!, $cpuPortAmount: Int!) { 
-		connectMatrix(slug: $slug, ip: $ip, port: $port, conPortAmount: $conPortAmount, cpuPortAmount: $cpuPortAmount) {
+	mutation matrix($slug: String!, $ip: String!, $port: Int!, $conPortAmount: Int!, $cpuPortAmount: Int!) { 
+		matrix: connectMatrix(slug: $slug, ip: $ip, port: $port, conPortAmount: $conPortAmount, cpuPortAmount: $cpuPortAmount) {
 			id
 			slug
 		}
 	}`, {
-		name: "connectMatrix"
+		props: ({ownProps, mutate}) => ({
+			connectMatrix({ slug, ip, port, conPortAmount, cpuPortAmount })	{
+				return mutate({
+					variables: {
+						slug,
+						ip,
+						port,
+						conPortAmount,
+						cpuPortAmount
+					},
+					updateQueries: {
+						matrixs: (prev, { mutationResult }) => {
+							return Object.assign({}, prev, {
+								matrixs: [...prev.matrixs, mutationResult.data.matrix]
+							});
+						}
+					}
+				})
+			}
+		})
 	})
 )(ConnectingMatrix);
