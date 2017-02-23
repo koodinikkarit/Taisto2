@@ -8,7 +8,7 @@ import Promode from "./containers/Promode";
 import Settings from "./containers/Settings";
 import NotFound from "./components/404";
 
-import MatrixSettings from "./containers/MatrixSettings";
+import MatrixSettings from "./components/MatrixSettings";
 import MatrixList from "./containers/MatrixList";
 import TimerList from "./containers/TimerList";
 import LockList from "./containers/LockList";

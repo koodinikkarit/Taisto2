@@ -1,6 +1,8 @@
 var net = require('net');
 var events = require('events');
 
+import fs from "fs";
+
 import TaistoDb from "./records/TaistoDb";
 import Matrix from "./records/Matrix";
 import ConPort from "./records/ConPort";
@@ -30,15 +32,55 @@ var tcpServer = net.createServer(function (socket) {
 	});
 });
 
-export const setDb = (d) => {
-	if (d !== db) console.log("uuutta dataa");
-	db = d;
+var saveScheduled = false;
+
+
+fs.readFile("./database.json", "utf8", (err, data) => {
+	if (!err && data !== "undefined") {
+		var loadedDatabase = JSON.parse(data);
+		db = db.withMutations(db => {
+			db.matrixs = db.matrixs.withMutations(matrixs => {
+				Object.keys(loadedDatabase.matrixs).forEach(id => {
+					matrixs.set(id, new Matrix(loadedDatabase.matrixs[id]));
+				});
+			});
+			db.conPorts = db.conPorts.withMutations(conPorts => {
+				Object.keys(loadedDatabase.conPorts).forEach(id => {
+					conPorts.set(id, new ConPort(loadedDatabase.conPorts[id]));
+				});
+			});
+			db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
+				Object.keys(loadedDatabase.cpuPorts).forEach(id => {
+					cpuPorts.set(id, new CpuPort(loadedDatabase.cpuPorts[id]));
+				});
+			});
+		});
+	}
+});
+
+export const setDb = (newDatabase) => {
+	if (newDatabase !== db) {
+		db = newDatabase;
+		if (!saveScheduled) {
+			setTimeout(() => {
+				fs.writeFile("./database.json", JSON.stringify(db), err => {
+					if (!err) {
+						saveScheduled = false;
+						console.log("saved");
+					} else {
+						console.log("error while saving", err);
+					}
+				});
+			}, 2000);
+			saveScheduled = true;
+		}
+	}
 }
 
 export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts) => {
 	var id = matrixId++;
 	var matrix;
-	db = db.withMutations(db => {
+	setDb(db.withMutations(db => {
 		matrix = new Matrix({
 			id,
 			ip,
@@ -93,9 +135,25 @@ export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts)
 		});
 
 		matrix.requestAllStates();
-	});
+	}));
 	return matrix;
-} 
+}
+
+export const removeMatrix = (id) => {
+	setDb(db.withMutations(db => {
+		db.matrixs = db.matrixs.delete(id);
+		db.conPorts = db.conPorts.withMutations(conPorts => {
+			conPorts.forEach(conPort => {
+				conPorts.delete(conPort.id);
+			});
+		});
+		db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
+			cpuPorts.forEach(cpuPort => {
+				cpuPorts.delete(cpuPort.id);
+			});
+		});
+	}));
+}
 
 export const listen = (port) => {
 	tcpServer.listen(port);

@@ -1,8 +1,9 @@
 import React from 'react';
+import { graphql, compose } from 'react-apollo';
+import gql from 'graphql-tag';
 import Settings from "../containers/Settings";
 
-export default class extends React.Component {
-
+class MatrixSettings extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -37,8 +38,19 @@ export default class extends React.Component {
             return (
                 <Settings active="matriisit">
                     <div className="row-fluid">
-                        <div className="row-fluid">
-                            <h3>Tunniste</h3>
+                        <div className="row" style={{ marginBottom: "20px" }}>
+                            <div className="col">
+                                <h3>Tunniste</h3>
+                            </div>
+                            <div className="col">
+                                <button className="btn btn-danger"
+								 onClick={e => this.props.removeMatrix({
+									 id: this.props.matrix.id
+								 }).then(data => {
+									 if (data.data.removeMatrix)
+									 this.props.history.push("/settings/matriisit");
+								 })}>Poista</button>
+                            </div>
                         </div>
                         <div className="row-fluid">
                             <input type="text" className="form-control"
@@ -141,3 +153,78 @@ export default class extends React.Component {
         }
     }
 }
+
+
+export default compose(
+	graphql(gql`
+	query matrixBySlug($slug: String!) {
+    	matrix: matrixBySlug(slug: $slug) {
+        	id
+        	slug
+        	ip
+        	port
+        	conPorts {
+        	    id
+        	    slug
+        	    portNum
+        	}
+        	cpuPorts {
+        	    id
+        	    slug
+        	    portNum
+        	}
+    	}
+	}`, {
+		options: (ownProps) => {
+			return {
+				variables: {
+					slug: ownProps.params.slug
+				}
+			}
+		},
+		props: ({ ownProps, data: { matrix } }) => ({
+			matrix
+		})
+	}),
+	graphql(gql`
+	mutation editMatrix($id: String!, $slug: String, $ip: String, $port: Int) {
+    	editMatrix(id: $id, slug: $slug, ip: $ip, port: $port) {
+     	   slug
+    	}
+	}`, { name: "editMatrixMutation" }),
+	graphql(gql`
+	mutation ediConPort($id: String!, $slug: String){
+    	editConPort(id: $id, slug: $slug) {
+        	id
+        	slug
+    	}
+	}`, { name: "editConPortMutation" }),
+	graphql(gql`
+	mutation editCpuPort($id: String!, $slug: String){
+    	editCpuPort(id: $id, slug: $slug) {
+        	id
+        	slug
+    	}
+	}`, { name: "editCpuPortMutation" }),
+    graphql(gql`
+    mutation removeMatrix($id: String!) {
+        removeMatrix(id: $id)
+    }`, {
+		props: ({ownProps, mutate}) => ({
+			removeMatrix({id}) {
+				return mutate({
+					variables: {
+						id
+					},
+					updateQueries: {
+						matrixs: (prev, { mutationResult }) => {
+							return Object.assign({}, prev, {
+								matrixs: prev.matrixs.filter(p => p.id !== mutationResult.data.matrix.id)
+							});
+						} 
+					}
+				})
+			}
+		})
+	})
+)(MatrixSettings);

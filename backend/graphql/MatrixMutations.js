@@ -11,7 +11,8 @@ import {
 import {
 	db,
 	setDb,
-	connectMarix
+	connectMarix,
+	removeMatrix
 } from "../TaistoService";
 
 /**
@@ -104,7 +105,11 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Matrix.del(args.id));
+			if (db.matrixs.get(parseInt(args.id))) {
+				removeMatrix(parseInt(args.id));
+				resolve(true);
+			} else resolve(false);
+
 		})
 	},
 	editConPort: {
