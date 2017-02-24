@@ -70,7 +70,7 @@ export default class extends React.Component {
                                 <tbody>
                                     <tr style={styles.matrixRow}><th style={styles.matrixCpuColumn}></th></tr>
                                     {this.props.conPorts.map(conPort => (
-                                        <tr style={styles.matrixRow}><th style={styles.matrixCpuColumn}>{conPort.slug}</th></tr>
+                                        <tr style={styles.matrixRow}><th style={styles.matrixCpuColumn}>{conPort.portNum + ". "}{conPort.slug}</th></tr>
                                     ))}
                                 </tbody>
                             </table>
@@ -79,7 +79,7 @@ export default class extends React.Component {
                             <thead style={styles.cpuTable.head}>
                                 <tr style={styles.matrixRow}>
                                     {this.props.cpuPorts.map(cpuPort => (
-                                        <th style={styles.matrixColumnHeader}>{cpuPort.slug}</th>
+                                        <th style={styles.matrixColumnHeader}>{cpuPort.portNum + ". "}{cpuPort.slug}</th>
                                     ))}
                                 </tr>
                             </thead>

@@ -9,10 +9,15 @@ import {
 } from "../constants/actionconstants";
 
 import {
+	UPDATE_MATRIX_CONNECTION_STATE
+} from "../constants/matrix";
+
+import {
 	Map
 } from "immutable";
 
 const initialState = {
+	connectionStates: new Map(),
 	videoConnections: new Map(),
 	kwmConnections: new Map()
 };
@@ -42,6 +47,11 @@ export default function (state = initialState, action) {
 		case KWM_CONNECTION_TURN_OFF:
 			return Object.assign({}, state, {
 				kwmConnections: state.kwmConnections.delete(action.cpu)
+			});
+		case UPDATE_MATRIX_CONNECTION_STATE:
+			console.log("Täällä?");
+			return Object.assign({}, state, {
+				connectionStates: state.connectionStates.set(action.matrixId, action.connectionState)
 			});
 		default:
 			return state;

@@ -41,19 +41,23 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 		db = db.withMutations(db => {
 			db.matrixs = db.matrixs.withMutations(matrixs => {
 				Object.keys(loadedDatabase.matrixs).forEach(id => {
-					matrixs.set(id, new Matrix(loadedDatabase.matrixs[id]));
+					var newMatrix = new Matrix(loadedDatabase.matrixs[id]);
+					matrixs.set(parseInt(id), newMatrix);
 				});
 			});
 			db.conPorts = db.conPorts.withMutations(conPorts => {
 				Object.keys(loadedDatabase.conPorts).forEach(id => {
-					conPorts.set(id, new ConPort(loadedDatabase.conPorts[id]));
+					conPorts.set(parseInt(id), new ConPort(loadedDatabase.conPorts[id]));
 				});
 			});
 			db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
 				Object.keys(loadedDatabase.cpuPorts).forEach(id => {
-					cpuPorts.set(id, new CpuPort(loadedDatabase.cpuPorts[id]));
+					cpuPorts.set(parseInt(id), new CpuPort(loadedDatabase.cpuPorts[id]));
 				});
 			});
+		});
+		db.matrixs.forEach(matrix => {
+			registerMatrixEvents(matrix);
 		});
 	}
 });
@@ -78,9 +82,9 @@ export const setDb = (newDatabase) => {
 }
 
 export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts) => {
-	var id = matrixId++;
 	var matrix;
 	setDb(db.withMutations(db => {
+		var id = db.nextMatrixId++;
 		matrix = new Matrix({
 			id,
 			ip,
@@ -92,7 +96,7 @@ export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts)
 		db.matrixs = db.matrixs.set(id, matrix);
 		db.conPorts = db.conPorts.withMutations(conPorts => {
 			for (var i = 0; i < numberOfConPorts; i++) {
-				var conId = conPortId++;
+				var conId = db.nextConPortId++;
 				conPorts.set(conId, new ConPort({
 					id: conId,
 					portNum: i + 1,
@@ -102,7 +106,7 @@ export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts)
 		});
 		db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
 			for (var i = 0; i < numberOfCpuPorts; i++) {
-				var cpuId = cpuPortId++;
+				var cpuId = db.nextCpuPortId++;
 				cpuPorts.set(cpuId, new CpuPort({
 					id: cpuId,
 					portNum: i + 1,
@@ -110,33 +114,40 @@ export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts)
 				}));
 			}
 		});
-
-		matrix.on("REQUEST_ALL_STATES", (videoConnections, kwmConnections) => {
-			emitter.emit("NEW_VIDEO_CONNECTIONS", videoConnections);
-			emitter.emit("NEW_KWM_CONNECTIONS", kwmConnections);
-		});
-		matrix.on("SET_KWM_CONNECTION", (cpuPortNum, conPortNum) => {	
-			var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
-			var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
-			emitter.emit("NEW_KWM_CONNECTION", String(cpuPort.id), String(conPort.id));
-		});
-		matrix.on("SET_VIDEO_CONNECTION", (conPortNum, cpuPortNum) => {	
-			var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
-			var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
-			emitter.emit("NEW_VIDEO_CONNECTION", String(conPort.id), String(cpuPort.id));
-		});
-		matrix.on("TURN_OFF_CON_PORT", (conPortNum) => {
-			var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
-			emitter.emit("TURN_OFF_CON_PORT", String(conPort.id))
-		});
-		matrix.on("TURN_OFF_CPU_PORT", (cpuPortNum) => {
-			var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
-			emitter.emit("TURN_OFF_CPU_PORT", String(cpuPort.id));
-		});
-
-		matrix.requestAllStates();
+		registerMatrixEvents(matrix);
 	}));
 	return matrix;
+}
+
+function registerMatrixEvents(matrix) {
+	var id = matrix.id;
+	matrix.on("REQUEST_ALL_STATES", (videoConnections, kwmConnections) => {
+		emitter.emit("NEW_VIDEO_CONNECTIONS", videoConnections);
+		emitter.emit("NEW_KWM_CONNECTIONS", kwmConnections);
+	});
+	matrix.on("SET_KWM_CONNECTION", (cpuPortNum, conPortNum) => {	
+		var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
+		var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
+		emitter.emit("NEW_KWM_CONNECTION", String(cpuPort.id), String(conPort.id));
+	});
+	matrix.on("SET_VIDEO_CONNECTION", (conPortNum, cpuPortNum) => {	
+		var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
+		var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
+		emitter.emit("NEW_VIDEO_CONNECTION", String(conPort.id), String(cpuPort.id));
+	});
+	matrix.on("TURN_OFF_CON_PORT", (conPortNum) => {
+		var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
+		emitter.emit("TURN_OFF_CON_PORT", String(conPort.id))
+	});
+	matrix.on("TURN_OFF_CPU_PORT", (cpuPortNum) => {
+		var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
+		emitter.emit("TURN_OFF_CPU_PORT", String(cpuPort.id));
+	});
+	matrix.on("MATRIX_CONNECTION_STATE_CHANGED", (reason, id, ip, port) => {
+		emitter.emit("MATRIX_CONNECTION_STATE_CHANGED", reason, String(id), ip, port);
+	});
+
+	matrix.requestAllStates();
 }
 
 export const removeMatrix = (id) => {
@@ -144,11 +155,13 @@ export const removeMatrix = (id) => {
 		db.matrixs = db.matrixs.delete(id);
 		db.conPorts = db.conPorts.withMutations(conPorts => {
 			conPorts.forEach(conPort => {
+				if (conPort.matrixId === id)
 				conPorts.delete(conPort.id);
 			});
 		});
 		db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
 			cpuPorts.forEach(cpuPort => {
+				if (cpuPort.matrixId === id)
 				cpuPorts.delete(cpuPort.id);
 			});
 		});

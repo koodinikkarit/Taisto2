@@ -4,12 +4,12 @@ import {Route, IndexRoute} from "react-router";
 import DiagramSettings from "./components/DiagramSettings";
 import Diagram from "./components/Diagram";
 import Etusivu from "./containers/Etusivu";
-import Promode from "./containers/Promode";
+import Promode from "./components/Promode";
 import Settings from "./containers/Settings";
 import NotFound from "./components/404";
 
 import MatrixSettings from "./components/MatrixSettings";
-import MatrixList from "./containers/MatrixList";
+import MatrixList from "./components/MatrixList";
 import TimerList from "./containers/TimerList";
 import LockList from "./containers/LockList";
 import DefaultStates from "./containers/DefaultStates";

@@ -123,7 +123,8 @@ function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
                 if (!emitter) {
                     emitter = new events.EventEmitter();
                     emitters[id] = emitter;
-                }                 
+                }   
+				try {              
                 client.connect(port, ip, () => {
 					connections[id] = client
 					setTimeout(() => {
@@ -164,7 +165,24 @@ function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
                         }
                     });
 					resolve(client);
+					console.log("matrix connected");
+					emitter.emit("MATRIX_CONNECTION_STATE_CHANGED", "CONNECTED", id, ip, port);
 				});
+				client.on("close", () => {
+					emitter.emit("MATRIX_CONNECTION_STATE_CHANGED", "DISCONNECTED", id, ip, port);
+				});
+
+				client.on("error", (err) => {
+					console.log("virhee", err);
+					switch(err.errno) {
+						case "ENOTFOUND":
+							emitter.emit("MATRIX_CONNECTION_STATE_CHANGED", "ADDRESS_NOT_FOUND", id, ip, port);
+							break;
+					}
+				});
+				} catch(err) {
+					console.log("[CONNECTION] connection failed! " + err);
+				}
 			}
 		}
 	});

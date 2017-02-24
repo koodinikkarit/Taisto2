@@ -12,6 +12,11 @@ import {
 	TURN_OFF_KWM_CONNECTION
 } from "./constants/actionconstants";
 
+import {
+	UPDATE_MATRIX_CONNECTION_STATE,
+	MATRIX_CONNECTION
+} from "./constants/matrix";
+
 export default () => {
 	const socket = io.connect(`http://${location.hostname}:${location.port}`, {reconnect: true});
 	return store => {
@@ -45,10 +50,18 @@ export default () => {
 			});
 		});
 
+		socket.on("MATRIX_CONNECTION_STATE_CHANGED", (state, id, ip, port) => {
+			store.dispatch({
+				type: UPDATE_MATRIX_CONNECTION_STATE,
+				connectionState: state,
+				matrixId: id
+			});
+		});
+
 		socket.on(NEW_VIDEO_CONNECTIONS, (videoConnections) => {
 			store.dispatch({
 				type: NEW_VIDEO_CONNECTIONS,
-				videoConnections
+				videoConnections,
 			});
 		});
 
@@ -78,6 +91,9 @@ export default () => {
 					break;
 				case TURN_OFF_KWM_CONNECTION:
 					socket.emit(TURN_OFF_KWM_CONNECTION, action.cpu);
+					break;
+				case "REQUEST_ALL_STATES":
+					socket.emit("REQUEST_ALL_STATES", action.matrixId);
 					break;
 			}
 			next(action);

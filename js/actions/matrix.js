@@ -35,3 +35,10 @@ export const turnOffKwmConnection = (cpu) => {
 		cpu
 	}
 }
+
+export const requestAllStates = (matrixId) => {
+	return {
+		type: "REQUEST_ALL_STATES",
+		matrixId
+	}
+}

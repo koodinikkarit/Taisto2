@@ -89,10 +89,19 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			var matrix = Matrix.gen(args.id);
-			if (args.slug) matrix.slug = args.slug;
-			if (args.ip) matrix.ip = args.ip;
-			if (args.port) matrix.port = args.port;
+			var matrix = db.matrixs.get(parseInt(args.id));
+			if (matrix) {
+				setDb(db.withMutations(db => {
+					db.matrixs = db.matrixs.withMutations(matrixs => {
+						matrixs.set(matrix.id, matrix.withMutations(matrix => {
+							if (args.slug) matrix.slug = args.slug;
+							if (args.ip) matrix.ip = args.ip;
+							if (args.port) matrix.port = args.port;
+						}));
+					});
+				}));
+			}
+
 			resolve(matrix);
 		})
 	},
@@ -105,7 +114,9 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
+			console.log("poistetaan", args.id, db.matrixs);
 			if (db.matrixs.get(parseInt(args.id))) {
+				console.log("loytyi");
 				removeMatrix(parseInt(args.id));
 				resolve(true);
 			} else resolve(false);

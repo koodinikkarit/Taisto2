@@ -32,7 +32,7 @@ export const createService = (server) => {
 	}));
 	on("TURN_OFF_CON_PORT", con => io.emit("CON_PORT_TURN_OFF", con));
 	on("TURN_OFF_CPU_PORT", cpu => io.emit("CPU_PORT_TURN_OFF", cpu));
-
+	on("MATRIX_CONNECTION_STATE_CHANGED", (reason, id, ip, port) => io.emit("MATRIX_CONNECTION_STATE_CHANGED", reason, id, ip, port));
 	io.on("connection", function (socket) {
 		db.matrixs.forEach(matrix => {
 			matrix.requestAllStates();
@@ -60,6 +60,12 @@ export const createService = (server) => {
 			var cpuPort = db.cpuPorts.get(parseInt(cpu));
 			if (cpuPort) {
 				cpuPort.turnOffPort();
+			}
+		});
+		socket.on("REQUEST_ALL_STATES", matrixId => {
+			var matrix = db.matrixs.get(parseInt(matrixId));
+			if (matrix) {
+				matrix.requestAllStates();
 			}
 		});
 	});
