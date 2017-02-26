@@ -15,14 +15,6 @@ import {
 	removeMatrix
 } from "../TaistoService";
 
-/**
- * Business objects
- */
-
-import Matrix from "../business/Matrix";
-import ConPort from "../business/ConPort";
-import CpuPort from "../business/CpuPort";
-
 
 /**
  * Graphql objects

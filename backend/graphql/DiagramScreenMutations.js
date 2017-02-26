@@ -7,11 +7,12 @@ import {
 	GraphQLNonNull
 } from "graphql";
 
-/**
- * Business objects
- */
-
-import DiagramScreen from "../business/DiagramScreen";
+import {
+	db,
+	setDb,
+	createDiagramScreen,
+	addCpuToDiagramScreen
+} from "../TaistoService";
 
 /**
  * Graphql objects
@@ -35,15 +36,11 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(DiagramScreen.new({
-				slug: args.slug,
-				diagramId: args.diagram,
-				conPort: args.conPort
-			}));
+			resolve(createDiagramScreen(parseInt(args.diagram), args.slug, parseInt(args.conPort)));
 		})
 	},
 	editDiagramScreen: {
-		name: "EditDiagram",
+		name: "EditDiagramScreen",
 		type: DiagramScreenGraphqlObject,
 		args: {
 			id: {
@@ -54,10 +51,22 @@ export default {
 			},
 			conPort: {
 				type: GraphQLString
+			},
+			matrix: {
+				type: GraphQLString
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			
+			var diagramScreen = db.diagramScreens.get(parseInt(args.id));
+			if (diagramScreen) {
+				setDb(db.withMutations(db => {
+					db.diagramScreens = diagramScreens.set(diagramScreen.id, diagramScreen.withMutations(diagramScreen => {
+						if (args.slug) diagramScreen.slug = args.slug;
+						if (args.conPort) diagramScreen.conPortId = parseInt(args.conPort);
+						if (args.matrix) diagramScreen.matrixId = parseInt(args.matrix);
+					}));
+				}));
+			}
 		})
 	},
 	addCpuToDiagramScreen: {
@@ -67,10 +76,13 @@ export default {
 			id: {
 				type: new GraphQLNonNull(GraphQLString)
 			},
-			conPort: {
+			cpuPort: {
 				type: GraphQLString
 			}
-		}
+		},
+		resolve: (_, args) => new Promise((resolve, reject) => {
+			resolve(addCpuToDiagramScreen(parseInt(args.id), parseInt(cpuPort)));
+		})
 	},
 	changeMatrixOfDiagramScreen: {
 		name: "ChangeMatrixOfDiagramScreen",

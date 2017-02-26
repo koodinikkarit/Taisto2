@@ -7,11 +7,9 @@ import {
 	GraphQLNonNull
 } from "graphql";
 
-/**
- * Business objects
- */
-
-import DiagramScreen from "../business/DiagramScreen";
+import {
+	db
+} from "../TaistoService";
 
 /**
  * Graphql objects
@@ -24,7 +22,7 @@ export default {
 		name: "diagramScreens",
 		type: new GraphQLList(DiagramScreenGraphqlObject),
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(DiagramScreen.genAll());
+			resolve(db.diagramScreens);
 		})
 	},
 	diagramScreenById: {
@@ -36,7 +34,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(DiagramScreen.gen(args.id));
+			resolve(db.diagramScreens.get(parseInt(args.id)));
 		})
 	},
 	diagramScreenBySlug: {
@@ -48,7 +46,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(DiagramScreen.gen(args.slug));
+			resolve(db.diagramScreens.find(p => p.slug === args.slug));
 		})
 	}
 }

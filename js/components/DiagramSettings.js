@@ -5,6 +5,7 @@ import gql from 'graphql-tag';
 import Settings from "../containers/Settings";
 
 import EditDiagramScreen from "./EditDiagramScreen";
+import CreateDiagramScreen from "./CreateDiagramScreen";
 
 import RemoveDiagram from "../graphql/RemoveDiagram";
 
@@ -22,7 +23,7 @@ class DiagramSettings extends React.Component {
 			return (
 				<Settings>
 					<div className="row-fluid">
-						<div className="col-6">
+						<div className="col">
 							<h1>Tunniste</h1>
 							<button className="btn btn-danger"
 							 onClick={e => {
@@ -38,10 +39,10 @@ class DiagramSettings extends React.Component {
 						</div>
 					</div>
 					<div className="row-fluid">
-						<div className="col-6">
+						<div className="col">
 							<h1>Kaavion näytöt</h1>
 						</div>
-						<div className="col-6">
+						<div className="col">
 							<button className="btn btn-success"
 							 onClick={e => {
 								 this.setState({
@@ -55,35 +56,18 @@ class DiagramSettings extends React.Component {
 					<div className="row-fluid">
 						<div className="row-fluid">
 							{this.state.addingScreen ?
-							<div className="col">
-								<h1>Tunniste</h1>
-								<input type="text" className="form-control"
-								 value={this.state.newSlug} onChange={e => {
-							 		this.setState({
-								 		newSlug: e.target.value
-							 		});
-						 		}} />
-								<button className="btn btn-success"
-								 onClick={e => {
-									 this.props.createDiagramScreen({
-										 slug: this.state.newSlug,
-										 diagram: this.props.diagram.id
-									 }).then(data => {
-										 this.setState({
-											 addingScreen: false
-										 });
-									 })
-								 }}>
-									Lisää
-								</button>
-								<button className="btn"
-								 onClick={e => {
-									 this.setState({
-										 addingScreen: false,
-										 newSlug: ""
-									 });
-								 }}>Peruuta</button>
-							</div> : ""}
+							 <CreateDiagramScreen
+							  diagram={this.props.diagram}
+							  onDiagramScreenCreated={() => {
+								this.setState({
+									addingScreen: false
+								});
+							  }}
+							  onDiagramScreenCreationCancelled={() => {
+								this.setState({
+									addingScreen: false
+								});
+							  }} />: ""}
 						</div>
 						<ul>
 							{this.props.diagram.diagramScreens.map(diagramScreen => (
@@ -127,32 +111,41 @@ export default compose(
 			diagram
 		})
 	}),
-	graphql(gql`
-	mutation ($slug: String!, $diagram: String!) {
-		diagramScreen : createDiagramScreen (slug: $slug, diagram: $diagram) {
-			id
-			slug
-		}
-	}`, {
-		props: ({ownPorts, mutate}) => {
-			return {
-				createDiagramScreen({ slug, diagram }) {
-					return mutate({
-						variables: { slug, diagram },
-						updateQueries: {
-							Diagram: (prev, { mutationResult }) => {
-								const newDiagramScreen = mutationResult.data.diagramScreen;
-								return Object.assign({}, prev, {
-									diagram: Object.assign({}, prev.diagram, {
-										diagramScreens: [...prev.diagram.diagramScreens, mutationResult.data.diagramScreen]
-									})
-								});
-							}
-						}
-					})
-				}
-			}
-		}
-	}),
 	RemoveDiagram
 )(DiagramSettings);
+
+
+
+
+
+
+/*
+<div className="col">
+								<h1>Tunniste</h1>
+								<input type="text" className="form-control"
+								 value={this.state.newSlug} onChange={e => {
+							 		this.setState({
+								 		newSlug: e.target.value
+							 		});
+						 		}} />
+								<button className="btn btn-success"
+								 onClick={e => {
+									 this.props.createDiagramScreen({
+										 slug: this.state.newSlug,
+										 diagram: this.props.diagram.id
+									 }).then(data => {
+										 this.setState({
+											 addingScreen: false
+										 });
+									 })
+								 }}>
+									Lisää
+								</button>
+								<button className="btn"
+								 onClick={e => {
+									 this.setState({
+										 addingScreen: false,
+										 newSlug: ""
+									 });
+								 }}>Peruuta</button>
+							</div>*/

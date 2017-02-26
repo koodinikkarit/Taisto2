@@ -7,6 +7,10 @@ import TaistoDb from "./records/TaistoDb";
 import Matrix from "./records/Matrix";
 import ConPort from "./records/ConPort";
 import CpuPort from "./records/CpuPort";
+import Diagram from "./records/Diagram";
+import DiagramScreen from "./records/DiagramScreen";
+import DiagramScreenCpuPort from "./records/DiagramScreenCpuPort";
+
 
 import {
 	Map
@@ -117,6 +121,53 @@ export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts)
 		registerMatrixEvents(matrix);
 	}));
 	return matrix;
+}
+
+export const createDiagram = (slug) => {
+	var diagram;
+	setDb(db.withMutations(db => {
+		var id = db.nextDiagramId;
+		diagram = new Diagram({
+			id,
+			slug
+		});
+		db.diagrams = db.diagrams.withMutations(diagrams => {
+			diagrams.set(id, diagram);
+		});
+	}));
+	return diagram;
+}
+
+export const createDiagramScreen = (diagramId, slug, matrixId, conPortId) => {
+	var diagramScreen;
+	setDb(db.withMutations(db => {
+		var id = db.nextDiagramScreenId++;
+		diagramScreen = new DiagramScreen({
+			id,
+			diagramId,
+			slug,
+			conPortId
+		});
+		db.diagramScreens = db.diagramScreens.set(id, diagramScreen);
+	}));
+	return diagramScreen;
+}
+
+export const addCpuToDiagramScreen = (diagramScreenId, cpuPortId) => {
+	var diagramScreen = db.diagramScreens.get(diagramScreenId);
+	var diagramScreenCpu;
+	if (diagramScreen) {
+		setDb(db.withMutations(db => {
+			var id = db.nextDiagramScreenCpuPortId++;
+			diagramScreenCpu = new DiagramScreenCpuPort({
+				id,
+				diagramScreenId,
+				cpuPortId
+			});
+			db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.set(id, diagramScreenCpu);
+		}));
+	}
+	return diagramScreenCpu;
 }
 
 function registerMatrixEvents(matrix) {

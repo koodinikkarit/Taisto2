@@ -8,11 +8,11 @@ import {
 	GraphQLFloat
 } from "graphql";
 
-/**
- * Business objects
- */
-
-import Diagram from "../business/Diagram";
+import {
+	db,
+	setDb,
+	createDiagram
+} from "../TaistoService";
 
 /**
  * Graphql objects
@@ -30,9 +30,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Diagram.new({
-				slug: args.slug
-			}));
+			resolve(createDiagram(args.slug));
 		})
 	},
 	editDiagram: {
@@ -51,7 +49,19 @@ export default {
 			yPosition: {
 				type: GraphQLFloat
 			}
-		}
+		},
+		resolve: (_, args) => new Promise((resolve, reject) => {
+			var diagram = db.diagrams.get(parseInt(args.id));
+			if (diagram) {
+				setDb(db.withMutations(db => {
+					db.diagrams = db.diagrams.withMutations(diagrams => {
+						diagrams.set(diagram.id, diagram.withMutations(diagram => {
+							if (args.slug) diagram.slug = args.slug;
+						}))
+					});
+				}));
+			}
+		})
 	},
 	removeDiagram: {
 		name: "RemoveDiagram",
@@ -62,7 +72,12 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Diagram.del(args.id));
+			var diagram = db.diagrams.get(parseInt(args.id));
+			if (diagram) {
+				setDb(db.withMutations(db => {
+					db.diagrams = db.diagrams.delete(diagram.id);
+				}));
+			}
 		})
 	}
 }

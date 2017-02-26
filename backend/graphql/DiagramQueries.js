@@ -7,11 +7,9 @@ import {
 	GraphQLNonNull
 } from "graphql";
 
-/**
- * Business objects
- */
-
-import Diagram from "../business/Diagram";
+import {
+	db
+} from "../TaistoService";
 
 /**
  * Graphql objects
@@ -26,7 +24,7 @@ export default {
 		description: "Hakee kaikki kaaviot",
 		type: new GraphQLList(DiagramGraphqlObject),
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Diagram.genAll());
+			resolve(db.diagrams);
 		})
 	},
 	diagramById: {
@@ -38,7 +36,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Diagram.gen(args.id));
+			resolve(db.diagrams.get(parseInt(args.id)));
 		})
 	},
 	diagramBySlug: {
@@ -50,7 +48,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(Diagram.genBySlug(args.slug));
+			resolve(db.diagrams.find(p => p.slug === args.slug));
 		})
 	}
 }

@@ -41,17 +41,22 @@ class EditDiagramScreen extends React.Component {
 							</select>
 						</div>
 					</div>
+					<div className="row">		
+						<div className="col">
+							<label>Näyttö:</label>
+							<select value={this.props.diagramScreen.conPort ?
+								this.props.diagramScreen.conPort.id : null}>
+								{conPorts.map(conPort => (
+									<option value={conPort.id}>{conPort.slug}</option>
+								))}
+							</select>
+						</div>
+					</div>
 					<div className="row">
-						{matrix ?
-							<div className="col">
-								<label>Näyttö:</label>
-								<select value={this.props.diagramScreen.conPort ?
-									this.props.diagramScreen.conPort.id : null}>
-									{conPorts.map(conPort => (
-										<option value={conPort.id}>{conPort.slug}</option>
-									))}
-								</select>
-							</div> : ""}
+						<div className="col">
+							<label>Laitteet</label>
+							
+						</div>
 					</div>
 				</div>
 			)
