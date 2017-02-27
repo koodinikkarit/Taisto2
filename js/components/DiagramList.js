@@ -50,7 +50,7 @@ class DiagramList extends React.Component {
 
 
 export default graphql(gql`
-query Diagrams{
+query diagrams{
 	diagrams {
 		id
 		slug

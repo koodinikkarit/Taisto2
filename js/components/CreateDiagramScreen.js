@@ -14,19 +14,22 @@ class CreateDiagramScreen extends React.Component {
 	}
 
 	render() {
-		
+		var selectedMatrix = this.state.selectedMatrix ? this.state.selectedMatrix : this.props.matrixs && this.props.matrixs.length > 0 ? this.props.matrixs[0].id : null;
 		var conPorts;
-		if (this.state.selectedMatrix) {
-			var matrix = this.props.matrixs.find(p => p.id === this.state.selectedMatrix);
+		if (selectedMatrix) {
+			var matrix = this.props.matrixs.find(p => p.id === selectedMatrix);
 			if (matrix) {
 				conPorts = matrix.conPorts;
 			}
 		}
+		
+		
+		var selectedConPort = this.state.selectedConPort ? this.state.selectedConPort : conPorts && conPorts.length > 0 ? conPorts[0].id : null;
 
 		return (
 			<div className="row-fluid">
 				<div className="col">
-					<h1>Tunniste</h1>
+					<label>Tunniste</label>
 					<input className="form-control"
 					value={this.state.slug}
 					onChange={e => {
@@ -34,61 +37,72 @@ class CreateDiagramScreen extends React.Component {
 							slug: e.target.value
 						});
 					}} />
-					<select value={this.state.selectedMatrix}
+					<br />
+					<label>Matriisi</label>
+					<select value={selectedMatrix}
 					 className="form-control"
 					 onChange={e => {
 						 this.setState({
 							 selectedMatrix: e.target.value
 						 });
 					 }}>
-					 	<option></option>
 						{this.props.matrixs ?
 						 this.props.matrixs.map(matrix => (
 							<option value={matrix.id}>{matrix.slug}</option>
 						)) : ""}
 					</select>
-					{this.state.selectedMatrix ?
-					<select value={this.props.selectedConPort}
-					className="form-control"
-					onChange={e => {
-						this.setState({
-							selectedConPort: e.target.value
-						});
-					}}>
-						{conPorts ?
-						 conPorts.map(conPort => (
-							<option value={conPort.id}>{conPort.portNum + ". "}{conPort.slug}</option>
-						 )) : ""}
-					</select> : ""}
-				</div>
-				<button className="btn btn-success"
-					onClick={e => {
-						this.props.createDiagramScreen({
-							slug: this.state.slug,
-							conPort: this.state.selectedConPort,
-							diagram: this.props.diagram.id
-						}).then(data => {
+					<br />
+					{selectedMatrix ?
+					<div>
+						<label>Näyttölaite</label>
+						<select value={selectedConPort}
+						className="form-control"
+						onChange={e => {
 							this.setState({
-								slug: "",
-								selectedConPort: "",
-								selectedMatrix: ""
+								selectedConPort: e.target.value
 							});
-							if (this.props.onDiagramScreenCreated)
-							this.props.onDiagramScreenCreated();
-						})
-					}}>
-					Lisää
-				</button>
-				<button className="btn"
-					onClick={e => {
-						this.setState({
-							slug: "",
-							selectedConPort: "",
-							selectedMatrix: ""
-						});
-						if (this.props.onDiagramScreenCreationCancelled)
-						this.props.onDiagramScreenCreationCancelled();
-					}}>Peruuta</button>
+						}}>
+							{conPorts ?
+							 conPorts.map(conPort => (
+								<option value={conPort.id}>{conPort.portNum + ". "}{conPort.slug}</option>
+							 )) : ""}
+						</select>
+					</div> : ""}
+				</div>
+				<br/>
+				<div className="row">
+					<div className="col">
+						<button className="btn"
+							onClick={e => {
+								this.setState({
+									slug: "",
+									selectedConPort: "",
+									selectedMatrix: ""
+								});
+								if (this.props.onDiagramScreenCreationCancelled)
+									this.props.onDiagramScreenCreationCancelled();
+							}}>Peruuta</button>
+						<button className="btn btn-success"
+							onClick={e => {
+								this.props.createDiagramScreen({
+									slug: this.state.slug,
+									conPort: selectedConPort,
+									matrix: selectedMatrix,
+									diagram: this.props.diagram.id
+								}).then(data => {
+									this.setState({
+										slug: "",
+										selectedConPort: "",
+										selectedMatrix: ""
+									});
+									if (this.props.onDiagramScreenCreated)
+										this.props.onDiagramScreenCreated();
+								})
+							}}>
+							Lisää
+						</button>
+					</div>
+				</div>
 			</div>
 		)
 	}
@@ -112,19 +126,19 @@ export default compose(
 		})
 	}),
 	graphql(gql`
-	mutation ($slug: String!, $diagram: String!) {
-		diagramScreen : createDiagramScreen (slug: $slug, diagram: $diagram) {
+	mutation ($slug: String!, $diagram: String!, $matrix: String!, $conPort: String!) {
+		diagramScreen : createDiagramScreen (slug: $slug, diagram: $diagram, matrix: $matrix, conPort: $conPort) {
 			id
 			slug
 		}
 	}`, {
 		props: ({ownPorts, mutate}) => {
 			return {
-				createDiagramScreen({ slug, diagram }) {
+				createDiagramScreen({ slug, diagram, conPort, matrix }) {
 					return mutate({
-						variables: { slug, diagram },
+						variables: { slug, diagram, conPort, matrix },
 						updateQueries: {
-							Diagram: (prev, { mutationResult }) => {
+							diagram: (prev, { mutationResult }) => {
 								const newDiagramScreen = mutationResult.data.diagramScreen;
 								return Object.assign({}, prev, {
 									diagram: Object.assign({}, prev.diagram, {

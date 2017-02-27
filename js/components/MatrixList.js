@@ -29,8 +29,6 @@ class MatrixList extends React.Component {
 	}
 
 	render() {
-		console.log("connectionStates", this.props.connectionStates);
-
 		return (
 			<Settings active="matriisit">
 				<div className="row">
@@ -116,7 +114,6 @@ export default compose(
 					},
 					updateQueries: {
 						matrixs: (prev, { mutationResult }) => {
-							console.log("update queries");
 							return Object.assign({}, prev, {
 								matrixs: prev.matrixs.filter(p => p.id !== id)
 							});
@@ -128,7 +125,6 @@ export default compose(
 	}),
 	connect(
 		state => {
-			console.log("state", state, state.matrix);
 			return {
 				connectionStates: state.matrix ? state.matrix.connectionStates : null
 			}

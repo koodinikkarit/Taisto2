@@ -20,7 +20,6 @@ class Promode extends React.Component {
 	}
 
 	render() {
-		console.log("props", this.props);
 		var slug = null;
 		var selectedMatrix = null;
 		var mode = null;
@@ -49,7 +48,6 @@ class Promode extends React.Component {
 		}
 
 		if (slug && mode) {
-			console.log("mode on", mode);
 			return (
 				<div>
 					<div className="row">

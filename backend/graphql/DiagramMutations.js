@@ -76,7 +76,10 @@ export default {
 			if (diagram) {
 				setDb(db.withMutations(db => {
 					db.diagrams = db.diagrams.delete(diagram.id);
+					db.diagramScreens = db.diagramScreens.filterNot(p => p.diagramId === diagram.id);
+					db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.filterNot(p => p.diagramScreen.diagramId === diagram.id);
 				}));
+				resolve(true);
 			}
 		})
 	}

@@ -60,7 +60,7 @@ mutation createDiagram($slug: String!)  {
 				return mutate({
 					variables: { slug },
 					updateQueries: {
-						Diagrams: (prev, { mutationResult}) => {
+						diagrams: (prev, { mutationResult}) => {
 							const newDiagram = mutationResult.data.diagram;
 							return Object.assign({}, prev, {
 								diagrams: [...prev.diagrams, newDiagram]

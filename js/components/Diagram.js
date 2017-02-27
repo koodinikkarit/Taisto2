@@ -1,4 +1,6 @@
 ﻿import React from 'react';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 import {
     Link
 } from "react-router";
@@ -20,7 +22,7 @@ var styles = {
     }
 };
 
-export default class extends React.Component {
+class Diagram extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -30,15 +32,48 @@ export default class extends React.Component {
     render() {
         styles.customDiagramContainer.paddingBottom = (100 / this.props.aspectRatio) + "%";
         return (
-            <div style={styles.customDiagramContainer}>
+            <ul className="list-group">
                 {this.props.diagram && this.props.diagram.diagramScreens ? this.props.diagram.diagramScreens.map(diagramScreen => (
-                    <ActionShortcut cpus={diagramScreen.cpuPorts} con={diagramScreen.conPort} />   
+                    <li className="list-group-item">
+                        <ActionShortcut diagramScreenId={diagramScreen.id} /> 
+                    </li>  
                 )) : ""}
 
-            </div>
+            </ul>
         );
     }
 }
+
+
+export default graphql(gql`
+query ($slug: String!) {
+    diagram: diagramBySlug(slug: $slug) {
+        id
+        diagramScreens {
+            id
+            slug
+            conPort {
+                id
+                slug
+                portNum
+            }
+            cpuPorts {
+                id
+                slug
+                portNum
+            }
+        }
+    }
+}`, {
+        options: (ownProps) => ({
+            variables: {
+                slug: ownProps.params.slug
+            }
+        }),
+        props: ({ ownProps, data: { diagram } }) => ({
+            diagram
+        })
+})(Diagram);
 
 
                 // <div onMouseDown={() => { this.setState({ dragging: true }) } } style={styles.customDiagramItem}>

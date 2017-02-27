@@ -11,7 +11,7 @@ mutation ($id: String!) {
 				return mutate({
 					variables: { id },
 					updateQueries: {
-						Diagrams: (prev, { mutationResult }) => {
+						diagrams: (prev, { mutationResult }) => {
 							return Object.assign({}, prev, {
 								diagrams: [...prev.diagrams.filter(p => p.id != id)]
 							});

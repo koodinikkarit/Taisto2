@@ -106,9 +106,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			console.log("poistetaan", args.id, db.matrixs);
 			if (db.matrixs.get(parseInt(args.id))) {
-				console.log("loytyi");
 				removeMatrix(parseInt(args.id));
 				resolve(true);
 			} else resolve(false);

@@ -13,4 +13,9 @@ export default class extends Immutable.Record({
         var cpuPort = db.cpuPorts.get(this.cpuPortId);
         if (cpuPort) return cpuPort;
     }
+
+    get diagramScreen() {
+        var diagramScreen = db.diagramScreens.get(this.diagramScreenId);
+        return diagramScreen;
+    }
 }

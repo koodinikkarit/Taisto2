@@ -43,6 +43,13 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 	if (!err && data !== "undefined") {
 		var loadedDatabase = JSON.parse(data);
 		db = db.withMutations(db => {
+			db.nextMatrixId = loadedDatabase.nextMatrixId;
+			db.nextConPortId = loadedDatabase.nextConPortId;
+			db.nextCpuPortId = loadedDatabase.nextCpuPortId;
+			db.nextDiagramId = loadedDatabase.nextDiagramId;
+			db.nextDiagramScreenId = loadedDatabase.nextDiagramScreenId;
+			db.nextDiagramScreenCpuPortId = loadedDatabase.nextDiagramScreenCpuPortId;
+
 			db.matrixs = db.matrixs.withMutations(matrixs => {
 				Object.keys(loadedDatabase.matrixs).forEach(id => {
 					var newMatrix = new Matrix(loadedDatabase.matrixs[id]);
@@ -57,6 +64,21 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 			db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
 				Object.keys(loadedDatabase.cpuPorts).forEach(id => {
 					cpuPorts.set(parseInt(id), new CpuPort(loadedDatabase.cpuPorts[id]));
+				});
+			});
+			db.diagrams = db.diagrams.withMutations(diagrams => {
+				Object.keys(loadedDatabase.diagrams).forEach(id => {
+					diagrams.set(parseInt(id), new Diagram(loadedDatabase.diagrams[id]));
+				});
+			});
+			db.diagramScreens = db.diagramScreens.withMutations(diagramScreens => {
+				Object.keys(loadedDatabase.diagramScreens).forEach(id => {
+					diagramScreens.set(parseInt(id), new DiagramScreen(loadedDatabase.diagramScreens[id]));
+				});
+			});
+			db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.withMutations(diagramScreenCpuPorts => {
+				Object.keys(loadedDatabase.diagramScreenCpuPorts).forEach(id => {
+					diagramScreenCpuPorts.set(parseInt(id), new DiagramScreenCpuPort(loadedDatabase.diagramScreenCpuPorts[id]));
 				});
 			});
 		});
@@ -126,7 +148,7 @@ export const connectMarix = (ip, port, slug, numberOfConPorts, numberOfCpuPorts)
 export const createDiagram = (slug) => {
 	var diagram;
 	setDb(db.withMutations(db => {
-		var id = db.nextDiagramId;
+		var id = db.nextDiagramId++;
 		diagram = new Diagram({
 			id,
 			slug
@@ -146,8 +168,10 @@ export const createDiagramScreen = (diagramId, slug, matrixId, conPortId) => {
 			id,
 			diagramId,
 			slug,
-			conPortId
+			conPortId,
+			matrixId
 		});
+		console.log("uusi diagramScreen ", diagramScreen);
 		db.diagramScreens = db.diagramScreens.set(id, diagramScreen);
 	}));
 	return diagramScreen;

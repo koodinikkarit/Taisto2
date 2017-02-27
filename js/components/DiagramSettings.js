@@ -14,7 +14,8 @@ class DiagramSettings extends React.Component {
 		super(props);
 		this.state = {
 			addingScreen: false,
-			newSlug: ""
+			newSlug: "",
+			expandedDiagramScreens: {}
 		}
 	}
 	
@@ -24,20 +25,31 @@ class DiagramSettings extends React.Component {
 				<Settings>
 					<div className="row-fluid">
 						<div className="col">
-							<h1>Tunniste</h1>
-							<button className="btn btn-danger"
-							 onClick={e => {
-								 this.props.removeDiagram({ 
-									 id: this.props.diagram.id 
-								 }).then(data => {
-									 this.props.history.push("/Settings/diagrams");
-								 })
-							 }}>
-								Poista
-							</button>
+							<div className="row">
+								<div className="col">
+									<h1>Tunniste</h1>
+								</div>
+								<div className="col">
+									<button className="btn btn-danger"
+									 onClick={e => {
+										this.props.removeDiagram({ 
+											id: this.props.diagram.id 
+									 	}).then(data => {
+											 this.props.history.push("/Settings/diagrams");
+								 		})
+										}}>
+											Poista
+									</button>
+								</div>
+							</div>
+							<hr />
+							<label>Tunniste:</label>
 							<input className="form-control" value={this.props.diagram.slug} />
 						</div>
 					</div>
+					<br />
+					<hr />
+					<br />		
 					<div className="row-fluid">
 						<div className="col">
 							<h1>Kaavion näytöt</h1>
@@ -53,6 +65,7 @@ class DiagramSettings extends React.Component {
 							</button>
 						</div>
 					</div>
+					<br />
 					<div className="row-fluid">
 						<div className="row-fluid">
 							{this.state.addingScreen ?
@@ -69,13 +82,30 @@ class DiagramSettings extends React.Component {
 								});
 							  }} />: ""}
 						</div>
-						<ul>
+						<hr />
+						<div id="accordion" role="tablist" aria-multiselectable="true">						
 							{this.props.diagram.diagramScreens.map(diagramScreen => (
-								<li key={diagramScreen.id} >
-									<EditDiagramScreen id={diagramScreen.id} />
-								</li>
+								<div className="card">
+									<div className="card-header" role="tab">
+										<h5 className="mb-0">
+											<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"
+											 onClick={e => {
+												this.state.expandedDiagramScreens[diagramScreen.id] = !this.state.expandedDiagramScreens[diagramScreen.id] ? true : false;
+												this.forceUpdate();
+											 }}>
+												{diagramScreen.slug}
+        									</a>
+										</h5>
+									</div>
+
+									<div className={this.state.expandedDiagramScreens[diagramScreen.id] ? "collapse show" : "collapse"} role="tabpanel" aria-labelledby="headingOne">
+										<div className="card-block">
+											<EditDiagramScreen id={diagramScreen.id} />
+      									</div>
+									</div>
+								</div>
 							))}
-						</ul>
+						</div>
 					</div>
 				</Settings>
 			);
@@ -90,7 +120,7 @@ class DiagramSettings extends React.Component {
 
 export default compose(
 	graphql(gql`
-	query Diagram($slug: String!) {
+	query diagram($slug: String!) {
 		diagram: diagramBySlug(slug: $slug) {
 			id
 			slug

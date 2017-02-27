@@ -19,6 +19,7 @@ import {
  */
 
 import DiagramScreenGraphqlObject from "./DiagramScreen";
+import DiagramScreenCpuPortGraphqlObject from "./DiagramScreenCpuPort";
 
 export default {
 	createDiagramScreen: {
@@ -32,11 +33,14 @@ export default {
 				type: new GraphQLNonNull(GraphQLString)
 			},
 			conPort: {
-				type: GraphQLString
+				type: new GraphQLNonNull(GraphQLString)
+			},
+			matrix: {
+				type: new GraphQLNonNull(GraphQLString)
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(createDiagramScreen(parseInt(args.diagram), args.slug, parseInt(args.conPort)));
+			resolve(createDiagramScreen(parseInt(args.diagram), args.slug, parseInt(args.matrix), parseInt(args.conPort)));
 		})
 	},
 	editDiagramScreen: {
@@ -71,17 +75,59 @@ export default {
 	},
 	addCpuToDiagramScreen: {
 		name: "AddCpuToDiagramScreen",
-		type: DiagramScreenGraphqlObject,
+		type: DiagramScreenCpuPortGraphqlObject,
 		args: {
 			id: {
 				type: new GraphQLNonNull(GraphQLString)
 			},
 			cpuPort: {
-				type: GraphQLString
+				type: new GraphQLNonNull(GraphQLString)
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(addCpuToDiagramScreen(parseInt(args.id), parseInt(cpuPort)));
+			var cpuDiagramScreen = db.diagramScreenCpuPorts.find(p => p.id === parseInt(args.id) && p.cpuPortId === parseInt(args.cpuPort));
+			if (!cpuDiagramScreen)
+			resolve(addCpuToDiagramScreen(parseInt(args.id), parseInt(args.cpuPort)));
+			else reject();
+		})
+	},
+	removeCpuFromDiagramScreen: {
+		name: "RemoveCpuFromDiagramScreen",
+		type: GraphQLBoolean,
+		args: {
+			id: {
+				type: new GraphQLNonNull(GraphQLString)
+			},
+			cpuPort: {
+				type: new GraphQLNonNull(GraphQLString)
+			}
+		},
+		resolve: (_, args) => new Promise((resolve, reject) => {
+			setDb(db.withMutations(db => {
+				db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.filterNot(p => p.diagramScreenId === parseInt(args.id) && p.cpuPortId === parseInt(args.cpuPort));
+			}));
+			resolve(true);
+		})
+	},
+	removeDiagramScreen: {
+		name: "RemoveDiagraScreen",
+		type: GraphQLBoolean,
+		args: {
+			id: {
+				type: new GraphQLNonNull(GraphQLString)
+			}
+		},
+		resolve: (_, args) => new Promise((resolve, reject) => {
+			setDb(db.withMutations(db => {
+				var diagramScreen = db.diagramScreens.get(parseInt(args.id));
+				if (diagramScreen) {
+					setDb(db.withMutations(db => {
+						db.diagramScreens = db.diagramScreens.delete(diagramScreen.id);
+						db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.filterNot(p => p.diagramScreenId === diagramScreen.id);
+					}));
+					resolve(true);
+				}
+			}));
 		})
 	},
 	changeMatrixOfDiagramScreen: {

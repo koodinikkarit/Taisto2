@@ -7,15 +7,21 @@ import {
 export default class extends React.Component {
         render() {
             var buttonHeight = "60px";
-        return (
-            <div style={{ padding: "10%" }}>
-                <h3>Kappaa</h3>
-                {this.props.diagrams ?
-                this.props.diagrams.map(diagram => (
-                    <Link key={diagram.id} to={`/diagram/${diagram.slug}`}><button style={{ height: buttonHeight, width: "100%", marginBottom: "2px" }}>{diagram.slug}</button></Link>
-                )) : ""}
-
-            </div>       
+            return (
+                <div className="row">
+                    <div className="col">
+                        <div className="jumbotron">
+                            <h1>Kaaviot</h1>
+                        </div>
+                        <div className="list-group">
+                            {this.props.diagrams ? this.props.diagrams.map(diagram => (
+                                <a href={"./diagram/" + diagram.slug} className="list-group-item list-group-item-action">
+                                    {diagram.slug}
+                                </a>
+                            )) : ""}
+                        </div>
+                    </div>
+                </div>   
         );
     }
 }

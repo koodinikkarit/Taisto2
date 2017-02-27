@@ -35,7 +35,6 @@ export default class extends React.Component {
 
 	render() {
 		var that = this;
-		console.log("videoCOnnections", this.props.videoConnections);
 		return (
 			<div className="row" style={{ width: "100%" }}>
 				<div className="col">
@@ -57,7 +56,6 @@ export default class extends React.Component {
 					<div style={styles.matrixBoardCpuList}>
 						{this.props.cpuPorts ?
 						this.props.cpuPorts.map((cpu, index) => {
-							console.log("vertaus ", cpu.id, this.props.videoConnections[this.state.selectedCon], this.state.selectedCon);
 					   	 	return (<div key={cpu.id} style={styles.matrixBoardItem}>
 								<button onClick={() => { if (that.props.onNewVideoConnection && this.state.selectedCon !== "") that.props.onNewVideoConnection(this.state.selectedCon, cpu.id); } } 
 								style={{...styles.matrixBoardItemButton, backgroundColor: this.props.videoConnections[this.state.selectedCon] === cpu.id ? videoConnectionColor : "rgb(179, 229, 220)"}}>
