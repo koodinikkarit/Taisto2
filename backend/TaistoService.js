@@ -50,37 +50,49 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 			db.nextDiagramScreenId = loadedDatabase.nextDiagramScreenId;
 			db.nextDiagramScreenCpuPortId = loadedDatabase.nextDiagramScreenCpuPortId;
 
-			db.matrixs = db.matrixs.withMutations(matrixs => {
-				Object.keys(loadedDatabase.matrixs).forEach(id => {
-					var newMatrix = new Matrix(loadedDatabase.matrixs[id]);
-					matrixs.set(parseInt(id), newMatrix);
+			if (loadedDatabase.matrixs) {
+				db.matrixs = db.matrixs.withMutations(matrixs => {
+					Object.keys(loadedDatabase.matrixs).forEach(id => {
+						var newMatrix = new Matrix(loadedDatabase.matrixs[id]);
+						matrixs.set(parseInt(id), newMatrix);
+					});
 				});
-			});
-			db.conPorts = db.conPorts.withMutations(conPorts => {
-				Object.keys(loadedDatabase.conPorts).forEach(id => {
-					conPorts.set(parseInt(id), new ConPort(loadedDatabase.conPorts[id]));
+			}
+			if (loadedDatabase.conPorts) {
+				db.conPorts = db.conPorts.withMutations(conPorts => {
+					Object.keys(loadedDatabase.conPorts).forEach(id => {
+						conPorts.set(parseInt(id), new ConPort(loadedDatabase.conPorts[id]));
+					});
 				});
-			});
-			db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
-				Object.keys(loadedDatabase.cpuPorts).forEach(id => {
-					cpuPorts.set(parseInt(id), new CpuPort(loadedDatabase.cpuPorts[id]));
+			}
+			if (loadedDatabase.cpuPorts) {
+				db.cpuPorts = db.cpuPorts.withMutations(cpuPorts => {
+					Object.keys(loadedDatabase.cpuPorts).forEach(id => {
+						cpuPorts.set(parseInt(id), new CpuPort(loadedDatabase.cpuPorts[id]));
+					});
 				});
-			});
-			db.diagrams = db.diagrams.withMutations(diagrams => {
-				Object.keys(loadedDatabase.diagrams).forEach(id => {
-					diagrams.set(parseInt(id), new Diagram(loadedDatabase.diagrams[id]));
+			}
+			if (loadedDatabase.diagrams) {
+				db.diagrams = db.diagrams.withMutations(diagrams => {
+					Object.keys(loadedDatabase.diagrams).forEach(id => {
+						diagrams.set(parseInt(id), new Diagram(loadedDatabase.diagrams[id]));
+					});
 				});
-			});
-			db.diagramScreens = db.diagramScreens.withMutations(diagramScreens => {
-				Object.keys(loadedDatabase.diagramScreens).forEach(id => {
-					diagramScreens.set(parseInt(id), new DiagramScreen(loadedDatabase.diagramScreens[id]));
+			}
+			if (loadedDatabase.diagramScreens) {
+				db.diagramScreens = db.diagramScreens.withMutations(diagramScreens => {
+					Object.keys(loadedDatabase.diagramScreens).forEach(id => {
+						diagramScreens.set(parseInt(id), new DiagramScreen(loadedDatabase.diagramScreens[id]));
+					});
 				});
-			});
-			db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.withMutations(diagramScreenCpuPorts => {
-				Object.keys(loadedDatabase.diagramScreenCpuPorts).forEach(id => {
-					diagramScreenCpuPorts.set(parseInt(id), new DiagramScreenCpuPort(loadedDatabase.diagramScreenCpuPorts[id]));
+			}
+			if (loadedDatabase.diagramScreenCpuPorts) {
+				db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.withMutations(diagramScreenCpuPorts => {
+					Object.keys(loadedDatabase.diagramScreenCpuPorts).forEach(id => {
+						diagramScreenCpuPorts.set(parseInt(id), new DiagramScreenCpuPort(loadedDatabase.diagramScreenCpuPorts[id]));
+					});
 				});
-			});
+			}
 		});
 		db.matrixs.forEach(matrix => {
 			registerMatrixEvents(matrix);
