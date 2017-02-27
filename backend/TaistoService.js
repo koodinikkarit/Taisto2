@@ -43,12 +43,12 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 	if (!err && data !== "undefined") {
 		var loadedDatabase = JSON.parse(data);
 		db = db.withMutations(db => {
-			db.nextMatrixId = loadedDatabase.nextMatrixId;
-			db.nextConPortId = loadedDatabase.nextConPortId;
-			db.nextCpuPortId = loadedDatabase.nextCpuPortId;
-			db.nextDiagramId = loadedDatabase.nextDiagramId;
-			db.nextDiagramScreenId = loadedDatabase.nextDiagramScreenId;
-			db.nextDiagramScreenCpuPortId = loadedDatabase.nextDiagramScreenCpuPortId;
+			db.nextMatrixId = loadedDatabase.nextMatrixId ? loadedDatabase.nextMatrixId : 1;
+			db.nextConPortId = loadedDatabase.nextConPortId ? loadedDatabase.nextConPortId : 1;
+			db.nextCpuPortId = loadedDatabase.nextCpuPortId ? loadedDatabase.nextCpuPortId : 1;
+			db.nextDiagramId = loadedDatabase.nextDiagramId ? loadedDatabase.nextDiagramId : 1;
+			db.nextDiagramScreenId = loadedDatabase.nextDiagramScreenId ? loadedDatabase.nextDiagramScreenId : 1;
+			db.nextDiagramScreenCpuPortId = loadedDatabase.nextDiagramScreenCpuPortId ? loadedDatabase.nextDiagramScreenCpuPortId : 1;
 
 			if (loadedDatabase.matrixs) {
 				db.matrixs = db.matrixs.withMutations(matrixs => {
