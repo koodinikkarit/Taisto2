@@ -1,7 +1,12 @@
 import {
 	GraphQLObjectType,
-	GraphQLString
+	GraphQLString,
+	GraphQLList
 } from "graphql";
+
+import DefaultStateVideoConnection from "./DefaultStateVideoConnection";
+import DefaultStateKwmConnection from "./DefaultStateKwmConnection";
+
 
 export default new GraphQLObjectType({
 	name: "DefaultState",
@@ -12,5 +17,11 @@ export default new GraphQLObjectType({
 		slug: {
 			type: GraphQLString
 		},
+		videoConnections: {
+			type: new GraphQLList(DefaultStateVideoConnection)
+		},
+		kwmConnections: {
+			type: new GraphQLList(DefaultStateKwmConnection)
+		}
 	})
 });

@@ -12,7 +12,7 @@ import MatrixSettings from "./components/MatrixSettings";
 import MatrixList from "./components/MatrixList";
 import TimerList from "./containers/TimerList";
 import LockList from "./containers/LockList";
-import DefaultStates from "./containers/DefaultStates";
+import DefaultStatesSettingsList from "./components/DefaultStatesSettingsList";
 import DiagramList from "./components/DiagramList";
 import TranslationList from "./containers/TranslationList";
 
@@ -31,7 +31,7 @@ export default (
 			<Route path="/settings/matriisit" component={MatrixList} />
 			<Route path="/settings/timers" component={TimerList} />
 			<Route path="/settings/locks" component={LockList} />
-			<Route path="/settings/oletustilat" component={DefaultStates} />
+			<Route path="/settings/oletustilat" component={DefaultStatesSettingsList} />
 			<Route path="/settings/diagram/:slug" component={DiagramSettings} />
 			<Route path="/settings/diagrams" component={DiagramList} />
 			<Route path="/settings/translations" component={TranslationList} />

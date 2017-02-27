@@ -10,6 +10,9 @@ import CpuPort from "./records/CpuPort";
 import Diagram from "./records/Diagram";
 import DiagramScreen from "./records/DiagramScreen";
 import DiagramScreenCpuPort from "./records/DiagramScreenCpuPort";
+import DefaultState from "./records/DefaultState";
+import DefaultStateVideoConnection from "./records/DefaultStateVideoConnection";
+import DefaultStateKwmConnection from "./records/DefaultStateKwmConnection";
 
 
 import {
@@ -204,6 +207,56 @@ export const addCpuToDiagramScreen = (diagramScreenId, cpuPortId) => {
 		}));
 	}
 	return diagramScreenCpu;
+}
+
+export const createDefaultState = (slug, matrixId) => {
+	var defaultState;
+	setDb(db.withMutations(db => {
+		var id = db.nextDefaultStateId++;
+		defaultState = new DefaultState({
+			id,
+			slug,
+			matrixId
+		});
+		db.defaultStates.set(id, defaultState);
+	}));
+	return defaultState;
+}
+
+export const insertVideoConnectionToDefaultState = (defaultStateId, conPortId, cpuPortId) => {
+	var defaultState = db.defaultStates.get(defaultStateId);
+	var defaultStateVideoConnection;
+	if (defaultState) {
+		setDb(db.withMutations(db => {
+			var id = db.nextDefaultStateVideoConnectionId++;
+			defaultStateVideoConnection = new DefaultStateVideoConnection({
+				id,
+				defaultStateId,
+				conPortId,
+				cpuPortId
+			});
+			db.defaultStateVideoConnections.set(id, defaultStateVideoConnection);
+		}));
+	}
+	return defaultStateVideoConnection;
+}
+
+export const insertKwmConnectionToDefaultState = (defaultStateId, conPortId, cpuPortId) => {
+	var defaultState = db.defaultStates.get(defaultStateId);
+	var defaultStateKwmConnection;
+	if (defaultState) {
+		setDb(db.withMutations(db => {
+			var id = db.nextDefaultStateKwmConnectionId++;
+			defaultStateKwmConnection = new DefaultStateKwmConnection({
+				id,
+				defaultStateId,
+				conPortId,
+				cpuPortId
+			});
+			db.defaultStateKwmConnections.set(id, defaultStateKwmConnections);
+		}));
+	}
+	return defaultStateKwmConnection;
 }
 
 function registerMatrixEvents(matrix) {
