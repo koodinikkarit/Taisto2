@@ -4,6 +4,7 @@ import {
 	GraphQLList
 } from "graphql";
 
+import Matrix from "./Matrix";
 import DefaultStateVideoConnection from "./DefaultStateVideoConnection";
 import DefaultStateKwmConnection from "./DefualtStateKwmConnection";
 
@@ -16,6 +17,9 @@ export default new GraphQLObjectType({
 		},
 		slug: {
 			type: GraphQLString
+		},
+		matrix: {
+			type: Matrix
 		},
 		videoConnections: {
 			type: new GraphQLList(DefaultStateVideoConnection)

@@ -56,7 +56,8 @@ export default {
 					db.defaultStates = db.defaultStates.delete(defaultState.id);
 					db.defaultStateVideoConnections = db.defaultStateVideoConnections.filterNot(p => p.defaultStateId === defaultState.id);
 					db.defaultStateKwmConnections = db.defaultStateKwmConnections.filterNot(p => p.defaultStateId === defaultState.id);
-				}))
+				}));
+				resolve(defaultState);
 			}
 		})
 	},
@@ -105,16 +106,13 @@ export default {
 			},
 			conPort: {
 				type: new GraphQLNonNull(GraphQLString)
-			},
-			cpuPort: {
-				type: new GraphQLNonNull(GraphQLString)
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
 			var defaultState = db.defaultStates.get(parseInt(args.id));
 			if (defaultState) {
 				setDb(db.withMutations(db => {
-					db.defaultStateVideoConnections = db.defaultStateVideoConnections.filterNot(p => p.defaultStateId && p.conPortId === parseInt(args.conPort) && p.cpuPortId === parseInt(args.cpuPort));
+					db.defaultStateVideoConnections = db.defaultStateVideoConnections.filterNot(p => p.defaultStateId === parseInt(args.id) && p.conPortId === parseInt(args.conPort));
 				}));
 				resolve(true);
 			}
@@ -128,9 +126,6 @@ export default {
 			id: {
 				type: new GraphQLNonNull(GraphQLString)
 			},
-			conPort: {
-				type: new GraphQLNonNull(GraphQLString)
-			},
 			cpuPort: {
 				type: new GraphQLNonNull(GraphQLString)
 			}
@@ -139,7 +134,7 @@ export default {
 			var defaultState = db.defaultStates.get(parseInt(args.id));
 			if (defaultState) {
 				setDb(db.withMutations(db => {
-					db.defaultStateKwmConnections = db.defaultStateKwmConnections.filterNot(p => p.defaultStateId && p.conPortId === parseInt(args.conPort) && p.cpuPortId === parseInt(args.cpuPort));
+					db.defaultStateKwmConnections = db.defaultStateKwmConnections.filterNot(p => p.defaultStateId === parseInt(args.id) && p.cpuPortId === parseInt(args.cpuPort));
 				}));
 				resolve(true);
 			}

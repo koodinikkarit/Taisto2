@@ -10,7 +10,7 @@ export default class extends Immutable.Record({
 	matrixId: null
 }) {
 	get matrix() {
-		return db.matrix.get(this.matrixId);
+		return db.matrixs.get(this.matrixId);
 	}
 
 	get videoConnections() {

@@ -228,33 +228,50 @@ export const insertVideoConnectionToDefaultState = (defaultStateId, conPortId, c
 	var defaultState = db.defaultStates.get(defaultStateId);
 	var defaultStateVideoConnection;
 	if (defaultState) {
+		defaultStateVideoConnection = db.defaultStateVideoConnections.find(p => p.defaultStateId === defaultStateId && p.conPortId === conPortId);
 		setDb(db.withMutations(db => {
-			var id = db.nextDefaultStateVideoConnectionId++;
-			defaultStateVideoConnection = new DefaultStateVideoConnection({
-				id,
-				defaultStateId,
-				conPortId,
-				cpuPortId
-			});
-			db.defaultStateVideoConnections.set(id, defaultStateVideoConnection);
+			var id;
+			if (defaultStateVideoConnection) {
+				id = defaultStateVideoConnection.id;
+				defaultStateVideoConnection = defaultStateVideoConnection.set("cpuPortId", cpuPortId);
+ 			} else {
+				id = db.nextDefaultStateVideoConnectionId++;
+				defaultStateVideoConnection = new DefaultStateVideoConnection({
+					id,
+					defaultStateId,
+					conPortId,
+					cpuPortId
+				});
+			}
+			db.defaultStateVideoConnections = db.defaultStateVideoConnections.set(id, defaultStateVideoConnection);
 		}));
 	}
 	return defaultStateVideoConnection;
 }
 
 export const insertKwmConnectionToDefaultState = (defaultStateId, conPortId, cpuPortId) => {
+	console.log("adding kwm connection", defaultStateId, conPortId, cpuPortId);
 	var defaultState = db.defaultStates.get(defaultStateId);
 	var defaultStateKwmConnection;
 	if (defaultState) {
+		defaultStateKwmConnection = db.defaultStateKwmConnections.find(p => p.defaultStateId === defaultStateId && p.cpuPortId === cpuPortId);
 		setDb(db.withMutations(db => {
-			var id = db.nextDefaultStateKwmConnectionId++;
-			defaultStateKwmConnection = new DefaultStateKwmConnection({
-				id,
-				defaultStateId,
-				conPortId,
-				cpuPortId
-			});
-			db.defaultStateKwmConnections.set(id, defaultStateKwmConnections);
+			var id;
+			if (defaultStateKwmConnection) {
+				id = defaultStateKwmConnection.id;
+				defaultStateKwmConnection = defaultStateKwmConnection.set("conPortId", conPortId);
+			} else {	
+				id = db.nextDefaultStateKwmConnectionId++;
+				console.log("uusi", id);
+				defaultStateKwmConnection = new DefaultStateKwmConnection({
+					id,
+					defaultStateId,
+					conPortId,
+					cpuPortId
+				});
+			}
+			console.log("it iss", defaultStateKwmConnection);
+			db.defaultStateKwmConnections = db.defaultStateKwmConnections.set(id, defaultStateKwmConnection);
 		}));
 	}
 	return defaultStateKwmConnection;

@@ -9,7 +9,7 @@ class DefaultStatesSettingsList extends React.Component {
 		super(props);
 		this.state = {
 			newSlug: "",
-			creatingDefaultStates: false,
+			creatingDefaultState: false,
 			selectedMatrix: ""
 		};
 	}
@@ -27,7 +27,7 @@ class DefaultStatesSettingsList extends React.Component {
 						<button className="btn btn-success"
 						 onClick={e => {
 							 this.setState({
-								 creatingDefaultStates: true
+								 creatingDefaultState: true
 							 });
 						 }}>
 							Uusi oletustila
@@ -35,8 +35,7 @@ class DefaultStatesSettingsList extends React.Component {
 					</div>
 				</div>
 				<hr/>
-				<br/>
-				{this.state.creatingDefaultStates ? 
+				{this.state.creatingDefaultState ? 
 				<div className="row">
 					<div className="col-xl-4">
 						<div className="row">
@@ -92,7 +91,7 @@ class DefaultStatesSettingsList extends React.Component {
 									 }).then(data => {
 										this.setState({
 											newSlug: "",
-											createDefaultState: false
+											creatingDefaultState: false
 										});
 									 });
 								 }}>
@@ -105,18 +104,35 @@ class DefaultStatesSettingsList extends React.Component {
 					</div>
 				</div> : ""}
 				<br/>
-			<div>
-				<ul className="list-group">
-					{this.props.defaultStates ? 
-					 this.props.defaultStates.map(defaultState => (
-						<li key={defaultState.id} className="list-group-item list-group-item-action"
-						 onClick={e => {
-							 this.props.history.push(`/settings/oletustila/${defaultState.slug}`)
-						 }}>
-							{defaultState.slug}
-						</li>
-					 )) : ""}
-				</ul>
+			<div className="row">
+				<div className="col-xl-6">
+					<ul className="list-group">
+						{this.props.defaultStates ? 
+						 this.props.defaultStates.map(defaultState => (
+							<li key={defaultState.id} className="list-group-item list-group-item-action"
+						 	onClick={e => {
+								 this.props.history.push(`/settings/oletustila/${defaultState.slug}`)
+						 	}}>
+						 		<div className="row"  style={{ width: "100%" }}>
+							 		<div className="col-8">
+										{defaultState.slug}
+									</div>
+									<div className="col-4">
+										<button className="btn btn-danger"
+										 onClick={e => {
+											e.stopPropagation();
+											this.props.removeDefaultState({
+												id: defaultState.id
+											});
+										 }}>
+											Poista
+										</button>
+									</div>
+								</div>
+							</li>
+						 )) : ""}
+					</ul>
+				</div>
 			</div>
 			</Settings>
 		);
@@ -165,6 +181,31 @@ export default compose(
 							defaultStates: (prev, { mutationResult }) => {
 								return Object.assign({}, prev, {
 									defaultStates: [...prev.defaultStates, mutationResult.data.defaultState]
+								});
+							}
+						}
+					})
+				}
+			}
+		}
+	}),
+	graphql(gql`
+	mutation ($id: String!) {
+		removeDefaultState(id: $id) { 
+			id
+		}
+	}`, {
+		props: ({ ownProps, mutate }) => {
+			return {
+				removeDefaultState({ id }) {
+					return mutate({
+						variables: {
+							id
+						},
+						updateQueries: {
+							defaultStates: (prev, { mutationResult }) => {
+								return Object.assign({}, prev, {
+									defaultStates: prev.defaultStates.filter(p => p.id !== id)
 								});
 							}
 						}

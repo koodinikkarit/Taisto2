@@ -8,7 +8,7 @@ export default class extends Immutable.Record({
 	id: null,
 	conPortId: null,
 	cpuPortId: null,
-	defaulStateId: null
+	defaultStateId: null
 }) {
 	get conPort() {
 		return db.conPorts.get(this.conPortId);
