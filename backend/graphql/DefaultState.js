@@ -5,7 +5,7 @@ import {
 } from "graphql";
 
 import DefaultStateVideoConnection from "./DefaultStateVideoConnection";
-import DefaultStateKwmConnection from "./DefaultStateKwmConnection";
+import DefaultStateKwmConnection from "./DefualtStateKwmConnection";
 
 
 export default new GraphQLObjectType({

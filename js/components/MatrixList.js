@@ -43,7 +43,7 @@ class MatrixList extends React.Component {
 					</div>
 				</div>
 				<div className="row">
-					<div className="col-6">
+					<div className="col-xl-6">
 						<div>
 							{this.state.connectingNewMatrix ?
 							<ConnectingMatrix 

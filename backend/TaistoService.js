@@ -218,7 +218,8 @@ export const createDefaultState = (slug, matrixId) => {
 			slug,
 			matrixId
 		});
-		db.defaultStates.set(id, defaultState);
+		db.defaultStates = db.defaultStates.set(id, defaultState);
+		console.log("defaulStates", db.defaultStates);
 	}));
 	return defaultState;
 }

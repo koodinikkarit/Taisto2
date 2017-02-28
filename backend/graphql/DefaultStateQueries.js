@@ -1,6 +1,7 @@
 import {
 	GraphQLList,
-	GraphQLNonNull
+	GraphQLNonNull,
+	GraphQLString
 } from "graphql";
 
 import DefaultState from "./DefaultState";
@@ -11,10 +12,11 @@ import {
 
 export default {
 	defaultStates: {
-		name: "defaultStates",
+		name: "DefaultStates",
 		description: "makkara",
 		type: new GraphQLList(DefaultState),
 		resolve: (_, args) => new Promise((resolve, reject) => {
+			console.log("defualtStates", db.defaultStates);
 			resolve(db.defaultStates);
 		})
 	},

@@ -24,12 +24,14 @@ import MatrixGraphqlObject from "./Matrix";
 import matrixQueries from "./MatrixQueries";
 import diagramQueries from "./DiagramQueries";
 import diagramScreenQueries from "./DiagramScreenQueries";
+import defaultStateQueries from "./DefaultStateQueries";
 
 export default new GraphQLObjectType({
 	name: "QueryType",
 	fields: () => Object.assign(
 		matrixQueries,
 		diagramQueries,
-		diagramScreenQueries
+		diagramScreenQueries,
+		defaultStateQueries
 	)
 });

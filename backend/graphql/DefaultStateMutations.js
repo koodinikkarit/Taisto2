@@ -23,7 +23,7 @@ import {
 
 import DefaultState from "./DefaultState";
 import DefaultStateVideoConnection from "./DefaultStateVideoConnection";
-import DefaultStateKwmConnection from "./DefaultStateKwmConnection";
+import DefaultStateKwmConnection from "./DefualtStateKwmConnection";
 
 export default {
 	createDefaultState: {
