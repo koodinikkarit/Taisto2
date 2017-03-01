@@ -7,7 +7,7 @@ import Etusivu from "./containers/Etusivu";
 import Promode from "./components/Promode";
 import Settings from "./containers/Settings";
 import NotFound from "./components/404";
-
+import DefaultStatesList from "./components/DefaultStatesList";
 import MatrixSettings from "./components/MatrixSettings";
 import MatrixList from "./components/MatrixList";
 import TimerList from "./containers/TimerList";
@@ -26,6 +26,7 @@ export default (
 				<Route path="/promode/:slug/:mode" component={Promode} />
 			</Route>
 		</Route>
+		<Route path="/oletustilat" component={DefaultStatesList} />
 		<Route>
 			<Route path="/settings" component={MatrixList} />
 			<Route path="/settings/matriisi/:slug" component={MatrixSettings} />

@@ -83,7 +83,7 @@ class DiagramSettings extends React.Component {
 							  }} />: ""}
 						</div>
 						<hr />
-						<div id="accordion" role="tablist" aria-multiselectable="true">						
+						<div role="tablist" aria-multiselectable="true">						
 							{this.props.diagram.diagramScreens.map(diagramScreen => (
 								<div className="card">
 									<div className="card-header" role="tab">

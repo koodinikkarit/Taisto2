@@ -85,11 +85,6 @@ export default class extends Immutable.Record({
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
 			connection.write(new Buffer([2, REQUEST_ALL_STATES, 3]));
 		});
-		// var requestStatesPromise = requestAllStatesPromises[this.id];
-		// if (requestStatesPromise) return requestStatesPromise;
-		// else {
-
-		// }
 	}
 
     on(eventType, callback) {

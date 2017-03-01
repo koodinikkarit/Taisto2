@@ -29,6 +29,9 @@ export default class extends React.Component {
                                     <a className="nav-link" href="/">Kaaviot</a>
                                 </li>
                                 <li className="nav-item active">
+                                    <a className="nav-link" href="/oletustilat">Oletustilat</a>
+                                </li>
+                                <li className="nav-item active">
                                     <a className="nav-link" href="/promode">Promode<span className="sr-only">(current)</span></a>
                                 </li>
                                 <li className="nav-item">

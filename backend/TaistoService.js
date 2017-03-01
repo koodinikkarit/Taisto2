@@ -52,6 +52,9 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 			db.nextDiagramId = loadedDatabase.nextDiagramId ? loadedDatabase.nextDiagramId : 1;
 			db.nextDiagramScreenId = loadedDatabase.nextDiagramScreenId ? loadedDatabase.nextDiagramScreenId : 1;
 			db.nextDiagramScreenCpuPortId = loadedDatabase.nextDiagramScreenCpuPortId ? loadedDatabase.nextDiagramScreenCpuPortId : 1;
+			db.nextDefaultStateId = loadedDatabase.nextDefaultStateId ? loadedDatabase.nextDefaultStateId : 1;
+			db.nextDefaultStateVideoConnectionId = loadedDatabase.nextDefaultStateVideoConnectionId ? loadedDatabase.nextDefaultStateVideoConnectionId : 1;
+			db.nextDefaultStateKwmConnectionId = loadedDatabase.nextDefaultStateKwmConnectionId ? loadedDatabase.nextDefaultStateKwmConnectionId : 1;
 
 			if (loadedDatabase.matrixs) {
 				db.matrixs = db.matrixs.withMutations(matrixs => {
@@ -93,6 +96,27 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 				db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.withMutations(diagramScreenCpuPorts => {
 					Object.keys(loadedDatabase.diagramScreenCpuPorts).forEach(id => {
 						diagramScreenCpuPorts.set(parseInt(id), new DiagramScreenCpuPort(loadedDatabase.diagramScreenCpuPorts[id]));
+					});
+				});
+			}
+			if (loadedDatabase.defaultStates) {
+				db.defaultStates = db.defaultStates.withMutations(defaultStates => {
+					Object.keys(loadedDatabase.defaultStates).forEach(id => {
+						defaultStates.set(parseInt(id), new DefaultState(loadedDatabase.defaultStates[id]));
+					});
+				});
+			}
+			if (loadedDatabase.defaultStateVideoConnections) {
+				db.defaultStateVideoConnections = db.defaultStateVideoConnections.withMutations(defaultStateVideoConnections => {
+					Object.keys(loadedDatabase.defaultStateVideoConnections).forEach(id => {
+						defaultStateVideoConnections.set(parseInt(id), new DefaultStateVideoConnection(loadedDatabase.defaultStateVideoConnections[id]));
+					});
+				});
+			}
+			if (loadedDatabase.defaultStateKwmConnections) {
+				db.defaultStateKwmConnections = db.defaultStateKwmConnections.withMutations(defaultStateKwmConnections => {
+					Object.keys(loadedDatabase.defaultStateKwmConnections).forEach(id => {
+						defaultStateKwmConnections.set(parseInt(id), new DefaultStateKwmConnection(loadedDatabase.defaultStateKwmConnections[id]));
 					});
 				});
 			}
@@ -186,7 +210,6 @@ export const createDiagramScreen = (diagramId, slug, matrixId, conPortId) => {
 			conPortId,
 			matrixId
 		});
-		console.log("uusi diagramScreen ", diagramScreen);
 		db.diagramScreens = db.diagramScreens.set(id, diagramScreen);
 	}));
 	return diagramScreen;
@@ -219,7 +242,6 @@ export const createDefaultState = (slug, matrixId) => {
 			matrixId
 		});
 		db.defaultStates = db.defaultStates.set(id, defaultState);
-		console.log("defaulStates", db.defaultStates);
 	}));
 	return defaultState;
 }
@@ -250,7 +272,6 @@ export const insertVideoConnectionToDefaultState = (defaultStateId, conPortId, c
 }
 
 export const insertKwmConnectionToDefaultState = (defaultStateId, conPortId, cpuPortId) => {
-	console.log("adding kwm connection", defaultStateId, conPortId, cpuPortId);
 	var defaultState = db.defaultStates.get(defaultStateId);
 	var defaultStateKwmConnection;
 	if (defaultState) {
@@ -262,7 +283,6 @@ export const insertKwmConnectionToDefaultState = (defaultStateId, conPortId, cpu
 				defaultStateKwmConnection = defaultStateKwmConnection.set("conPortId", conPortId);
 			} else {	
 				id = db.nextDefaultStateKwmConnectionId++;
-				console.log("uusi", id);
 				defaultStateKwmConnection = new DefaultStateKwmConnection({
 					id,
 					defaultStateId,
@@ -270,11 +290,25 @@ export const insertKwmConnectionToDefaultState = (defaultStateId, conPortId, cpu
 					cpuPortId
 				});
 			}
-			console.log("it iss", defaultStateKwmConnection);
 			db.defaultStateKwmConnections = db.defaultStateKwmConnections.set(id, defaultStateKwmConnection);
 		}));
 	}
 	return defaultStateKwmConnection;
+}
+
+export const executeDefaultState = (defaultStateId) => {
+	var defaultState = db.defaultStates.get(defaultStateId);
+	db.defaultStateVideoConnections.filter(p => p.defaultStateId === defaultStateId).forEach(defaultStateVideoConnection => {
+		defaultStateVideoConnection.conPort.setValue(defaultStateVideoConnection.cpuPort.portNum);
+	});
+	db.defaultStateKwmConnections.filter(p => p.defaultStateId === defaultStateId).forEach(defaultStateKwmConnection => {
+		defaultStateKwmConnection.cpuPort.setValue(defaultStateKwmConnection.conPort.portNum);
+	});
+	if (defaultState) {
+		setTimeout(() => {
+			defaultState.matrix.requestAllStates();
+		}, 100)
+	} 
 }
 
 function registerMatrixEvents(matrix) {

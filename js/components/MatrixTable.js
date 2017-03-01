@@ -127,9 +127,11 @@ export default class extends React.Component {
                                                 };
                                             }
                                             return <td style={newStyle} onClick={(e) => {
+                                                e.stopPropagation();
 												e.preventDefault();
 												leftClickAction();
                                             }} onContextMenu={e => {
+                                                e.stopPropagation();
 												e.preventDefault();
 												rightClickAction();
 											}}></td>

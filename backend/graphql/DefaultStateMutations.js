@@ -13,7 +13,8 @@ import {
 	setDb,
 	createDefaultState,
 	insertKwmConnectionToDefaultState,
-	insertVideoConnectionToDefaultState
+	insertVideoConnectionToDefaultState,
+	executeDefaultState
 } from "../TaistoService";
 
 /**
@@ -136,6 +137,23 @@ export default {
 				setDb(db.withMutations(db => {
 					db.defaultStateKwmConnections = db.defaultStateKwmConnections.filterNot(p => p.defaultStateId === parseInt(args.id) && p.cpuPortId === parseInt(args.cpuPort));
 				}));
+				resolve(true);
+			}
+			resolve(false);
+		})
+	},
+	executeDefaultState: {
+		name: "ExecuteDefaultState",
+		type: GraphQLBoolean,
+		args: {
+			id: {
+				type: new GraphQLNonNull(GraphQLString)
+			}
+		},
+		resolve: (_, args) => new Promise((resolve, reject) => {
+			var defaultStateId = parseInt(args.id);
+			if (db.defaultStates.has(defaultStateId)) {
+				executeDefaultState(defaultStateId);
 				resolve(true);
 			}
 			resolve(false);

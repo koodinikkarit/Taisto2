@@ -49,7 +49,6 @@ export default function (state = initialState, action) {
 				kwmConnections: state.kwmConnections.delete(action.cpu)
 			});
 		case UPDATE_MATRIX_CONNECTION_STATE:
-			console.log("Täällä?");
 			return Object.assign({}, state, {
 				connectionStates: state.connectionStates.set(action.matrixId, action.connectionState)
 			});
