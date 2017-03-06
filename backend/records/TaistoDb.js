@@ -12,7 +12,11 @@ export default class extends Immutable.Record({
     nextDiagramScreenCpuPortId: 1,
     nextDefaultStateId: 1,
     nextDefaultStateVideoConnectionId: 1,
-    nextDefaultStateKwmConnectionId: 1, 
+    nextDefaultStateKwmConnectionId: 1,
+    nextWeeklyTimerId: 1,
+    nextWeeklyTimerVideoConnectionId: 1,
+    nextWeeklyTimerKwmConnectionId: 1,
+    nextWeeklyTimerDefaultStateId: 1,
 	matrixs: new Map(),
     conPorts: new Map(),
     cpuPorts: new Map(),
@@ -21,7 +25,11 @@ export default class extends Immutable.Record({
     diagramScreenCpuPorts: new Map(),
     defaultStates: new Map(),
     defaultStateVideoConnections: new Map(),
-    defaultStateKwmConnections: new Map()
+    defaultStateKwmConnections: new Map(),
+    weeklyTimers: new Map(),
+    weeklyTimerVideoConnections: new Map(),
+    weeklyTimerKwmConnections: new Map(),
+    weeklyTimerDefaultStates: new Map()
 }) {
 
 

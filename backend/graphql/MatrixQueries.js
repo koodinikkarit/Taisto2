@@ -39,7 +39,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.matrixs.get(args.id));
+			resolve(db.matrixs.get(parseInt(args.id)));
 		})
 	},
 	matrixBySlug: {

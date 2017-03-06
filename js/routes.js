@@ -10,7 +10,7 @@ import NotFound from "./components/404";
 import DefaultStatesList from "./components/DefaultStatesList";
 import MatrixSettings from "./components/MatrixSettings";
 import MatrixList from "./components/MatrixList";
-import TimerList from "./containers/TimerList";
+import TimerList from "./components/TimerList";
 import LockList from "./containers/LockList";
 import DefaultStatesSettings from "./components/DefaultStateSettings";
 import DefaultStatesSettingsList from "./components/DefaultStatesSettingsList";

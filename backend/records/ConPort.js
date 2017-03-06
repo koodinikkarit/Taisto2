@@ -27,9 +27,6 @@ export default class extends Immutable.Record({
     }
 
     get matrix() {
-        var matrix = db.matrixs.get(this.matrixId);
-        if (matrix) {
-            return matrix;
-        }
+        return db.matrixs.get(this.matrixId);
     }
 }

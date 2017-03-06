@@ -1,11 +1,11 @@
 import React from 'react';
+import { graphql, compose } from 'react-apollo';
+import gql from 'graphql-tag';
 
 import OnOffSwitch from "./OnOffSwitch";
-import MatrixsSelect from "../containers/MatrixsSelect";
-import SelectPortConnection from "../containers/SelectPortConnection";
 import WeeklyTimerListItem from "../components/WeeklyTimerListItem";
 
-export default class extends React.Component {
+class WeeklyTimerListItemSummary extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -34,6 +34,8 @@ export default class extends React.Component {
 				marginBottom: "25px"
 			}
 		}
+
+		if (this.props.weeklyTimer) {
 		return (
 			<div>
 				<div className="list-group-item-action" style={styles.timerListItemSummaryContainer}
@@ -61,26 +63,122 @@ export default class extends React.Component {
 						<div className="col-6">
 							<OnOffSwitch on={this.props.weeklyTimer.active} onSwitch={mode => {
 								this.props.editWeeklyTimer({
-									variables: {
-										id: this.props.weeklyTimer.id,
-										active: mode
-									}
+									id: this.props.weeklyTimer.id,
+									active: mode
 								}).then(data => {
-									this.props.refetch();
 								})
 							} } />
 
 						</div>
 					</div>
 				</div>
-				{this.state.expanded ?
-				<WeeklyTimerListItem weeklyTimer={this.props.weeklyTimer} 
-				editWeeklyTimer={this.props.editWeeklyTimer} refetch={this.props.refetch}
-				removeWeeklyTimer={this.props.removeWeeklyTimer} 
-				addVideoConnectionToWeeklyTimer={this.props.addVideoConnectionToWeeklyTimer}
-				 />	 : ""}
+				<div>
+					{this.state.expanded ?
+					<WeeklyTimerListItem weeklyTimerId={this.props.weeklyTimer.id} /> : ""}
+				</div>
 			</div>
 		)
+		} else {
+			return <h1>ei oo</h1>
+		}
 	}
 }
 
+
+
+
+
+
+
+
+				// editWeeklyTimer={this.props.editWeeklyTimer}
+				// removeWeeklyTimer={this.props.removeWeeklyTimer} 
+				// addVideoConnectionToWeeklyTimer={this.props.addVideoConnectionToWeeklyTimer}
+
+
+export default compose(
+	graphql(gql`
+	query weeklyTimer($id: String!) {
+		weeklyTimer: weeklyTimerById(id: $id) {
+			id
+			slug
+			hours
+			minutes
+			active
+			monday
+			tuesday
+			wednesday
+			thursday
+			friday
+			saturday
+			sunday
+		}
+	}`, {
+		options: ({weeklyTimerId}) => ({
+			variables: {
+				id: weeklyTimerId
+			}
+		}),
+		props: ({ ownProps, data: { weeklyTimer } }) => ({
+			weeklyTimer
+		})
+	}),
+	graphql(gql`
+	mutation editWeeklyTimer($id: String!, $slug: String, $minutes: Int, $hours: Int, $active: Boolean, $monday: Boolean, $tuesday: Boolean, $wednesday: Boolean, $thursday: Boolean, $friday: Boolean, $saturday: Boolean, $sunday: Boolean) {
+		weeklyTimer: editWeeklyTimer (id: $id, slug: $slug, minutes: $minutes, hours: $hours, active: $active, monday: $monday, tuesday: $tuesday, wednesday: $wednesday, thursday: $thursday, friday: $friday, saturday: $saturday, sunday: $sunday) { 
+			id
+			slug
+			active
+			minutes
+			hours
+			monday
+			tuesday
+			wednesday
+			thursday
+			friday
+			saturday
+			sunday
+		}
+	}`, {
+		props: ({ ownProps, mutate }) => ({
+			editWeeklyTimer({id, active}) {
+				return mutate({
+					variables: {
+						id,
+						active
+					 },
+					updateQueries: {
+						weeklyTimer: (prev, { mutationResult }) => {
+							if (prev.weeklyTimer.id === id)
+							 return {weeklyTimer:{...mutationResult.data.weeklyTimer}}
+						}
+					}
+				})
+			}
+		})
+	}),
+	graphql(gql`
+	mutation ($id: String!) {
+		removeWeeklyTimer (id: $id)
+	}`, {
+		name: "removeWeeklyTimer"
+	}),
+	graphql(gql`
+	mutation ($weeklyTimer: String!, $matrix: String!, $conPort: String!, $cpuPort: String!) {
+		addVideoConnectionToWeeklyTimer (weeklyTimer: $weeklyTimer, matrix: $matrix, conPort: $conPort, cpuPort: $cpuPort) {
+			id
+			matrix {
+				id
+
+			}
+			conPort {
+				id
+			}
+			cpuPort {
+				id
+			}
+		}
+	}`, {
+		name: "addVideoConnectionToWeeklyTimer"
+	})
+)(WeeklyTimerListItemSummary);

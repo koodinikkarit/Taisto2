@@ -13,15 +13,15 @@ import DiagramScreenCpuPort from "./records/DiagramScreenCpuPort";
 import DefaultState from "./records/DefaultState";
 import DefaultStateVideoConnection from "./records/DefaultStateVideoConnection";
 import DefaultStateKwmConnection from "./records/DefaultStateKwmConnection";
+import WeeklyTimer from "./records/WeeklyTimer";
+import WeeklyTimerVideConnection from "./records/WeeklyTimerVideoConnection";
+import WeeklyTimerKwmConnection from "./records/WeeklyTimerKwmConnection";
+import WeeklyTimerDefaultState from "./records/WeeklyTimerDefaultState";
 
 
 import {
 	Map
 } from "immutable";
-
-var matrixId = 1;
-var conPortId = 1;
-var cpuPortId = 1;
 
 var db = new TaistoDb();
 
@@ -55,7 +55,11 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 			db.nextDefaultStateId = loadedDatabase.nextDefaultStateId ? loadedDatabase.nextDefaultStateId : 1;
 			db.nextDefaultStateVideoConnectionId = loadedDatabase.nextDefaultStateVideoConnectionId ? loadedDatabase.nextDefaultStateVideoConnectionId : 1;
 			db.nextDefaultStateKwmConnectionId = loadedDatabase.nextDefaultStateKwmConnectionId ? loadedDatabase.nextDefaultStateKwmConnectionId : 1;
-
+			db.nextWeeklyTimerId = loadedDatabase.nextWeeklyTimerId ? loadedDatabase.nextWeeklyTimerId : 1;
+			db.nextWeeklyTimerVideoConnectionsId = loadedDatabase.nextWeeklyTimerVideoConnectionsId ? loadedDatabase.nextWeeklyTimerVideoConnectionsId : 1;
+			db.nextWeeklyTimerKwmConnectionId = loadedDatabase.nextWeeklyTimerKwmConnectionId ? loadedDatabase.nextWeeklyTimerKwmConnectionId : 1;
+			db.nextWeeklyTimerDefaultStateId = loadedDatabase.nextWeeklyTimerDefaultStateId ? loadedDatabase.nextWeeklyTimerDefaultStateId : 1;
+		
 			if (loadedDatabase.matrixs) {
 				db.matrixs = db.matrixs.withMutations(matrixs => {
 					Object.keys(loadedDatabase.matrixs).forEach(id => {
@@ -117,6 +121,34 @@ fs.readFile("./database.json", "utf8", (err, data) => {
 				db.defaultStateKwmConnections = db.defaultStateKwmConnections.withMutations(defaultStateKwmConnections => {
 					Object.keys(loadedDatabase.defaultStateKwmConnections).forEach(id => {
 						defaultStateKwmConnections.set(parseInt(id), new DefaultStateKwmConnection(loadedDatabase.defaultStateKwmConnections[id]));
+					});
+				});
+			}
+			if (loadedDatabase.weeklyTimers) {
+				db.weeklyTimers = db.weeklyTimers.withMutations(weeklyTimers => {
+					Object.keys(loadedDatabase.weeklyTimers).forEach(id => {
+						weeklyTimers.set(parseInt(id), new WeeklyTimer(loadedDatabase.weeklyTimers[id]));
+					});
+				});
+			}
+			if (loadedDatabase.weeklyTimerVideoConnections) {
+				db.weeklyTimerVideoConnections = db.weeklyTimerVideoConnections.withMutations(weeklyTimerVideoConnections => {
+					Object.keys(loadedDatabase.weeklyTimerVideoConnections).forEach(id => {
+						weeklyTimerVideoConnections.set(parseInt(id), new WeeklyTimerVideConnection(loadedDatabase.weeklyTimerVideoConnections[id]));
+					});
+				});
+			}
+			if (loadedDatabase.weeklyTimerKwmConnections) {
+				db.weeklyTimerKwmConnections = db.weeklyTimerKwmConnections.withMutations(weeklyTimerKwmConnections => {
+					Object.keys(loadedDatabase.weeklyTimerKwmConnections).forEach(id => {
+						weeklyTimerKwmConnections.set(parseInt(id), new WeeklyTimerKwmConnection(loadedDatabase.weeklyTimerKwmConnections[id]));
+					});
+				});
+			}
+			if (loadedDatabase.weeklyTimerDefaultStates) {
+				db.weeklyTimerDefaultStates = db.weeklyTimerDefaultStates.withMutations(weeklyTimerDefaultStates => {
+					Object.keys(loadedDatabase.weeklyTimerDefaultStates).forEach(id => {
+						weeklyTimerDefaultStates.set(parseInt(id), new WeeklyTimerDefaultState(loadedDatabase.weeklyTimerDefaultStates[id]));
 					});
 				});
 			}
@@ -309,6 +341,74 @@ export const executeDefaultState = (defaultStateId) => {
 			defaultState.matrix.requestAllStates();
 		}, 100)
 	} 
+}
+
+export const createWeeklyTimer = (slug) => {
+	var weeklyTimer;
+	setDb(db.withMutations(db => {
+		var id = db.nextWeeklyTimerId++;
+		weeklyTimer = new WeeklyTimer({
+			id,
+			slug
+		});
+		db.weeklyTimers = db.weeklyTimers.set(id, weeklyTimer);
+	}));
+	return weeklyTimer;
+}
+
+export const addVideoConnectionToWeeklyTimer = (weeklyTimerId, conPortId, cpuPortId) => {
+	var weeklyTimerVideoConnection;
+	if (db.weeklyTimers.has(weeklyTimerId) &&
+	    db.conPorts.has(conPortId) && db.cpuPorts.has(cpuPortId) &&
+		!db.weeklyTimerVideoConnections.some(p => p.weeklyTimerId === weeklyTimerId && p.conPortId === conPortId && p.cpuPortId === cpuPortId)) {
+		setDb(db.withMutations(db => {
+			var id = db.nextWeeklyTimerVideoConnectionId++;
+			weeklyTimerVideoConnection = new WeeklyTimerVideConnection({
+				id,
+				weeklyTimerId,
+				conPortId,
+				cpuPortId
+			});
+			db.weeklyTimerVideoConnections = db.weeklyTimerVideoConnections.set(id, weeklyTimerVideoConnection);
+		}));
+	}
+	return weeklyTimerVideoConnection;
+}
+
+export const addKwmConnectionToWeeklyTimer = (weeklyTimerId, conPortId, cpuPortId) => {
+	var weeklyTimerKwmConnection;
+	if (db.weeklyTimers.has(weeklyTimerId) &&
+	    db.conPorts.has(conPortId) && db.cpuPorts.has(cpuPortId)) {
+		setDb(db.withMutations(db => {
+			var id = db.nextWeeklyTimerKwmConnectionId++;
+			weeklyTimerKwmConnection = new WeeklyTimerKwmConnection({
+				id,
+				weeklyTimerId,
+				conPortId,
+				cpuPortId
+			});
+			db.weeklyTimerKwmConnections = db.weeklyTimerKwmConnections.set(id, weeklyTimerKwmConnection);
+		}));
+	}
+	return weeklyTimerKwmConnection;
+}
+
+export const addDefaultStateToWeeklyTimer = (weeklyTimerId, defaultStateId) => {
+	var weeklyTimerDefaultState;
+	if (db.weeklyTimers.has(weeklyTimerId) &&
+		db.defaultStates.has(defaultStateId) &&
+		!db.weeklyTimerDefaultStates.some(p => p.weeklyTimerId === weeklyTimerId && p.defaultStateId === defaultStateId)) {
+		setDb(db.withMutations(db => {
+			var id = db.nextWeeklyTimerDefaultStateId++;
+			weeklyTimerDefaultState = new WeeklyTimerDefaultState({
+				id,
+				weeklyTimerId,
+				defaultStateId
+			});
+			db.weeklyTimerDefaultStates = db.weeklyTimerDefaultStates.set(id, weeklyTimerDefaultState);
+		}));
+	}
+	return weeklyTimerDefaultState;
 }
 
 function registerMatrixEvents(matrix) {

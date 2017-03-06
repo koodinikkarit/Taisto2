@@ -160,7 +160,6 @@ function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
                         }
                     });
 					resolve(client);
-					console.log("matrix connected");
 					emitter.emit("MATRIX_CONNECTION_STATE_CHANGED", "CONNECTED", id, ip, port);
 				});
 				client.on("close", () => {
@@ -168,7 +167,6 @@ function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
 				});
 
 				client.on("error", (err) => {
-					console.log("virhee", err);
 					switch(err.errno) {
 						case "ENOTFOUND":
 							emitter.emit("MATRIX_CONNECTION_STATE_CHANGED", "ADDRESS_NOT_FOUND", id, ip, port);

@@ -7,13 +7,6 @@ import {
 	GraphQLBoolean
 } from "graphql";
 
-import MatrixGraphqlObject from "./Matrix";
-import ConPortGraphqlObject from "./ConPort";
-import CpuPortGraphqlObject from "./CpuPort";
-import Matrix from "../business/Matrix";
-import ConPort from "../business/ConPort";
-import CpuPort from "../business/CpuPort";
-
 import matrixMutations from "./MatrixMutations";
 import diagramMutations from "./DiagramMutations";
 import diagramScreenMutations from "./DiagramScreenMutations";

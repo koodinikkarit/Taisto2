@@ -1,11 +1,15 @@
 import {
     GraphQLObjectType,
     GraphQLString,
-    GraphQLList,
     GraphQLInt,
 	GraphQLBoolean,
-	GraphQLNonNull
+	GraphQLNonNull,
+	GraphQLList
 } from "graphql";
+
+import WeeklyTimerVideoConnection from "./WeeklyTimerVideoConnection";
+import WeeklyTimerKwmConnection from "./WeeklyTimerKwmConnection";
+import WeeklyTimerDefaultState from "./WeeklyTimerDefaultState";
 
 export default new GraphQLObjectType({
 	name: "WeeklyTimer",
@@ -45,6 +49,15 @@ export default new GraphQLObjectType({
 		},
 		sunday: {
 			type: GraphQLBoolean
+		},
+		videoConnections: {
+			type: new GraphQLList(WeeklyTimerVideoConnection)
+		},
+		kwmConnections: {
+			type: new GraphQLList(WeeklyTimerKwmConnection)
+		},
+		defaultStates: {
+			type: new GraphQLList(WeeklyTimerDefaultState)
 		}
 	})
 })

@@ -6,18 +6,6 @@ import {
 } from "graphql";
 
 /**
- * Business objects
- */
-import Matrix from "../business/Matrix";
-
-/**
- * Graphql objects
- */
-
-import MatrixGraphqlObject from "./Matrix";
-
-
-/**
  * Queryparts
  */
 
@@ -25,6 +13,7 @@ import matrixQueries from "./MatrixQueries";
 import diagramQueries from "./DiagramQueries";
 import diagramScreenQueries from "./DiagramScreenQueries";
 import defaultStateQueries from "./DefaultStateQueries";
+import weeklyTimerQueries from "./WeeklyTimerQueries";
 
 export default new GraphQLObjectType({
 	name: "QueryType",
@@ -32,6 +21,7 @@ export default new GraphQLObjectType({
 		matrixQueries,
 		diagramQueries,
 		diagramScreenQueries,
-		defaultStateQueries
+		defaultStateQueries,
+		weeklyTimerQueries
 	)
 });

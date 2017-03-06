@@ -19,12 +19,7 @@ export default new GraphQLObjectType({
             type: GraphQLString
         },
         matrix: {
-            type: Matrix,
-            resolve: function (that, args) {
-                return new Promise(function (resolve, reject) {
-
-                });
-            }
+            type: Matrix
         },
         portNum: {
             type: GraphQLInt
