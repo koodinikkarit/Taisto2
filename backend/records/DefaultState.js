@@ -1,7 +1,8 @@
 import Immutable from "immutable";
 
 import {
-	db
+	db,
+	executeDefaultState
 } from "../TaistoService";
 
 export default class extends Immutable.Record({
@@ -19,5 +20,9 @@ export default class extends Immutable.Record({
 
 	get kwmConnections() {
 		return db.defaultStateKwmConnections.filter(p => p.defaultStateId === this.id);
+	}
+
+	execute() {
+		executeDefaultState(this.id);
 	}
 }

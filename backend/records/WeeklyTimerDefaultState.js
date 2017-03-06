@@ -16,4 +16,8 @@ export default class extends Immutable.Record({
 	get defaultState() {
 		return db.defaultStates.get(this.defaultStateId);
 	}
+
+	execute() {
+		this.defaultState.execute();
+	}
 }

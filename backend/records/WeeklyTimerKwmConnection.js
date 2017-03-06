@@ -21,4 +21,8 @@ export default class extends Immutable.Record({
 	get cpuPort() {
 		return db.cpuPorts.get(this.cpuPortId);
 	}
+
+	execute() {
+		this.cpuPort.setValue(conPort.portNum);
+	}
 }

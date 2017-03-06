@@ -445,6 +445,29 @@ function registerMatrixEvents(matrix) {
 export const removeMatrix = (id) => {
 	setDb(db.withMutations(db => {
 		db.matrixs = db.matrixs.delete(id);
+
+		db.defaultStateKwmConnections = db.defaultStateKwmConnections.filterNot(p => 
+		db.conPorts.filter(f => f.matrixId === id).some(e => e.id === p.conPortId) ||
+		db.cpuPorts.filter(f => f.matrixId === id).some(e => e.id === p.cpuPortId));
+
+		db.defaultStateVideoConnections = db.defaultStateVideoConnections.filterNot(p => 
+		db.conPorts.filter(f => f.matrixId === id).some(e => e.id === p.conPortId) ||
+		db.cpuPorts.filter(f => f.matrixId === id).some(e => e.id === p.cpuPortId));
+
+		db.diagramScreens = db.diagramScreens.filterNot(p => 
+		p.matrixId === id || db.conPorts.filter(f => f.matrixId === id).some(e => e.id === p.conPortId));
+
+		db.diagramScreenCpuPorts = db.diagramScreenCpuPorts.filterNot(p => 
+		db.cpuPorts.filter(f => f.matrixId === id).some(e => e.id === p.cpuPortId));
+
+		db.weeklyTimerKwmConnections = db.weeklyTimerKwmConnections.filterNot(p => 
+		db.conPorts.filter(f => f.matrixId === id).some(e => e.id === p.conPortId) ||
+		db.cpuPorts.filter(f => f.matrixId === id).some(e => e.id === p.cpuPortId));
+
+		db.weeklyTimerVideoConnections = db.weeklyTimerVideoConnections.filterNot(p => 
+		db.conPorts.filter(f => f.matrixId === id).some(e => e.id === p.conPortId) ||
+		db.cpuPorts.filter(f => f.matrixId === id).some(e => e.id === p.cpuPortId));
+
 		db.conPorts = db.conPorts.withMutations(conPorts => {
 			conPorts.forEach(conPort => {
 				if (conPort.matrixId === id)
@@ -457,6 +480,7 @@ export const removeMatrix = (id) => {
 				cpuPorts.delete(cpuPort.id);
 			});
 		});
+		db.defaultStates = db.defaultStates.filterNot(p => p.matrixId === id);
 	}));
 }
 
