@@ -18,6 +18,6 @@ export default class extends Immutable.Record({
 	}
 
 	execute() {
-		this.defaultState.execute();
+		if (this.defaultState) this.defaultState.execute();
 	}
 }

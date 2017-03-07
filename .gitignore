@@ -7,3 +7,4 @@ public/app.js.map
 saves/*
 debug.log
 database.json
+npm-debug.log*

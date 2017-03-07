@@ -139,9 +139,7 @@ function checkScheduleJobWeekday(scheduleJob, dayNumber, value, weeklyTimerId) {
 }
 
 function executeWeeklyTimer(id) {
-	console.log("executeWeeklyTimer", id);
 	if (id) {
-		console.log("executeWeeklyTimer", id);
 		db.weeklyTimerVideoConnections.filter(p => p.weeklyTimerId === id).forEach(weeklyTimerVideoConnection => {
 			weeklyTimerVideoConnection.execute();
 		});

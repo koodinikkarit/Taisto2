@@ -87,6 +87,15 @@ export default class extends Immutable.Record({
 		});
 	}
 
+	destroy() {
+		var connection = connections[this.id];
+		if (connection) {
+			connection.end();
+			delete connections[this.id];
+		}
+		delete emitters[this.id];
+	}
+
     on(eventType, callback) {
         var emitter = emitters[this.id];
         if (emitter) {
@@ -132,7 +141,7 @@ function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
                                     emitter.emit("SET_KWM_CONNECTION", data[3]-128, data[2]-128);
                                     break;
                                 case SET_VIDEO_CONNECTION:
-                                    emitter.emit("SET_VIDEO_CONNECTION", data[2]-128, data[3]-128);
+									emitter.emit("SET_VIDEO_CONNECTION", data[2]-128, data[3]-128);
                                     break;
                                 case TURN_OFF_CON_PORT:
                                     emitter.emit("TURN_OFF_CON_PORT", data[2]-128);

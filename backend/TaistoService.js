@@ -330,16 +330,20 @@ export const insertKwmConnectionToDefaultState = (defaultStateId, conPortId, cpu
 
 export const executeDefaultState = (defaultStateId) => {
 	var defaultState = db.defaultStates.get(defaultStateId);
-	db.defaultStateVideoConnections.filter(p => p.defaultStateId === defaultStateId).forEach(defaultStateVideoConnection => {
-		defaultStateVideoConnection.execute();
+	db.defaultStateVideoConnections.filter(p => p.defaultStateId === defaultStateId).forEach((defaultStateVideoConnection, i) => {
+		setTimeout(() => {
+			defaultStateVideoConnection.execute();
+		}, 10*i);
 	});
-	db.defaultStateKwmConnections.filter(p => p.defaultStateId === defaultStateId).forEach(defaultStateKwmConnection => {
-		defaultStateKwmConnection.execute();
+	db.defaultStateKwmConnections.filter(p => p.defaultStateId === defaultStateId).forEach((defaultStateKwmConnection, i) => {
+		setTimeout(() => {
+			defaultStateKwmConnection.execute();
+		}, 10*i);
 	});
 	if (defaultState) {
 		setTimeout(() => {
 			defaultState.matrix.requestAllStates();
-		}, 100)
+		}, 300)
 	} 
 }
 
@@ -413,37 +417,58 @@ export const addDefaultStateToWeeklyTimer = (weeklyTimerId, defaultStateId) => {
 
 function registerMatrixEvents(matrix) {
 	var id = matrix.id;
-	matrix.on("REQUEST_ALL_STATES", (videoConnections, kwmConnections) => {
-		emitter.emit("NEW_VIDEO_CONNECTIONS", videoConnections);
-		emitter.emit("NEW_KWM_CONNECTIONS", kwmConnections);
-	});
-	matrix.on("SET_KWM_CONNECTION", (cpuPortNum, conPortNum) => {	
-		var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
-		var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
-		emitter.emit("NEW_KWM_CONNECTION", String(cpuPort.id), String(conPort.id));
-	});
-	matrix.on("SET_VIDEO_CONNECTION", (conPortNum, cpuPortNum) => {	
-		var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
-		var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
-		emitter.emit("NEW_VIDEO_CONNECTION", String(conPort.id), String(cpuPort.id));
-	});
-	matrix.on("TURN_OFF_CON_PORT", (conPortNum) => {
-		var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
-		emitter.emit("TURN_OFF_CON_PORT", String(conPort.id))
-	});
-	matrix.on("TURN_OFF_CPU_PORT", (cpuPortNum) => {
-		var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
-		emitter.emit("TURN_OFF_CPU_PORT", String(cpuPort.id));
-	});
-	matrix.on("MATRIX_CONNECTION_STATE_CHANGED", (reason, id, ip, port) => {
-		emitter.emit("MATRIX_CONNECTION_STATE_CHANGED", reason, String(id), ip, port);
-	});
+	matrix.on("REQUEST_ALL_STATES", requestAllStates);
+	matrix.on("SET_KWM_CONNECTION", setKwmConnection);
+	matrix.on("SET_VIDEO_CONNECTION", setVideoConnection);
+	matrix.on("TURN_OFF_CON_PORT", turnOffConPort);
+	matrix.on("TURN_OFF_CPU_PORT", turnOffCpuPort);
+	matrix.on("MATRIX_CONNECTION_STATE_CHANGED", matrixConnectionStateChanged);
+
+	function requestAllStates(videoConnections, kwmConnections) {
+		if (db.matrixs.has(id)) {
+			emitter.emit("NEW_VIDEO_CONNECTIONS", videoConnections);
+			emitter.emit("NEW_KWM_CONNECTIONS", kwmConnections);
+		}
+	}
+	function setKwmConnection(cpuPortNum, conPortNum) {
+		if (db.matrixs.has(id)) {
+			var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
+			var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
+			emitter.emit("NEW_KWM_CONNECTION", String(cpuPort.id), String(conPort.id));
+		}
+	}
+	function setVideoConnection(conPortNum, cpuPortNum) {
+		if (db.matrixs.has(id)) {
+			var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
+			var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
+			emitter.emit("NEW_VIDEO_CONNECTION", String(conPort.id), String(cpuPort.id));
+		}
+	}
+	function turnOffConPort(conPortNum) {
+		if (db.matrixs.has(id)) {
+			var conPort = db.conPorts.find(p => p.matrixId === id && p.portNum === conPortNum);
+			emitter.emit("TURN_OFF_CON_PORT", String(conPort.id));
+		}
+	}
+	function turnOffCpuPort(cpuPortNum) {
+		if (db.matrixs.has(id)) {
+			var cpuPort = db.cpuPorts.find(p => p.matrixId === id && p.portNum === cpuPortNum);
+			emitter.emit("TURN_OFF_CPU_PORT", String(cpuPort.id));
+		}
+	}
+	function matrixConnectionStateChanged(reason, id, ip, port) {
+		if (db.matrixs.has(id)) {
+			emitter.emit("MATRIX_CONNECTION_STATE_CHANGED", reason, String(id), ip, port);
+		}
+	}
 
 	matrix.requestAllStates();
 }
 
 export const removeMatrix = (id) => {
 	setDb(db.withMutations(db => {
+		var matrix = db.matrixs.get(id);
+		if (matrix) matrix.destroy();
 		db.matrixs = db.matrixs.delete(id);
 
 		db.defaultStateKwmConnections = db.defaultStateKwmConnections.filterNot(p => 
@@ -467,6 +492,9 @@ export const removeMatrix = (id) => {
 		db.weeklyTimerVideoConnections = db.weeklyTimerVideoConnections.filterNot(p => 
 		db.conPorts.filter(f => f.matrixId === id).some(e => e.id === p.conPortId) ||
 		db.cpuPorts.filter(f => f.matrixId === id).some(e => e.id === p.cpuPortId));
+
+		db.weeklyTimerDefaulStates = db.weeklyTimerDefaultStates.filterNot(p => 
+		p.matrixId === id);
 
 		db.conPorts = db.conPorts.withMutations(conPorts => {
 			conPorts.forEach(conPort => {
