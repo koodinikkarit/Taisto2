@@ -99,11 +99,11 @@ export default class extends Immutable.Record({
     }
 
 	get conPorts() {
-		return db.conPorts.filter(p => p.matrixId === this.id);
+		return db.conPorts.filter(p => p.matrixId === this.id).sort((a, b) => a.portNum - b.portNum);
 	}
 
 	get cpuPorts() {
-		return db.cpuPorts.filter(p => p.matrixId === this.id);
+		return db.cpuPorts.filter(p => p.matrixId === this.id).sort((a, b) => a.portNum - b.portNum);
 	}
 }
 
