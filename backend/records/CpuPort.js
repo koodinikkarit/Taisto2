@@ -11,10 +11,11 @@ export default class extends Immutable.Record({
     portNum: null
 }) {
 
-    setValue(conNum) {
+    setValue(conId) {
         var matrix = this.matrix;
-        if (matrix) {
-            matrix.setKwmConnection(this.portNum, conNum);
+        var conPort = db.conPorts.get(conId);
+        if (matrix && conPort) {
+            matrix.setKwmConnection(this.portNum, conPort.portNum);
         }
     }
 

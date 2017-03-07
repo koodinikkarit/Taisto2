@@ -23,6 +23,6 @@ export default class extends Immutable.Record({
 	}
 
 	execute() {
-		this.cpuPort.setValue(conPort.portNum);
+		this.cpuPort.setValue(this.conPortId);
 	}
 }

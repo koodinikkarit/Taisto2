@@ -331,10 +331,10 @@ export const insertKwmConnectionToDefaultState = (defaultStateId, conPortId, cpu
 export const executeDefaultState = (defaultStateId) => {
 	var defaultState = db.defaultStates.get(defaultStateId);
 	db.defaultStateVideoConnections.filter(p => p.defaultStateId === defaultStateId).forEach(defaultStateVideoConnection => {
-		defaultStateVideoConnection.conPort.setValue(defaultStateVideoConnection.cpuPort.portNum);
+		defaultStateVideoConnection.execute();
 	});
 	db.defaultStateKwmConnections.filter(p => p.defaultStateId === defaultStateId).forEach(defaultStateKwmConnection => {
-		defaultStateKwmConnection.cpuPort.setValue(defaultStateKwmConnection.conPort.portNum);
+		defaultStateKwmConnection.execute();
 	});
 	if (defaultState) {
 		setTimeout(() => {
