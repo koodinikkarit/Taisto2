@@ -492,9 +492,10 @@ export const removeMatrix = (id) => {
 		db.weeklyTimerVideoConnections = db.weeklyTimerVideoConnections.filterNot(p => 
 		db.conPorts.filter(f => f.matrixId === id).some(e => e.id === p.conPortId) ||
 		db.cpuPorts.filter(f => f.matrixId === id).some(e => e.id === p.cpuPortId));
+		
 
-		db.weeklyTimerDefaulStates = db.weeklyTimerDefaultStates.filterNot(p => 
-		p.matrixId === id);
+		db.weeklyTimerDefaultStates = db.weeklyTimerDefaultStates.filterNot(p => p.defaultState.matrixId === id);
+
 
 		db.conPorts = db.conPorts.withMutations(conPorts => {
 			conPorts.forEach(conPort => {
