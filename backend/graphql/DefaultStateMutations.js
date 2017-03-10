@@ -57,6 +57,7 @@ export default {
 					db.defaultStates = db.defaultStates.delete(defaultState.id);
 					db.defaultStateVideoConnections = db.defaultStateVideoConnections.filterNot(p => p.defaultStateId === defaultState.id);
 					db.defaultStateKwmConnections = db.defaultStateKwmConnections.filterNot(p => p.defaultStateId === defaultState.id);
+					db.weeklyTimerDefaultStates = db.weeklyTimerDefaultStates.filterNot(p => p.defaultStateId === defaultState.id);
 				}));
 				resolve(defaultState);
 			}
