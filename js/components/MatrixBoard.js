@@ -49,7 +49,7 @@ export default class extends React.Component {
 							<option key=""></option>
 							{this.props.conPorts ?
 							 this.props.conPorts.map(con => {
-								return (<option key={con.id} value={con.id}>{con.portNum+"."}{con.name}</option>);
+								return (<option key={con.id} value={con.id}>{con.portNum+". "}{con.slug}</option>);
 							}) : ""}
 						</select>
 					</div>
@@ -59,8 +59,8 @@ export default class extends React.Component {
 					   	 	return (<div key={cpu.id} style={styles.matrixBoardItem}>
 								<button onClick={() => { if (that.props.onNewVideoConnection && this.state.selectedCon !== "") that.props.onNewVideoConnection(this.state.selectedCon, cpu.id); } } 
 								style={{...styles.matrixBoardItemButton, backgroundColor: this.props.videoConnections[this.state.selectedCon] === cpu.id ? videoConnectionColor : "rgb(179, 229, 220)"}}>
-									{cpu.portNum+"."}
-									{cpu.name}
+									{cpu.portNum+". "}
+									{cpu.slug}
 								</button>
 							</div>);
 						}) : ""}
