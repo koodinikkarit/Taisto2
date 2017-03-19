@@ -32,7 +32,7 @@ export default class extends Immutable.Record({
 		if (props.friday) rule.dayOfWeek.push(5);
 		if (props.saturday)  rule.dayOfWeek.push(6);
 		if (props.sunday) rule.dayOfWeek.push(0);
-		rule.hour = props.gours;
+		rule.hour = props.hours;
 		rule.minute = props.minutes;
 		scheduleJobs[props.id] = {
 			rule
