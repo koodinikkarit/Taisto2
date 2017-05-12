@@ -108,7 +108,7 @@ class MatrixSettings extends React.Component {
                             <div className="col-sm-6">
                                 <h5>Con ports</h5>
                                 {this.props.matrix.conPorts ? this.props.matrix.conPorts.map((conPort, index) => (
-                                    <div>
+                                    <div key={conPort.id}>
                                         {`${index+1}. `}
                                         <input key={conPort.id} type="text" className="form-control" value={this.state.conPorts[conPort.id]}
                                             onChange={e => {
@@ -129,7 +129,7 @@ class MatrixSettings extends React.Component {
                             <div className="col-sm-6">
                                 <h5>Cpu ports</h5>
                                 {this.props.matrix.cpuPorts ? this.props.matrix.cpuPorts.map((cpuPort, index) => (
-                                    <div>
+                                    <div key={cpuPort.id}>
                                         {`${index+1}. `}
                                         <input key={cpuPort.id} type="text" className="form-control" value={this.state.cpuPorts[cpuPort.id]}
                                             onChange={e => {
