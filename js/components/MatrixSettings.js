@@ -107,38 +107,44 @@ class MatrixSettings extends React.Component {
                         <div className="row">
                             <div className="col-sm-6">
                                 <h5>Con ports</h5>
-                                {this.props.matrix.conPorts ? this.props.matrix.conPorts.map(conPort => (
-                                    <input key={conPort.id} type="text" className="form-control" value={this.state.conPorts[conPort.id]}
-                                        onChange={e => {
-                                            this.state.conPorts[conPort.id] = e.target.value;
-                                            this.forceUpdate();
-                                        } }
-                                        onBlur={e => {
-                                            this.props.editConPortMutation({ variables: { id: conPort.id, slug: e.target.value } }).then(({data}) => console.log("got data ", data));
-                                        } }
-                                        onKeyPress={e => {
-                                            if (e.key === "Enter") {
-                                                this.props.editConPortMutation({ variables: { id: conPort.id, slug: e.target.value } }).then(({data}) => console.log("got data ", data));
-                                            }
-                                        } } />
+                                {this.props.matrix.conPorts ? this.props.matrix.conPorts.map((conPort, index) => (
+                                    <div>
+                                        {`${index+1}. `}
+                                        <input key={conPort.id} type="text" className="form-control" value={this.state.conPorts[conPort.id]}
+                                            onChange={e => {
+                                                this.state.conPorts[conPort.id] = e.target.value;
+                                                this.forceUpdate();
+                                            }}
+                                            onBlur={e => {
+                                                this.props.editConPortMutation({ variables: { id: conPort.id, slug: e.target.value } }).then(({ data }) => console.log("got data ", data));
+                                            }}
+                                            onKeyPress={e => {
+                                                if (e.key === "Enter") {
+                                                    this.props.editConPortMutation({ variables: { id: conPort.id, slug: e.target.value } }).then(({ data }) => console.log("got data ", data));
+                                                }
+                                            }} />
+                                    </div>
                                 )) : ""}
                             </div>
                             <div className="col-sm-6">
                                 <h5>Cpu ports</h5>
-                                {this.props.matrix.cpuPorts ? this.props.matrix.cpuPorts.map(cpuPort => (
-                                    <input key={cpuPort.id} type="text" className="form-control" value={this.state.cpuPorts[cpuPort.id]}
-                                        onChange={e => {
-                                            this.state.cpuPorts[cpuPort.id] = e.target.value;
-                                            this.forceUpdate();
-                                        } }
-                                        onBlur={e => {
-                                            this.props.editCpuPortMutation({ variables: { id: cpuPort.id, slug: e.target.value } }).then(({data}) => console.log("got data ", data));
-                                        } }
-                                        onKeyPress={e => {
-                                            if (e.key === "Enter") {
-                                                this.props.editCpuPortMutation({ variables: { id: cpuPort.id, slug: e.target.value } }).then(({data}) => console.log("got data ", data));
-                                            }
-                                        } } />
+                                {this.props.matrix.cpuPorts ? this.props.matrix.cpuPorts.map((cpuPort, index) => (
+                                    <div>
+                                        {`${index+1}. `}
+                                        <input key={cpuPort.id} type="text" className="form-control" value={this.state.cpuPorts[cpuPort.id]}
+                                            onChange={e => {
+                                                this.state.cpuPorts[cpuPort.id] = e.target.value;
+                                                this.forceUpdate();
+                                            }}
+                                            onBlur={e => {
+                                                this.props.editCpuPortMutation({ variables: { id: cpuPort.id, slug: e.target.value } }).then(({ data }) => console.log("got data ", data));
+                                            }}
+                                            onKeyPress={e => {
+                                                if (e.key === "Enter") {
+                                                    this.props.editCpuPortMutation({ variables: { id: cpuPort.id, slug: e.target.value } }).then(({ data }) => console.log("got data ", data));
+                                                }
+                                            }} />
+                                    </div>
                                 )) : ""}
                             </div>
                         </div>
