@@ -126,7 +126,7 @@ export default class extends React.Component {
                                                     if (this.props.onNewKwmConnection) this.props.onNewKwmConnection(conPort.id, cpuPort.id);
                                                 };
                                             }
-                                            return <td style={newStyle} onClick={(e) => {
+                                            return <td style={newStyle} title={`${cpuPort.portNum}. ${cpuPort.slug} => ${conPort.portNum}. ${conPort.slug}`} onClick={(e) => {
                                                 e.stopPropagation();
 												e.preventDefault();
 												leftClickAction();
