@@ -91,43 +91,14 @@ if (development) {
         stats: "errors-only"
      }));
      ssr();
-} else {
-    const compiler = webpack({
-        devtool: "cheap-module-source-map",
-        entry: {
-            app: path.resolve(__dirname, 'js', 'app.js'),
-        },
-        module: {
-            loaders: [
-                {
-                    exclude: /node_modules/,
-                    loader: 'babel',
-                    test: /\.js$/,
-                },
-            ],
-        },
-        plugins: [
-            new webpack.DefinePlugin({
-                'process.env': {
-                    'NODE_ENV': JSON.stringify('production')
-                }
-            })
-        ],
-        output: {
-            filename: '[name].js',
-            path: './public/'
-        }
-    });
-
-     compiler.run(function (err, stats) {
-         app.use("/api", graphQLHTTP({
-             schema, graphiql: false, pretty: false
-         }))
-         app.get("/js/app.js", function (req, res, next) {
-             res.sendFile(__dirname + '/public/app.js');
-         });
-         ssr();
-     });
+} else {	
+	app.use("/api", graphQLHTTP({
+		schema, graphiql: false, pretty: false
+	}))
+	app.get("/js/app.js", function (req, res, next) {
+		res.sendFile(__dirname + '/public/app.js');
+	});
+	ssr();
 }
 
 function ssr() {

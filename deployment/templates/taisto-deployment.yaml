@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: taisto
+  labels:
+    app: taisto
+spec:
+  template:
+    metadata:
+      labels:
+        app: taisto
+    spec:
+      containers:
+        - name: taisto
+          image: "{{ .Values.taistoImage }}"
+          ports:
+            - containerPort: 80
