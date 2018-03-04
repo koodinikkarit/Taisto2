@@ -5,4 +5,4 @@ RELEASE_NAME=$(echo "$CI_COMMIT_REF_NAME" | sed 's/\./-/g')
 helm upgrade \
 	--wait \
 	--set taistoImage=jaska/taisto:$IMAGE_TAG \
-	--install $RELEASE_NAME ./deployment
+	--install taisto-$RELEASE_NAME ./deployment
