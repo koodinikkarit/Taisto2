@@ -8,7 +8,7 @@
 	},
 	"scripts": {
 		"start": "babel-node ./app.js -- -p 1337",
-		"app": "babel-node ./app.js -- -p 1337",
+		"app": "babel-node ./app.js",
 		"build": "webpack -p",
 		"dev": "babel-node ./app.js -- -d -p 1337",
 		"watch":
