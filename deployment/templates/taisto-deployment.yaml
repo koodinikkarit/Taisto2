@@ -15,3 +15,10 @@ spec:
           image: "{{ .Values.taistoImage }}"
           ports:
             - containerPort: 80
+          volumeMounts:
+            - name: database
+              mountPath: /usr/src/database
+      volumes:
+        - name: database
+        hostPath:
+          path: /taistoreborn/database
