@@ -20,5 +20,5 @@ spec:
               mountPath: /usr/src/database
       volumes:
         - name: database
-        hostPath:
-          path: /taistoreborn/database
+          hostPath:
+            path: /taistoreborn/database
