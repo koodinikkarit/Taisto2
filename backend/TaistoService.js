@@ -672,11 +672,15 @@ function registerMatrixEvents(matrix) {
 			var cpuPort = db.cpuPorts.find(
 				p => p.matrixId === id && p.portNum === cpuPortNum
 			);
-			emitter.emit(
-				"NEW_VIDEO_CONNECTION",
-				String(conPort.id),
-				String(cpuPort.id)
-			);
+			if (conPort && cpuPort) {
+				emitter.emit(
+					"NEW_VIDEO_CONNECTION",
+					String(conPort.id),
+					String(cpuPort.id)
+				);
+			} else {
+				console.log("conPort or cpuPort null", conPort, cpuPort);
+			}
 		}
 	}
 	function turnOffConPort(conPortNum) {
