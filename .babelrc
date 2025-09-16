@@ -1,17 +1,21 @@
 {
-  "passPerPreset": true,
-  "plugins": [
-    "transform-runtime",
-	"transform-async-to-generator"
-  ],
   "presets": [
-    {
-      "plugins": [
-		  "transform-async-to-generator"
-      ]
-    },
-    "react",
-    "es2015",
-    "stage-0"
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ],
+    "@babel/preset-react"
+  ],
+  "plugins": [
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "regenerator": true
+      }
+    ]
   ]
 }

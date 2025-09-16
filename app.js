@@ -38,23 +38,26 @@ const APP_PORT = 80;
 
 app.use("/static", express.static("public"));
 
-var entry = {
+const webpackEntry = {
 	app: path.resolve(__dirname, "js", "app.js")
 };
 
-var module = {
-	loaders: [
+const webpackModule = {
+	rules: [
 		{
+			test: /\.js$/,
 			exclude: /node_modules/,
-			loader: "babel",
-			test: /\.js$/
+			use: {
+				loader: "babel-loader"
+			}
 		}
 	]
 };
 
-var output = {
+const webpackOutput = {
 	filename: "[name].js",
-	path: "./public/"
+	path: path.resolve(__dirname, "public"),
+	publicPath: "/js/"
 };
 
 if (development) {
@@ -67,21 +70,17 @@ if (development) {
 		})
 	);
 
-	output.path = "/public/";
+	const compiler = webpack({
+		mode: "development",
+		devtool: "eval",
+		entry: webpackEntry,
+		module: webpackModule,
+		output: webpackOutput
+	});
 	app.use(
-		WebpackMiddleware(
-			webpack({
-				devtool: "eval",
-				entry: entry,
-				module: module,
-				output: output
-			}),
-			{
-				contentBase: "./public/",
-				publicPath: "/js/",
-				stats: "errors-only"
-			}
-		)
+		WebpackMiddleware(compiler, {
+			publicPath: webpackOutput.publicPath
+		})
 	);
 	ssr();
 } else {
