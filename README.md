@@ -19,6 +19,9 @@ käyttöliittymästä, joka renderöidään myös palvelinpäässä.
    - GraphiQL-työkalu on käytettävissä osoitteessa <http://localhost:1337/api>.
 4. Tarvitsetko auto-reloadin? Käytä `npm run watch`, joka ajaa `babel-node app.js`in `nodemonin` kautta.
 
+## REST-rajapinta
+- Uusi `/rest`-polku tarjoaa GraphQL:n toiminnot REST-muodossa. Tarkemmat kutsut on dokumentoitu tiedostossa `REST_API.md`.
+
 ## Tuotantokäyttö ja build
 - Rakenna selainpaketti komennolla `npm run build`, jolloin tiedosto `public/app.js` syntyy Webpack 5:llä.
 - Käynnistä palvelin tuotantotilassa komennolla `npm start` (GraphiQL pois päältä, oletusportti 1337).

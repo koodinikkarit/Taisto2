@@ -42,6 +42,7 @@ import {
 } from "./backend/MatrixManager";
 
 import routes from "./js/routes";
+import restRouter from "./backend/rest/router";
 
 const app = express();
 
@@ -60,6 +61,8 @@ process.argv.forEach(function(arg, index) {
 const APP_PORT = 3000;
 
 app.use("/static", express.static("public"));
+
+app.use("/rest", restRouter);
 
 const webpackEntry = {
   app: path.resolve(__dirname, "js", "app.js")
