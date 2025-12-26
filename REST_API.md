@@ -33,7 +33,11 @@ Tämä dokumentti kuvaa `/rest`-polkuun lisätyn REST-rajapinnan. Rajapinta tarj
 | `PATCH` | `/matrices/{id}` | Päivittää matriisin kenttiä (samat avaimet kuin luonnissa). |
 | `DELETE` | `/matrices/{id}` | Poistaa matriisin ja siihen liittyvät portit. |
 | `PATCH` | `/con-ports/{id}` | Päivittää ohjausportin slug-kentän. Body: `{ "slug": "Ohjaus 1" }`. |
+| `POST` | `/con-ports/{id}/video-connection` | Vaihtaa ohjausportin (con) videolähteen. Body: `{ "cpuPort": "<cpuPortId>" }`. |
+| `DELETE` | `/con-ports/{id}/video-connection` | Katkaisee ohjausportin (con) videokytkennän. |
 | `PATCH` | `/cpu-ports/{id}` | Päivittää CPU-portin slug-kentän. Body: `{ "slug": "Työpiste 1" }`. |
+| `POST` | `/cpu-ports/{id}/kwm-connection` | Vaihtaa CPU-portin KWM-kytkennän. Body: `{ "conPort": "<conPortId>" }`. |
+| `DELETE` | `/cpu-ports/{id}/kwm-connection` | Katkaisee CPU-portin KWM-kytkennän. |
 
 ### Kaaviot
 | Metodi | Polku | Kuvaus |

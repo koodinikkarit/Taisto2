@@ -2,6 +2,7 @@ import express from "express";
 import { graphql } from "graphql";
 
 import schema from "../graphql/RootTypes";
+import { db } from "../TaistoService";
 
 const router = express.Router();
 
@@ -288,6 +289,69 @@ router.patch(
   })
 );
 
+router.post(
+  "/con-ports/:id/video-connection",
+  asyncHandler(async (req, res) => {
+    const { cpuPort } = req.body || {};
+    if (!cpuPort) {
+      res.status(400).json({ error: { message: "cpuPort is required" } });
+      return;
+    }
+
+    const conPortId = Number(req.params.id);
+    const cpuPortId = Number(cpuPort);
+    const conPort = db.conPorts.get(conPortId);
+    const cpuPortRecord = db.cpuPorts.get(cpuPortId);
+
+    if (!conPort) {
+      res.status(404).json({ error: { message: "Con port not found" } });
+      return;
+    }
+
+    if (!cpuPortRecord) {
+      res.status(404).json({ error: { message: "Cpu port not found" } });
+      return;
+    }
+
+    if (conPort.matrixId !== cpuPortRecord.matrixId) {
+      res.status(400).json({
+        error: { message: "Con port and CPU port must belong to the same matrix" }
+      });
+      return;
+    }
+
+    conPort.setValue(cpuPortId);
+    res.status(201).json({
+      conPort: {
+        id: String(conPort.id),
+        slug: conPort.slug,
+        portNum: conPort.portNum
+      },
+      cpuPort: {
+        id: String(cpuPortRecord.id),
+        slug: cpuPortRecord.slug,
+        portNum: cpuPortRecord.portNum
+      }
+    });
+  })
+);
+
+router.delete(
+  "/con-ports/:id/video-connection",
+  asyncHandler(async (req, res) => {
+    const conPortId = Number(req.params.id);
+    const conPort = db.conPorts.get(conPortId);
+
+    if (!conPort) {
+      res.status(404).json({ error: { message: "Con port not found" } });
+      return;
+    }
+
+    conPort.turnOffPort();
+    res.status(204).end();
+  })
+);
+
 router.patch(
   "/cpu-ports/:id",
   asyncHandler(async (req, res) => {
@@ -314,6 +378,69 @@ router.patch(
     }
 
     res.json(data.editCpuPort);
+  })
+);
+
+router.post(
+  "/cpu-ports/:id/kwm-connection",
+  asyncHandler(async (req, res) => {
+    const { conPort } = req.body || {};
+    if (!conPort) {
+      res.status(400).json({ error: { message: "conPort is required" } });
+      return;
+    }
+
+    const cpuPortId = Number(req.params.id);
+    const conPortId = Number(conPort);
+    const cpuPortRecord = db.cpuPorts.get(cpuPortId);
+    const conPortRecord = db.conPorts.get(conPortId);
+
+    if (!cpuPortRecord) {
+      res.status(404).json({ error: { message: "Cpu port not found" } });
+      return;
+    }
+
+    if (!conPortRecord) {
+      res.status(404).json({ error: { message: "Con port not found" } });
+      return;
+    }
+
+    if (cpuPortRecord.matrixId !== conPortRecord.matrixId) {
+      res.status(400).json({
+        error: { message: "Cpu port and con port must belong to the same matrix" }
+      });
+      return;
+    }
+
+    cpuPortRecord.setValue(conPortId);
+    res.status(201).json({
+      conPort: {
+        id: String(conPortRecord.id),
+        slug: conPortRecord.slug,
+        portNum: conPortRecord.portNum
+      },
+      cpuPort: {
+        id: String(cpuPortRecord.id),
+        slug: cpuPortRecord.slug,
+        portNum: cpuPortRecord.portNum
+      }
+    });
+  })
+);
+
+router.delete(
+  "/cpu-ports/:id/kwm-connection",
+  asyncHandler(async (req, res) => {
+    const cpuPortId = Number(req.params.id);
+    const cpuPortRecord = db.cpuPorts.get(cpuPortId);
+
+    if (!cpuPortRecord) {
+      res.status(404).json({ error: { message: "Cpu port not found" } });
+      return;
+    }
+
+    cpuPortRecord.turnOffPort();
+    res.status(204).end();
   })
 );
 

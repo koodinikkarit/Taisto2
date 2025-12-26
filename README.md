@@ -21,6 +21,24 @@ käyttöliittymästä, joka renderöidään myös palvelinpäässä.
 
 ## REST-rajapinta
 - Uusi `/rest`-polku tarjoaa GraphQL:n toiminnot REST-muodossa. Tarkemmat kutsut on dokumentoitu tiedostossa `REST_API.md`.
+  Esimerkit:
+  ```bash
+  # Vaihda con-portin videolähde (CPU)
+  curl -X POST "http://localhost:1337/rest/con-ports/12/video-connection" \
+    -H "Content-Type: application/json" \
+    -d '{"cpuPort":"34"}'
+
+  # Katkaise con-portin videokytkentä
+  curl -X DELETE "http://localhost:1337/rest/con-ports/12/video-connection"
+
+  # Vaihda CPU-portin KWM-kytkentä (con)
+  curl -X POST "http://localhost:1337/rest/cpu-ports/34/kwm-connection" \
+    -H "Content-Type: application/json" \
+    -d '{"conPort":"12"}'
+
+  # Katkaise CPU-portin KWM-kytkentä
+  curl -X DELETE "http://localhost:1337/rest/cpu-ports/34/kwm-connection"
+  ```
 
 ## Tuotantokäyttö ja build
 - Rakenna selainpaketti komennolla `npm run build`, jolloin tiedosto `public/app.js` syntyy Webpack 5:llä.
