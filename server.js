@@ -10,6 +10,7 @@ import schema from "./backend/graphql/RootTypes";
 
 import PageFrame from "./js/components/PageFrame";
 import ReactDOMServer from "react-dom/server";
+const { Server: SocketIOServer } = require("socket.io");
 const graphql = require("graphql");
 import ApolloClient, { createNetworkInterface } from "apollo-client";
 import { createLocalInterface } from "apollo-local-query";
@@ -161,7 +162,7 @@ var server = app.listen(port || APP_PORT, () => {
   console.log("serveri on käynnissä");
 });
 
-var io = require("socket.io")(server);
+const io = new SocketIOServer(server);
 
 io.on("connection", function(socket) {
   io.emit(NEW_VIDEO_CONNECTIONS, getVideoConnections());

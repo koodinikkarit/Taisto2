@@ -12,7 +12,7 @@ käyttöliittymästä, joka renderöidään myös palvelinpäässä.
 - Helm-pohjainen julkaisu löytyy hakemistosta `deployment/`, ja `linux/` sisältää avainskriptejä käyttöönottoa varten.
 
 ## Kehitysympäristön käynnistäminen
-1. Asenna Node.js 20 LTS ja npm (projekti on testattu uusinta LTS-versiota vasten).
+1. Asenna Node.js 24 LTS ja npm (projekti on testattu uusinta LTS-versiota vasten).
 2. Asenna riippuvuudet komennolla `npm install --legacy-peer-deps` (osa vanhoista Apollo-paketeista vaatii legacy-peer -lipun).
 3. Käynnistä kehitystilainen palvelin: `npm run dev`.
    - Palvelu nousee oletuksena osoitteeseen <http://localhost:1337>.
@@ -25,7 +25,7 @@ käyttöliittymästä, joka renderöidään myös palvelinpäässä.
 ## Tuotantokäyttö ja build
 - Rakenna selainpaketti komennolla `npm run build`, jolloin tiedosto `public/app.js` syntyy Webpack 5:llä.
 - Käynnistä palvelin tuotantotilassa komennolla `npm start` (GraphiQL pois päältä, oletusportti 1337).
-- Docker-kontin voi rakentaa päivitetystä `Dockerfile`:stä, joka pohjautuu Node 20 -kuvaan.
+- Docker-kontin voi rakentaa päivitetystä `Dockerfile`:stä, joka pohjautuu Node 24 -kuvaan.
 - Tarvittaessa portti voidaan määrittää parametreilla, esim. `npm start -- -p 8080`.
 
 ## Data ja kokoonpano
