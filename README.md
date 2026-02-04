@@ -81,6 +81,30 @@ Tämä esimerkki näyttää, miten kytket yksittäisen con-portin videolähteen 
 **Performance note**
 - Jos käytössä on paljon nappeja, käytä pidempää pollausväliä (esim. 1000–2000 ms) tai ryhmittele napit, jotta REST-kutsujen määrä pysyy kohtuullisena.
 
+## Bitfocus Companion module (local)
+Tämä repo sisältää paikallisen Companion-moduulin hakemistossa `companion-module-taisto/`.
+
+**Asennus**
+1. Asenna moduulin riippuvuudet.
+```bash
+npm install
+```
+2. Avaa Companion.
+3. Mene `Settings` -> `Modules` -> `Install module from local folder`.
+4. Valitse `companion-module-taisto`-hakemisto.
+
+**Käyttö**
+1. Lisää moduuli-instanssi ja aseta Host/Port.
+2. Lisää action `Set video connection`.
+3. Aseta `Con port id` arvoon `35`.
+4. Aseta `CPU port id` arvoon `37`.
+5. Lisää feedback `Video connection active`.
+6. Aseta `Con port id` arvoon `35`.
+7. Aseta `CPU port id` arvoon `37`.
+8. Aseta feedbackin taustaväri punaiseksi.
+9. Valinnainen: lisää action `Turn off video connection`.
+10. Aseta `Con port id` arvoon `35`.
+
 ## Tuotantokäyttö ja build
 - Rakenna selainpaketti komennolla `npm run build`, jolloin tiedosto `public/app.js` syntyy Webpack 5:llä.
 - Käynnistä palvelin tuotantotilassa komennolla `npm start` (GraphiQL pois päältä, oletusportti 1337).
