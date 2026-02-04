@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.bitfocus.io/companion/manifest/v1.json",
+  "manifestVersion": 1,
+  "id": "taisto-matrix",
+  "name": "Taisto Matrix",
+  "shortname": "Taisto",
+  "description": "Control Taisto matrix via REST API",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": "https://github.com/koodinikkarit/Taisto2",
+  "bugs": "https://github.com/koodinikkarit/Taisto2/issues",
+  "maintainers": [
+    {
+      "name": "koodinikkarit",
+      "email": "koodinikkarit@gmail.com"
+    }
+  ],
+  "runtime": {
+    "type": "node18",
+    "api": "nodejs-ipc",
+    "entrypoint": "../main.js"
+  }
+}

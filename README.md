@@ -85,8 +85,9 @@ Tämä esimerkki näyttää, miten kytket yksittäisen con-portin videolähteen 
 Tämä repo sisältää paikallisen Companion-moduulin hakemistossa `companion-module-taisto/`.
 
 **Asennus**
-1. Asenna moduulin riippuvuudet.
+1. Asenna moduulin riippuvuudet hakemistossa `companion-module-taisto`.
 ```bash
+cd companion-module-taisto
 npm install
 ```
 2. Avaa Companion.

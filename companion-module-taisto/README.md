@@ -9,8 +9,9 @@ Bitfocus Companion module for the Taisto REST API. Provides an action to set a v
 - Poll interval: `1000` ms
 
 ## Installation
-1. Build the module.
+1. Install dependencies in `companion-module-taisto`.
 ```bash
+cd companion-module-taisto
 npm install
 ```
 2. Open Companion.
