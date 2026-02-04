@@ -40,6 +40,47 @@ käyttöliittymästä, joka renderöidään myös palvelinpäässä.
   curl -X DELETE "http://localhost:1337/rest/cpu-ports/34/kwm-connection"
   ```
 
+## Bitfocus Companion quick-start (Generic HTTP)
+Tämä esimerkki näyttää, miten kytket yksittäisen con-portin videolähteen ja saat napille feedbackin REST-rajapinnan kautta.
+
+**Compatibility**
+- Bitfocus Companion v4.3.0+ (Generic HTTP)
+
+**Action (POST)**
+- Method: `POST`
+- URL: `http://localhost:1337/rest/con-ports/35/video-connection`
+- Headers: `Content-Type: application/json`
+- Body:
+```json
+{"cpuPort":"37"}
+```
+
+**Feedback (GET)**
+- Method: `GET`
+- URL: `http://localhost:1337/rest/con-ports/35/video-connection`
+- Suositeltu pollausväli: 500–1000 ms
+
+**Esimerkkivastaus**
+```json
+{
+  "conPort": { "id": "35", "slug": "Näyttö 1", "portNum": 1 },
+  "cpuPort": { "id": "37", "slug": "PC 5", "portNum": 5 },
+  "status": "connected"
+}
+```
+
+**Feedback-logiikka (esimerkki)**
+- Väri:
+  - `status == "connected"` -> vihreä
+  - `status == "disconnected"` -> punainen/harmaa
+  - `status == "unknown"` -> keltainen/harmaa
+- Teksti:
+  - `status == "connected"` -> `CPU {cpuPort.portNum}` tai `cpuPort.slug`
+  - Muulloin -> `Ei kytkentää`
+
+**Performance note**
+- Jos käytössä on paljon nappeja, käytä pidempää pollausväliä (esim. 1000–2000 ms) tai ryhmittele napit, jotta REST-kutsujen määrä pysyy kohtuullisena.
+
 ## Tuotantokäyttö ja build
 - Rakenna selainpaketti komennolla `npm run build`, jolloin tiedosto `public/app.js` syntyy Webpack 5:llä.
 - Käynnistä palvelin tuotantotilassa komennolla `npm start` (GraphiQL pois päältä, oletusportti 1337).

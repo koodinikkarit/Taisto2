@@ -2,7 +2,10 @@ import express from "express";
 import { graphql } from "graphql";
 
 import schema from "../graphql/RootTypes";
-import { db } from "../TaistoService";
+import {
+  db,
+  getVideoConnectionForConPort
+} from "../TaistoService";
 
 const router = express.Router();
 
@@ -286,6 +289,47 @@ router.patch(
     }
 
     res.json(data.editConPort);
+  })
+);
+
+router.get(
+  "/con-ports/:id/video-connection",
+  asyncHandler(async (req, res) => {
+    const conPortId = Number(req.params.id);
+    const conPort = db.conPorts.get(conPortId);
+
+    if (!conPort) {
+      res.status(404).json({ error: { message: "Con port not found" } });
+      return;
+    }
+
+    const cpuPortId = getVideoConnectionForConPort(conPortId);
+    let status = "unknown";
+    let cpuPort = null;
+
+    if (cpuPortId === 0) {
+      status = "disconnected";
+    } else if (cpuPortId) {
+      const cpuPortRecord = db.cpuPorts.get(Number(cpuPortId));
+      if (cpuPortRecord) {
+        status = "connected";
+        cpuPort = {
+          id: String(cpuPortRecord.id),
+          slug: cpuPortRecord.slug,
+          portNum: cpuPortRecord.portNum
+        };
+      }
+    }
+
+    res.json({
+      conPort: {
+        id: String(conPort.id),
+        slug: conPort.slug,
+        portNum: conPort.portNum
+      },
+      cpuPort,
+      status
+    });
   })
 );
 

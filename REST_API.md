@@ -33,6 +33,7 @@ Tämä dokumentti kuvaa `/rest`-polkuun lisätyn REST-rajapinnan. Rajapinta tarj
 | `PATCH` | `/matrices/{id}` | Päivittää matriisin kenttiä (samat avaimet kuin luonnissa). |
 | `DELETE` | `/matrices/{id}` | Poistaa matriisin ja siihen liittyvät portit. |
 | `PATCH` | `/con-ports/{id}` | Päivittää ohjausportin slug-kentän. Body: `{ "slug": "Ohjaus 1" }`. |
+| `GET` | `/con-ports/{id}/video-connection` | Palauttaa ohjausportin (con) viimeksi tunnetun videokytkennän. |
 | `POST` | `/con-ports/{id}/video-connection` | Vaihtaa ohjausportin (con) videolähteen. Body: `{ "cpuPort": "<cpuPortId>" }`. |
 | `DELETE` | `/con-ports/{id}/video-connection` | Katkaisee ohjausportin (con) videokytkennän. |
 | `PATCH` | `/cpu-ports/{id}` | Päivittää CPU-portin slug-kentän. Body: `{ "slug": "Työpiste 1" }`. |
@@ -127,5 +128,65 @@ DELETE /rest/default-states/3/video-connections/8
 ```
 
 **Vastaus 204**
+
+### Hae ohjausportin videokytkentä
+```http
+GET /rest/con-ports/35/video-connection
+```
+
+**Vastaus 200**
+```json
+{
+  "conPort": { "id": "35", "slug": "Näyttö 1", "portNum": 1 },
+  "cpuPort": { "id": "37", "slug": "PC 5", "portNum": 5 },
+  "status": "connected"
+}
+```
+
+`status`-arvot:
+- `connected`: con-portti on kytketty CPU-porttiin.
+- `disconnected`: con-portti on katkaistu.
+- `unknown`: tilaa ei ole vielä saatu (esim. matriisi ei ole vastannut tilakyselyyn).
+
+### Bitfocus Companion -esimerkki (Generic HTTP)
+Seuraava esimerkki näyttää, miten REST‑rajapintaa käytetään Companionissa sekä actioniin että feedbackiin.
+
+**Compatibility**
+- Bitfocus Companion v4.3.0+ (Generic HTTP)
+
+**Action (POST)**
+- Method: `POST`
+- URL: `http://localhost:1337/rest/con-ports/35/video-connection`
+- Headers: `Content-Type: application/json`
+- Body:
+```json
+{"cpuPort":"37"}
+```
+
+**Feedback (GET)**
+- Method: `GET`
+- URL: `http://localhost:1337/rest/con-ports/35/video-connection`
+- Suositeltu pollausväli: 500–1000 ms
+
+**Esimerkkivastaus**
+```json
+{
+  "conPort": { "id": "35", "slug": "Näyttö 1", "portNum": 1 },
+  "cpuPort": { "id": "37", "slug": "PC 5", "portNum": 5 },
+  "status": "connected"
+}
+```
+
+**Feedback‑logiikka (esimerkki)**
+- Väri:
+  - `status == "connected"` -> vihreä
+  - `status == "disconnected"` -> punainen/harmaa
+  - `status == "unknown"` -> keltainen/harmaa
+- Teksti:
+  - `status == "connected"` -> `CPU {cpuPort.portNum}` tai `cpuPort.slug`
+  - Muulloin -> `Ei kytkentää`
+
+**Performance note**
+- Jos käytössä on paljon nappeja, käytä pidempää pollausväliä (esim. 1000–2000 ms) tai ryhmittele napit, jotta REST-kutsujen määrä pysyy kohtuullisena.
 
 Rajapinta käyttää taustalla samaa GraphQL-skeemaa, joten data- ja liiketoimintasäännöt pysyvät yhdenmukaisina olemassa olevan käyttöliittymän kanssa.
