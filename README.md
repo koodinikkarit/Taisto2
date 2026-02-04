@@ -114,6 +114,7 @@ npm install
 - Oletuskoodi on `category 4054` + `code 15`. Jos tykki tukee erillisiä ON/OFF‑koodeja, aseta ne actionin options‑kenttiin.
 - Feedback `Tykki power on` käyttää tilaa `current_power_is_on`.
 - Feedback `Tykki input active` käyttää tilaa `current_input` (input1..input5).
+- Feedback `Tykki current input label` näyttää `label`‑kentän tekstin.
 
 ## Tuotantokäyttö ja build
 - Rakenna selainpaketti komennolla `npm run build`, jolloin tiedosto `public/app.js` syntyy Webpack 5:llä.

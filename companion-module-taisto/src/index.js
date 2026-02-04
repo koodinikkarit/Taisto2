@@ -76,6 +76,7 @@ class TaistoModule extends InstanceBase {
     this.consecutivePollErrors = 0;
     this.projectorState = null;
     this.projectorCurrentInput = null;
+    this.projectorLabels = null;
     this.projectorUsed = false;
     this.projectorConsecutiveErrors = 0;
     this.lastMatrixPollAt = 0;
@@ -206,6 +207,14 @@ class TaistoModule extends InstanceBase {
 
   getProjectorCommandById(id) {
     return PROJECTOR_COMMANDS.find(cmd => cmd.id === id);
+  }
+
+  getProjectorInputLabel(inputId) {
+    if (!inputId) return null;
+    const labels = this.projectorLabels || {};
+    if (labels[inputId]) return String(labels[inputId]);
+    const fallback = PROJECTOR_INPUTS.find(input => input.id === inputId);
+    return fallback ? fallback.label : String(inputId);
   }
 
   initActions() {
@@ -395,6 +404,18 @@ class TaistoModule extends InstanceBase {
           const input = feedback.options.input;
           if (!input) return false;
           return this.projectorCurrentInput === String(input);
+        }
+      },
+      projector_current_input_label: {
+        name: "Tykki current input label",
+        type: "advanced",
+        description: "Sets button text to current input label",
+        options: [],
+        callback: () => {
+          this.projectorUsed = true;
+          const label = this.getProjectorInputLabel(this.projectorCurrentInput);
+          if (!label) return {};
+          return { text: label };
         }
       },
       projector_power_off: {
@@ -615,6 +636,7 @@ class TaistoModule extends InstanceBase {
         this.projectorState = Boolean(data && data.current_power_is_on);
         this.projectorCurrentInput =
           data && data.current_input ? String(data.current_input) : null;
+        this.projectorLabels = data && data.label ? data.label : null;
       } catch (err) {
         projectorHadError = true;
         lastProjectorError = err;
@@ -651,6 +673,7 @@ class TaistoModule extends InstanceBase {
     if (shouldPollProjector) {
       this.checkFeedbacks("projector_power_on");
       this.checkFeedbacks("projector_input_active");
+      this.checkFeedbacks("projector_current_input_label");
     }
   }
 }

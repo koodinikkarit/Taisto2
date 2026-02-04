@@ -13,3 +13,4 @@
 - Companion module adds projector quick command presets for inputs and common controls.
 - Companion module adds projector poll interval configuration.
 - Companion module adds projector input feedback based on `current_input`.
+- Companion module adds current input label feedback based on `label`.

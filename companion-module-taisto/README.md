@@ -69,6 +69,7 @@ Options for "Tykki pikakomento":
 - Video connection active
 - Tykki power on
 - Tykki input active
+- Tykki current input label
 
 Options:
 - Con port id
@@ -88,3 +89,4 @@ The feedback becomes active when the REST endpoint reports `status: connected` a
 - Feedback reads `current_power_is_on` from the response.
 - Pikakomennot käyttävät valmiita koodeja (Input A/B/C/D, Video, Freeze, Picture Blank, Power).
 - Input feedback reads `current_input` from the response (values `input1`..`input5`).
+- Current input label feedback uses `label` from the response (falls back to Input names).
