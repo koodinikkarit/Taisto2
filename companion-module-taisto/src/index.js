@@ -14,6 +14,7 @@ class TaistoModule extends InstanceBase {
     this.pollTimer = null;
     this.trackedConPorts = new Set();
     this.connectionState = new Map();
+    this.consecutivePollErrors = 0;
   }
 
   async init(config) {
@@ -214,12 +215,19 @@ class TaistoModule extends InstanceBase {
   }
 
   async pollOnce() {
-    if (!this.config.host) return;
+    if (!this.config.host) {
+      this.updateStatus(InstanceStatus.BadConfig, "Host is required");
+      return;
+    }
 
     const conPorts = Array.from(this.trackedConPorts);
-    if (conPorts.length === 0) return;
+    if (conPorts.length === 0) {
+      this.updateStatus(InstanceStatus.Ok);
+      return;
+    }
 
     let hadError = false;
+    let lastError = null;
 
     for (const conPortId of conPorts) {
       try {
@@ -244,12 +252,24 @@ class TaistoModule extends InstanceBase {
         });
       } catch (err) {
         hadError = true;
+        lastError = err;
+        this.log(
+          "warn",
+          `Poll failed for conPort ${conPortId}: ${err?.message || err}`
+        );
       }
     }
 
     if (hadError) {
-      this.updateStatus(InstanceStatus.ConnectionFailure);
+      this.consecutivePollErrors += 1;
+      if (this.consecutivePollErrors >= 3) {
+        this.updateStatus(
+          InstanceStatus.ConnectionFailure,
+          lastError?.message || "Polling failed"
+        );
+      }
     } else {
+      this.consecutivePollErrors = 0;
       this.updateStatus(InstanceStatus.Ok);
     }
 
