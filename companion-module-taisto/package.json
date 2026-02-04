@@ -5,13 +5,16 @@
   "main": "main.js",
   "type": "module",
   "license": "MIT",
+  "keywords": [
+    "companion-module"
+  ],
   "scripts": {
     "build": "companion-module-build",
     "watch": "companion-module-watch",
     "check": "companion-module-check"
   },
   "dependencies": {
-    "@companion-module/base": "^1.7.0",
+    "@companion-module/base": "^1.14.1",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
