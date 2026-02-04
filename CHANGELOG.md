@@ -11,3 +11,5 @@
 - Companion module adds projector power action and power-on feedback with REST polling.
 - Companion module adds discrete projector power on/off actions with configurable codes.
 - Companion module adds projector quick command presets for inputs and common controls.
+- Companion module adds projector poll interval configuration.
+- Companion module adds projector input feedback based on `current_input`.

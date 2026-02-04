@@ -110,8 +110,10 @@ npm install
 - Lisää action `Tykki power` (toggle) tai `Tykki power on/off`.
 - Lisää action `Tykki pikakomento`, jos haluat valmiit input/power/freeze/blank -komennot.
 - Projector host/port/path asetukset löytyvät moduulin konfiguraatiosta.
+- Projektorin pollausväli löytyy moduulin konfiguraatiosta.
 - Oletuskoodi on `category 4054` + `code 15`. Jos tykki tukee erillisiä ON/OFF‑koodeja, aseta ne actionin options‑kenttiin.
 - Feedback `Tykki power on` käyttää tilaa `current_power_is_on`.
+- Feedback `Tykki input active` käyttää tilaa `current_input` (input1..input5).
 
 ## Tuotantokäyttö ja build
 - Rakenna selainpaketti komennolla `npm run build`, jolloin tiedosto `public/app.js` syntyy Webpack 5:llä.

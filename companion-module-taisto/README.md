@@ -7,6 +7,7 @@ Bitfocus Companion module for the Taisto REST API. Provides an action to set a v
 - Host: `localhost`
 - Port: `1337`
 - Poll interval: `1000` ms
+- Projector poll interval: `1000` ms
 - Projector host: `localhost`
 - Projector port: `8001`
 - Projector path: `/cgi-bin/web.cgi`
@@ -67,6 +68,7 @@ Options for "Tykki pikakomento":
 ## Feedback
 - Video connection active
 - Tykki power on
+- Tykki input active
 
 Options:
 - Con port id
@@ -85,3 +87,4 @@ The feedback becomes active when the REST endpoint reports `status: connected` a
 ```
 - Feedback reads `current_power_is_on` from the response.
 - Pikakomennot käyttävät valmiita koodeja (Input A/B/C/D, Video, Freeze, Picture Blank, Power).
+- Input feedback reads `current_input` from the response (values `input1`..`input5`).

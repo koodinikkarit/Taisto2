@@ -58,6 +58,14 @@ const PROJECTOR_COMMANDS = [
   }
 ];
 
+const PROJECTOR_INPUTS = [
+  { id: "input1", label: "Input Video" },
+  { id: "input2", label: "Input A" },
+  { id: "input3", label: "Input B" },
+  { id: "input4", label: "Input C" },
+  { id: "input5", label: "Input D" }
+];
+
 class TaistoModule extends InstanceBase {
   constructor(internal) {
     super(internal);
@@ -67,8 +75,11 @@ class TaistoModule extends InstanceBase {
     this.connectionState = new Map();
     this.consecutivePollErrors = 0;
     this.projectorState = null;
+    this.projectorCurrentInput = null;
     this.projectorUsed = false;
     this.projectorConsecutiveErrors = 0;
+    this.lastMatrixPollAt = 0;
+    this.lastProjectorPollAt = 0;
   }
 
   async init(config) {
@@ -113,6 +124,15 @@ class TaistoModule extends InstanceBase {
         type: "number",
         id: "pollInterval",
         label: "Poll interval (ms)",
+        width: 4,
+        min: 200,
+        max: 10000,
+        default: 1000
+      },
+      {
+        type: "number",
+        id: "projectorPollInterval",
+        label: "Projector poll interval (ms)",
         width: 4,
         min: 200,
         max: 10000,
@@ -174,6 +194,13 @@ class TaistoModule extends InstanceBase {
     return PROJECTOR_COMMANDS.map(cmd => ({
       id: cmd.id,
       label: cmd.label
+    }));
+  }
+
+  getProjectorInputChoices() {
+    return PROJECTOR_INPUTS.map(input => ({
+      id: input.id,
+      label: input.label
     }));
   }
 
@@ -346,6 +373,30 @@ class TaistoModule extends InstanceBase {
           }
         }
       },
+      projector_input_active: {
+        name: "Tykki input active",
+        type: "boolean",
+        description: "Turns the button on when projector current_input matches",
+        defaultStyle: {
+          bgcolor: combineRgb(0, 102, 204),
+          color: combineRgb(255, 255, 255)
+        },
+        options: [
+          {
+            type: "dropdown",
+            label: "Input",
+            id: "input",
+            default: "input3",
+            choices: this.getProjectorInputChoices()
+          }
+        ],
+        callback: (feedback) => {
+          this.projectorUsed = true;
+          const input = feedback.options.input;
+          if (!input) return false;
+          return this.projectorCurrentInput === String(input);
+        }
+      },
       projector_power_off: {
         name: "Tykki power off",
         options: [
@@ -444,15 +495,26 @@ class TaistoModule extends InstanceBase {
     return `http://${host}:${port}${path}`;
   }
 
+  getMatrixPollInterval() {
+    const pollIntervalRaw = Number(this.config.pollInterval || 1000);
+    return Math.min(10000, Math.max(200, pollIntervalRaw));
+  }
+
+  getProjectorPollInterval() {
+    const pollIntervalRaw = Number(this.config.projectorPollInterval || 1000);
+    return Math.min(10000, Math.max(200, pollIntervalRaw));
+  }
+
   startPolling() {
     this.stopPolling();
 
-    const pollIntervalRaw = Number(this.config.pollInterval || 1000);
-    const pollInterval = Math.min(10000, Math.max(200, pollIntervalRaw));
+    const matrixPollInterval = this.getMatrixPollInterval();
+    const projectorPollInterval = this.getProjectorPollInterval();
+    const tickInterval = Math.min(matrixPollInterval, projectorPollInterval);
 
     this.pollTimer = setInterval(() => {
       this.pollOnce().catch(() => undefined);
-    }, pollInterval);
+    }, tickInterval);
 
     this.pollOnce().catch(() => undefined);
   }
@@ -466,8 +528,18 @@ class TaistoModule extends InstanceBase {
 
   async pollOnce() {
     const conPorts = Array.from(this.trackedConPorts);
+    const matrixPollInterval = this.getMatrixPollInterval();
+    const projectorPollInterval = this.getProjectorPollInterval();
+    const now = Date.now();
+    const matrixActive = conPorts.length > 0;
+    const projectorActive = this.projectorUsed;
+
     if (conPorts.length > 0 && !this.config.host) {
       this.updateStatus(InstanceStatus.BadConfig, "Host is required");
+      return;
+    }
+    if (this.projectorUsed && !this.config.projectorHost) {
+      this.updateStatus(InstanceStatus.BadConfig, "Projector host is required");
       return;
     }
 
@@ -476,7 +548,14 @@ class TaistoModule extends InstanceBase {
     let projectorHadError = false;
     let lastProjectorError = null;
 
-    if (conPorts.length > 0) {
+    const shouldPollMatrix =
+      matrixActive && now - this.lastMatrixPollAt >= matrixPollInterval;
+    const shouldPollProjector =
+      projectorActive &&
+      now - this.lastProjectorPollAt >= projectorPollInterval;
+
+    if (shouldPollMatrix) {
+      this.lastMatrixPollAt = now;
       for (const conPortId of conPorts) {
         try {
           const url = this.buildUrl(
@@ -507,7 +586,7 @@ class TaistoModule extends InstanceBase {
           );
         }
       }
-    } else {
+    } else if (!matrixActive) {
       this.consecutivePollErrors = 0;
     }
 
@@ -517,7 +596,8 @@ class TaistoModule extends InstanceBase {
       this.consecutivePollErrors = 0;
     }
 
-    if (this.projectorUsed) {
+    if (shouldPollProjector) {
+      this.lastProjectorPollAt = now;
       try {
         const url = this.buildProjectorUrl();
         const res = await fetch(url, {
@@ -533,6 +613,8 @@ class TaistoModule extends InstanceBase {
 
         const data = await res.json();
         this.projectorState = Boolean(data && data.current_power_is_on);
+        this.projectorCurrentInput =
+          data && data.current_input ? String(data.current_input) : null;
       } catch (err) {
         projectorHadError = true;
         lastProjectorError = err;
@@ -541,7 +623,7 @@ class TaistoModule extends InstanceBase {
           `Projector poll failed: ${err?.message || err}`
         );
       }
-    } else {
+    } else if (!projectorActive) {
       this.projectorConsecutiveErrors = 0;
     }
 
@@ -565,8 +647,11 @@ class TaistoModule extends InstanceBase {
       this.updateStatus(InstanceStatus.Ok);
     }
 
-    this.checkFeedbacks("video_connection_active");
-    this.checkFeedbacks("projector_power_on");
+    if (shouldPollMatrix) this.checkFeedbacks("video_connection_active");
+    if (shouldPollProjector) {
+      this.checkFeedbacks("projector_power_on");
+      this.checkFeedbacks("projector_input_active");
+    }
   }
 }
 
