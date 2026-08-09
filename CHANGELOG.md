@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.7] - 2026-08-09
+### Added
+- React 18 and modern Apollo Client runtime.
+- Finnish and English interface language selection.
+- Markdown-based Help page with source and release links.
+- Visible application version and unique GitHub Actions build identifier.
+- Web login page for optional Promode and Settings password protection.
+
+### Changed
+- Docker images are built and published only from `v*` Git tags.
+- Docker build embeds the release version, build identifier, and Help content.
+- Promode route handling and Finnish character encoding were fixed.
+
 ## [2026-02-04]
 ### Added
 - `GET /rest/con-ports/{id}/video-connection` for fetching the last known video-connection state.
