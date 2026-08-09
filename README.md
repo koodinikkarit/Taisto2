@@ -21,7 +21,7 @@ Sovellus avautuu osoitteessa `http://localhost:1337`. Tuotantotilassa käytä `n
 
 ## Salasanasuojaus
 
-Promode (`/promode`) ja Asetukset (`/settings`) suojataan HTTP Basic -tunnistuksella vain, kun `TAISTO_PASSWORD` on asetettu. Ilman sitä suojaus ei ole käytössä.
+Promode (`/promode`) ja Asetukset (`/settings`) suojataan kirjautumissivulla vain, kun `TAISTO_PASSWORD` on asetettu. Onnistunut kirjautuminen käyttää 8 tuntia voimassa olevaa HTTP-only-istuntocookiea. Ilman salasanaa suojaus ei ole käytössä.
 
 ```powershell
 $env:TAISTO_PASSWORD = "vahva-salasana"
