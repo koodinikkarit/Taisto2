@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.10] - 2026-08-09
+### Fixed
+- GraphQL resolvers now support both legacy plain-object database records and Immutable records.
+
 ## [0.1.9] - 2026-08-09
 ### Fixed
 - Docker build now includes `CHANGELOG.md`, allowing the embedded Help-page changelog to compile.
