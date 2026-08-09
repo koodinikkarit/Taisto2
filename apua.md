@@ -5,6 +5,8 @@ Projektin lähdekoodi: [GitHub / koodinikkarit / Taisto2](https://github.com/koo
 
 Muutokset: [Changelog](https://github.com/koodinikkarit/Taisto2/blob/master/CHANGELOG.md)
 
+Tuki: [atk-tuki@turunhelluntaisrk.fi](mailto:atk-tuki@turunhelluntaisrk.fi)
+
 ## Aloittaminen
 
 1. Avaa **Asetukset** ja yhdistä matriisi.
@@ -29,6 +31,8 @@ Jos yhteys ei muodostu, tarkista laitteen osoite ja verkkoyhteys. Promode näytt
 Project source code: [GitHub / koodinikkarit / Taisto2](https://github.com/koodinikkarit/Taisto2)
 
 Changes: [Changelog](https://github.com/koodinikkarit/Taisto2/blob/master/CHANGELOG.md)
+
+Support: [atk-tuki@turunhelluntaisrk.fi](mailto:atk-tuki@turunhelluntaisrk.fi)
 
 ## Getting started
 
