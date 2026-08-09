@@ -13,7 +13,7 @@ käyttöliittymästä, joka renderöidään myös palvelinpäässä.
 
 ## Kehitysympäristön käynnistäminen
 1. Asenna Node.js 24 LTS ja npm (projekti on testattu uusinta LTS-versiota vasten).
-2. Asenna riippuvuudet komennolla `npm install --legacy-peer-deps` (osa vanhoista Apollo-paketeista vaatii legacy-peer -lipun).
+2. Asenna riippuvuudet komennolla `npm ci`.
 3. Käynnistä kehitystilainen palvelin: `npm run dev`.
    - Palvelu nousee oletuksena osoitteeseen <http://localhost:1337>.
    - GraphiQL-työkalu on käytettävissä osoitteessa <http://localhost:1337/api>.

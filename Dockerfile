@@ -8,7 +8,7 @@ ADD package.json package.json
 ADD package-lock.json package-lock.json
 ADD webpack.config.js webpack.config.js
 ADD app.js app.js
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 RUN npm run build
 RUN mkdir -p database
 EXPOSE 80
