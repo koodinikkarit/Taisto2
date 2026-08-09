@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.8] - 2026-08-09
+### Fixed
+- GraphQL now resolves Immutable Matrix, ConPort and CpuPort records correctly instead of returning `null` fields.
+- Matrix names and port data from existing `database.json` files are displayed correctly.
+
 ## [0.1.7] - 2026-08-09
 ### Added
 - React 18 and modern Apollo Client runtime.
