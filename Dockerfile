@@ -9,6 +9,6 @@ ADD package-lock.json package-lock.json
 ADD server.js server.js
 ADD webpack.config.js webpack.config.js
 ADD app.js app.js
-RUN npm install
+RUN npm ci --legacy-peer-deps
 RUN npm run build
 CMD ["npm", "run", "app"]
