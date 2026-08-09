@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.13] - 2026-08-09
+### Fixed
+- Added JSON request-body parsing for GraphQL POST requests, restoring data loading in the browser interface.
+
 ## [0.1.12] - 2026-08-09
 ### Fixed
 - Matrix list queries now return Map values rather than key-value tuples.
