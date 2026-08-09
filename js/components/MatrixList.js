@@ -6,6 +6,7 @@ import gql from 'graphql-tag';
 
 import Settings from "../containers/Settings";
 import ConnectingMatrix from "./ConnectingMatrix";
+import { I18nContext } from "../i18n";
 
 function getConnectionStateMessage(code) {
 	switch(code) {
@@ -21,6 +22,7 @@ function getConnectionStateMessage(code) {
 }
 
 class MatrixList extends React.Component {
+	static contextType = I18nContext;
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -29,17 +31,18 @@ class MatrixList extends React.Component {
 	}
 
 	render() {
+		const { t } = this.context;
 		return (
 			<Settings active="matriisit">
 				<div className="row">
 					<div className="col-6">
-						<h1>Matriisit</h1>
+						<h1>{t("matrices")}</h1>
 					</div>
 					<div className="col-4">
 						<button className="btn btn-success"
 						onClick={e => {
 							this.setState({ connectingNewMatrix: true });
-					}}>Yhdistä uusi matriisi</button>
+					}}>{t("connectMatrix")}</button>
 					</div>
 				</div>
 				<div className="row">
@@ -75,7 +78,7 @@ class MatrixList extends React.Component {
 												 this.props.removeMatrix({
 													 id: matrix.id
 												 });
-											 }}>Poista</button>
+											 }}>{t("remove")}</button>
 										</div>
 									</div>
 									</a>

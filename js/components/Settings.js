@@ -1,9 +1,11 @@
 import React from 'react';
 import Measure from './Measure';
+import { I18nContext } from "../i18n";
 
 import PageLayout from "./PageLayout";
 
 export default class extends React.Component {
+	static contextType = I18nContext;
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -12,6 +14,7 @@ export default class extends React.Component {
 	}
 
 	render() {
+		const { t } = this.context;
 		var styles = {
 			sideBar: {
 				//position: "fixed",
@@ -36,22 +39,22 @@ export default class extends React.Component {
 					<nav className="col-sm-3 col-md-2 bg-faded sidebar" style={styles.sideBar}>
 						<ul className="nav nav-pills flex-column">
 							<li className="nav-item">
-								<a className={this.props.active === "matriisit" ? "nav-link active" : "nav-link"} href="/settings/matriisit">Matriisit</a>
+								<a className={this.props.active === "matriisit" ? "nav-link active" : "nav-link"} href="/settings/matriisit">{t("matrices")}</a>
 							</li>
 							<li className="nav-item">
-								<a className={this.props.active === "timers" ? "nav-link active" : "nav-link"} href="/settings/timers">Ajastimet</a>
+								<a className={this.props.active === "timers" ? "nav-link active" : "nav-link"} href="/settings/timers">{t("timers")}</a>
 							</li>
 							<li className="nav-item">
-								<a className={this.props.active === "locks" ? "nav-link active" : "nav-link"} href="/settings/locks">Lukot</a>
+								<a className={this.props.active === "locks" ? "nav-link active" : "nav-link"} href="/settings/locks">{t("locks")}</a>
 							</li>
 							<li className="nav-item">
-								<a className={this.props.active === "oletustilat" ? "nav-link active" : "nav-link"} href="/settings/oletustilat">Oletustilat</a>
+								<a className={this.props.active === "oletustilat" ? "nav-link active" : "nav-link"} href="/settings/oletustilat">{t("defaults")}</a>
 							</li>
 							<li className="nav-item">
-								<a className={this.props.active === "diagrams" ? "nav-link active" : "nav-link"} href="/settings/diagrams">Kaaviot</a>
+								<a className={this.props.active === "diagrams" ? "nav-link active" : "nav-link"} href="/settings/diagrams">{t("diagrams")}</a>
 							</li>
 							<li className="nav-item">
-								<a className={this.props.active === "translations" ? "nav-link active" : "nav-link"} href="/settings/translations">Käännökset</a>
+								<a className={this.props.active === "translations" ? "nav-link active" : "nav-link"} href="/settings/translations">{t("translations")}</a>
 							</li>
 						</ul>
 					</nav>
