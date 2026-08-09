@@ -12,28 +12,36 @@ export default new GraphQLObjectType({
     name: "Matrix",
     fields: () => ({
         id: {
-            type: GraphQLString
+            type: GraphQLString,
+            resolve: matrix => String(matrix.get("id"))
         },
         slug: {
-            type: GraphQLString
+            type: GraphQLString,
+            resolve: matrix => matrix.get("slug")
         },
         ip: {
-            type: GraphQLString
+            type: GraphQLString,
+            resolve: matrix => matrix.get("ip")
         },
         port: {
-            type: GraphQLInt
+            type: GraphQLInt,
+            resolve: matrix => matrix.get("port")
         },
         conPortAmount: {
-            type: GraphQLInt
+            type: GraphQLInt,
+            resolve: matrix => matrix.get("numberOfConPorts")
         },
         cpuPortAmount: {
-            type: GraphQLInt
+            type: GraphQLInt,
+            resolve: matrix => matrix.get("numberOfCpuPorts")
         },
         conPorts: {
-            type: new GraphQLList(ConPort)
+            type: new GraphQLList(ConPort),
+            resolve: matrix => matrix.conPorts.toArray()
         },
         cpuPorts: {
-            type: new GraphQLList(CpuPort)
+            type: new GraphQLList(CpuPort),
+            resolve: matrix => matrix.cpuPorts.toArray()
         }
     })
 });

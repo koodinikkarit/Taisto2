@@ -13,16 +13,20 @@ export default new GraphQLObjectType({
     name: "ConPort",
     fields: () => ({
         id: {
-            type: GraphQLString
+            type: GraphQLString,
+            resolve: port => String(port.get("id"))
         },
         slug: {
-            type: GraphQLString
+            type: GraphQLString,
+            resolve: port => port.get("slug")
         },
         matrix: {
-            type: Matrix
+            type: Matrix,
+            resolve: port => port.matrix
         },
         portNum: {
-            type: GraphQLInt
+            type: GraphQLInt,
+            resolve: port => port.get("portNum")
         }
     })
 });
