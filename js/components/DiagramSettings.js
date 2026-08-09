@@ -133,7 +133,7 @@ export default compose(
 		options: (ownProps) => {
 			return {
 				variables: {
-					slug: ownProps.params.slug
+					slug: ownProps.match.params.slug
 				}
 			}
 		},

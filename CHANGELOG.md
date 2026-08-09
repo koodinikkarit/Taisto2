@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.15] - 2026-08-09
+### Fixed
+- Fixed route parameter handling in diagram, matrix, and default-state detail views, preventing blank pages when opening an item by name.
+
 ## [0.1.14] - 2026-08-09
 ### Fixed
 - Fixed every GraphQL list to return database records rather than Immutable Map key-value pairs.

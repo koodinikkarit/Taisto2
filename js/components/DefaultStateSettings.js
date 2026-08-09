@@ -156,7 +156,7 @@ export default compose(
     }`, {
         options: (ownProps) => ({
             variables: {
-                slug: ownProps.params.slug
+                slug: ownProps.match.params.slug
             }
         }),
         props: ({ ownProps, data: { defaultState } }) => ({
