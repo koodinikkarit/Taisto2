@@ -138,7 +138,7 @@ npm install
 - Deploymentissa hyödynnetään Helm-charttia; tarkista `deployment/values.yaml` ympäristökohtaista konfiguraatiota varten.
 # Password protection
 
-Promode and Settings are protected with HTTP Basic authentication. Set `TAISTO_PASSWORD` before starting the production server; the default username is `taisto` and can be changed with `TAISTO_USER`.
+Promode and Settings are protected with HTTP Basic authentication when `TAISTO_PASSWORD` is set. Without it, password protection is disabled. The default username is `taisto` and can be changed with `TAISTO_USER`.
 
 PowerShell example:
 

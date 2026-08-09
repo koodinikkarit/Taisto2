@@ -54,10 +54,6 @@ function requireProtectedAreaPassword(req, res, next) {
 	return res.status(401).send("Authentication required");
 }
 
-if (!development && !protectedPassword) {
-	throw new Error("TAISTO_PASSWORD must be set when running Taisto in production mode");
-}
-
 app.use("/static", express.static("public"));
 
 app.use(["/promode", "/settings"], requireProtectedAreaPassword);
