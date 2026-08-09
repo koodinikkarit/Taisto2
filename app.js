@@ -1,4 +1,5 @@
 import path from "path";
+import crypto from "crypto";
 import express from "express";
 import webpack from "webpack";
 import WebpackMiddleware from "webpack-dev-middleware";
@@ -29,8 +30,37 @@ process.argv.forEach(function(arg, index) {
 });
 
 const APP_PORT = 80;
+const protectedPassword = process.env.TAISTO_PASSWORD;
+const protectedUser = process.env.TAISTO_USER || "taisto";
+
+function credentialsMatch(value, expected) {
+	const valueBuffer = Buffer.from(value || "");
+	const expectedBuffer = Buffer.from(expected);
+	return valueBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(valueBuffer, expectedBuffer);
+}
+
+function requireProtectedAreaPassword(req, res, next) {
+	if (!protectedPassword) return next();
+	const header = req.get("authorization") || "";
+	const encodedCredentials = header.startsWith("Basic ") ? header.slice(6) : "";
+	const credentials = Buffer.from(encodedCredentials, "base64").toString("utf8");
+	const separator = credentials.indexOf(":");
+	const user = separator === -1 ? "" : credentials.slice(0, separator);
+	const password = separator === -1 ? "" : credentials.slice(separator + 1);
+
+	if (credentialsMatch(user, protectedUser) && credentialsMatch(password, protectedPassword)) return next();
+
+	res.set("WWW-Authenticate", 'Basic realm="Taisto protected area", charset="UTF-8"');
+	return res.status(401).send("Authentication required");
+}
+
+if (!development && !protectedPassword) {
+	throw new Error("TAISTO_PASSWORD must be set when running Taisto in production mode");
+}
 
 app.use("/static", express.static("public"));
+
+app.use(["/promode", "/settings"], requireProtectedAreaPassword);
 
 app.use("/rest", restRouter);
 

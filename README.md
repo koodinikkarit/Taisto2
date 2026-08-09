@@ -136,3 +136,14 @@ npm install
 - Pidä `database/database.json` versionhallinnan ulkopuolella, mutta säilytä siitä varmuuskopiot.
 - Uusia GraphQL-kyselyjä lisättäessä muista päivittää sekä skeema että Apollo-kyselyt (`js/graphql`).
 - Deploymentissa hyödynnetään Helm-charttia; tarkista `deployment/values.yaml` ympäristökohtaista konfiguraatiota varten.
+# Password protection
+
+Promode and Settings are protected with HTTP Basic authentication. Set `TAISTO_PASSWORD` before starting the production server; the default username is `taisto` and can be changed with `TAISTO_USER`.
+
+PowerShell example:
+
+```powershell
+$env:TAISTO_PASSWORD = "choose-a-strong-password"
+$env:TAISTO_USER = "taisto"
+npm start
+```
