@@ -27,7 +27,7 @@ export default {
 		name: "Matrixs",
 		type: new GraphQLList(MatrixGraphqlObject),
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.matrixs);
+			resolve(db.matrixs.toArray());
 		})
 	},
 	matrixById: {
@@ -51,7 +51,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.matrixs.find(p => p.slug === args.slug));
+			resolve(db.matrixs.find(p => p.get("slug") === args.slug));
 		})
 	},
 }

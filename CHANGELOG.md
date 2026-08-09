@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.11] - 2026-08-09
+### Fixed
+- Matrix GraphQL list queries now convert Immutable Maps to arrays before returning them to GraphQL.
+
 ## [0.1.10] - 2026-08-09
 ### Fixed
 - GraphQL resolvers now support both legacy plain-object database records and Immutable records.
