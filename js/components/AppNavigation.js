@@ -11,7 +11,7 @@ export default function AppNavigation() {
       <li className="nav-item"><Link className="nav-link" to="/oletustilat">{t("defaults")}</Link></li>
       <li className="nav-item"><Link className="nav-link" to="/promode">Promode</Link></li>
       <li className="nav-item"><Link className="nav-link" to="/settings">{t("settings")}</Link></li>
-      <li className="nav-item"><a className="nav-link" href="#">{t("help")}</a></li>
+      <li className="nav-item"><Link className="nav-link" to="/apua">{t("help")}</Link></li>
     </ul>
       <select aria-label="Language" className="form-control" style={{ width: "120px" }} value={language} onChange={event => setLanguage(event.target.value)}><option value="fi">Suomi</option><option value="en">English</option></select>
     </div>

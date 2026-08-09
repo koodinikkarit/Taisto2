@@ -15,6 +15,7 @@ import DefaultStatesSettings from "./components/DefaultStateSettings";
 import DefaultStatesSettingsList from "./components/DefaultStatesSettingsList";
 import DiagramList from "./components/DiagramList";
 import TranslationList from "./containers/TranslationList";
+import Help from "./components/Help";
 
 export default function Routes() {
   return (
@@ -33,6 +34,7 @@ export default function Routes() {
       <Route exact path="/settings/diagram/:slug" component={DiagramSettings} />
       <Route exact path="/settings/diagrams" component={DiagramList} />
       <Route exact path="/settings/translations" component={TranslationList} />
+      <Route exact path="/apua" component={Help} />
       <Route exact path="/settings" component={MatrixList} />
       <Route exact path="/" component={Etusivu} />
       <Route component={NotFound} />
