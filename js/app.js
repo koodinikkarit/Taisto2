@@ -8,12 +8,13 @@ import store from "./store";
 import client from "./client";
 import Routes from "./routes";
 import AppNavigation from "./components/AppNavigation";
+import AppVersion from "./components/AppVersion";
 import { I18nProvider } from "./i18n";
 
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <ApolloProvider client={client}>
-      <I18nProvider><BrowserRouter><AppNavigation /><Routes /></BrowserRouter></I18nProvider>
+      <I18nProvider><BrowserRouter><AppNavigation /><Routes /><AppVersion /></BrowserRouter></I18nProvider>
     </ApolloProvider>
   </Provider>
 );
