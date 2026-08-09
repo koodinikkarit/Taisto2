@@ -3,8 +3,12 @@ import helpMarkdown from "../../apua.md";
 import { useI18n } from "../i18n";
 
 function renderInline(text) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, index) => part.startsWith("**") ? <strong key={index}>{part.slice(2, -2)}</strong> : part);
+  const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^\)]+\))/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("**")) return <strong key={index}>{part.slice(2, -2)}</strong>;
+    const link = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
+    return link ? <a key={index} href={link[2]} target="_blank" rel="noopener noreferrer">{link[1]}</a> : part;
+  });
 }
 
 export default function Help() {

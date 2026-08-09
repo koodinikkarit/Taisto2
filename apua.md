@@ -1,6 +1,8 @@
 <!-- fi -->
 # Apua
 
+Projektin lähdekoodi: [GitHub / koodinikkarit / Taisto2](https://github.com/koodinikkarit/Taisto2)
+
 ## Aloittaminen
 
 1. Avaa **Asetukset** ja yhdistä matriisi.
@@ -21,6 +23,8 @@ Jos yhteys ei muodostu, tarkista laitteen osoite ja verkkoyhteys. Promode näytt
 
 <!-- en -->
 # Help
+
+Project source code: [GitHub / koodinikkarit / Taisto2](https://github.com/koodinikkarit/Taisto2)
 
 ## Getting started
 
