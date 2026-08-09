@@ -20,14 +20,15 @@ class Promode extends React.Component {
 	}
 
 	render() {
+		const params = this.props.match ? this.props.match.params : {};
 		var slug = null;
 		var selectedMatrix = null;
 		var mode = null;
-		if (this.props.params.slug) {
+		if (params.slug) {
 			if (this.props.matrixs) {
 				this.props.matrixs.some(matrix => {
-					if (matrix.slug === this.props.params.slug) {
-						slug = this.props.params.slug;
+					if (matrix.slug === params.slug) {
+						slug = params.slug;
 						selectedMatrix = matrix;
 					}
 				});				
@@ -39,8 +40,8 @@ class Promode extends React.Component {
 			}
 		}
 
-		if (this.props.params.mode) {
-			mode = this.props.params.mode;
+		if (params.mode) {
+			mode = params.mode;
 		} else {
 			if (slug) {
 				mode = "matriisi";
