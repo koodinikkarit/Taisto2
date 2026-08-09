@@ -10,6 +10,7 @@ ADD package.json package.json
 ADD package-lock.json package-lock.json
 ADD webpack.config.js webpack.config.js
 ADD app.js app.js
+ADD apua.md apua.md
 RUN node -e "require('fs').writeFileSync('js/build-info.js', 'export default { id: ' + JSON.stringify(process.env.TAISTO_BUILD_ID) + ' };\\n')"
 RUN npm ci
 RUN npm run build
