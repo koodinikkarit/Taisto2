@@ -7,6 +7,8 @@ Muutokset: [Changelog](https://github.com/koodinikkarit/Taisto2/blob/master/CHAN
 
 Tuki: [atk-tuki@turunhelluntaisrk.fi](mailto:atk-tuki@turunhelluntaisrk.fi)
 
+Rajapintadokumentaatio: [API-dokumentaatio](/api-docs)
+
 ## Aloittaminen
 
 1. Avaa **Asetukset** ja yhdistä matriisi.
@@ -33,6 +35,8 @@ Project source code: [GitHub / koodinikkarit / Taisto2](https://github.com/koodi
 Changes: [Changelog](https://github.com/koodinikkarit/Taisto2/blob/master/CHANGELOG.md)
 
 Support: [atk-tuki@turunhelluntaisrk.fi](mailto:atk-tuki@turunhelluntaisrk.fi)
+
+API reference: [API documentation](/api-docs)
 
 ## Getting started
 
