@@ -18,7 +18,7 @@ import {
 } from "./constants/matrix";
 
 export default () => {
-	const socket = io.connect(`http://${location.hostname}:${location.port}`, {reconnect: true});
+	const socket = io(`http://${location.hostname}:${location.port}`, {reconnection: true});
 	return store => {
 		socket.on(NEW_VIDEO_CONNECTION, (videoConnection) => {
 			store.dispatch({

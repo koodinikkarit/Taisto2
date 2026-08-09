@@ -17,9 +17,10 @@ import {
 	on
 } from "./TaistoService";
 
+import { Server as SocketIOServer } from "socket.io";
 
 export const createService = (server) => {
-	var io = require('socket.io')(server);
+	const io = new SocketIOServer(server);
 	on(NEW_VIDEO_CONNECTIONS, videoConnections => io.emit(NEW_VIDEO_CONNECTIONS, videoConnections));
 	on(NEW_KWM_CONNECTIONS, kwmConnections => io.emit(NEW_KWM_CONNECTIONS, kwmConnections));
 	on(NEW_VIDEO_CONNECTION, (con, cpu) => io.emit(NEW_VIDEO_CONNECTION, {

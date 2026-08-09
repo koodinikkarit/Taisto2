@@ -1,0 +1,23 @@
+{
+  "name": "companion-module-taisto-matrix",
+  "version": "0.0.0",
+  "description": "Bitfocus Companion module for Taisto REST API",
+  "main": "main.js",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "companion-module"
+  ],
+  "scripts": {
+    "build": "companion-module-build",
+    "watch": "companion-module-watch",
+    "check": "companion-module-check"
+  },
+  "dependencies": {
+    "@companion-module/base": "^1.14.1",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@companion-module/tools": "^1.5.0"
+  }
+}

@@ -23,6 +23,8 @@ import { Map } from "immutable";
 var db = new TaistoDb();
 
 var emitter = (emitter = new events.EventEmitter());
+var currentVideoConnections = {};
+var currentKwmConnections = {};
 
 export { db };
 
@@ -645,6 +647,18 @@ function registerMatrixEvents(matrix) {
 
 	function requestAllStates(videoConnections, kwmConnections) {
 		if (db.matrixs.has(id)) {
+			if (videoConnections) {
+				currentVideoConnections = Object.assign(
+					currentVideoConnections,
+					videoConnections
+				);
+			}
+			if (kwmConnections) {
+				currentKwmConnections = Object.assign(
+					currentKwmConnections,
+					kwmConnections
+				);
+			}
 			emitter.emit("NEW_VIDEO_CONNECTIONS", videoConnections);
 			emitter.emit("NEW_KWM_CONNECTIONS", kwmConnections);
 		}
@@ -657,6 +671,9 @@ function registerMatrixEvents(matrix) {
 			var cpuPort = db.cpuPorts.find(
 				p => p.matrixId === id && p.portNum === cpuPortNum
 			);
+			if (cpuPort && conPort) {
+				currentKwmConnections[String(cpuPort.id)] = String(conPort.id);
+			}
 			emitter.emit(
 				"NEW_KWM_CONNECTION",
 				String(cpuPort.id),
@@ -673,6 +690,7 @@ function registerMatrixEvents(matrix) {
 				p => p.matrixId === id && p.portNum === cpuPortNum
 			);
 			if (conPort && cpuPort) {
+				currentVideoConnections[String(conPort.id)] = String(cpuPort.id);
 				emitter.emit(
 					"NEW_VIDEO_CONNECTION",
 					String(conPort.id),
@@ -688,6 +706,9 @@ function registerMatrixEvents(matrix) {
 			var conPort = db.conPorts.find(
 				p => p.matrixId === id && p.portNum === conPortNum
 			);
+			if (conPort) {
+				currentVideoConnections[String(conPort.id)] = 0;
+			}
 			emitter.emit("TURN_OFF_CON_PORT", String(conPort.id));
 		}
 	}
@@ -696,6 +717,9 @@ function registerMatrixEvents(matrix) {
 			var cpuPort = db.cpuPorts.find(
 				p => p.matrixId === id && p.portNum === cpuPortNum
 			);
+			if (cpuPort) {
+				currentKwmConnections[String(cpuPort.id)] = 0;
+			}
 			emitter.emit("TURN_OFF_CPU_PORT", String(cpuPort.id));
 		}
 	}
@@ -803,3 +827,14 @@ export const listen = port => {
 export const on = (eventType, callback) => {
 	emitter.on(eventType, callback);
 };
+
+export const getVideoConnections = () =>
+	Object.assign({}, currentVideoConnections);
+
+export const getKwmConnections = () => Object.assign({}, currentKwmConnections);
+
+export const getVideoConnectionForConPort = conPortId =>
+	currentVideoConnections[String(conPortId)];
+
+export const getKwmConnectionForCpuPort = cpuPortId =>
+	currentKwmConnections[String(cpuPortId)];
