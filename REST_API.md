@@ -4,7 +4,9 @@ Tämä dokumentti kuvaa `/rest`-polkuun lisätyn REST-rajapinnan. Rajapinta tarj
 
 ## Yleiset periaatteet
 - **Pohja-URL**: `http://<palvelin>:<portti>/rest`
-- **Autentikointi**: ei oletuksena käytössä.
+- **Autentikointi**: kaikki `POST`-, `PATCH`-, `PUT`- ja `DELETE`-pyynnöt vaativat Asetukset → API-avaimet -sivulla luodun avaimen. Anna avain joko `X-API-Key: <avain>` -otsakkeessa tai `Authorization: Bearer <avain>` -otsakkeessa. `GET`-, `HEAD`- ja `OPTIONS`-pyynnöt eivät vaadi avainta.
+- API-avaimet voidaan nimetä, asettaa vanhenemaan tai jättää pysyvästi voimassa oleviksi. Yksittäisen avaimen voi ottaa pois käytöstä poistamatta sitä. Vanhentunut tai pois käytöstä otettu avain hylätään. Asetuksista voidaan lisäksi sallia muuttavat pyynnöt anonyymisti 15 minuutiksi, tunniksi, neljäksi tunniksi, päiväksi, viikoksi tai 30 päiväksi. Anonyymi pääsy sulkeutuu automaattisesti määräajan päättyessä.
+- Jokaisesta hyväksytystä API-avainpyynnöstä päivitetään avaimen käyttölaskuri ja viimeisin käyttöaika. Avaimet ja käyttötiedot säilytetään selväkielisinä SQLite-tietokannan `rest_api_keys`-taulussa (`database/taisto.sqlite`).
 - **Virheformaatti**:
   ```json
   {
@@ -20,6 +22,15 @@ Tämä dokumentti kuvaa `/rest`-polkuun lisätyn REST-rajapinnan. Rajapinta tarj
   }
   ```
 - **Statuskoodit**: 2xx onnistumisille, 4xx asiakkaan virheille (esim. puuttuva data, tuntematon resurssi) ja 5xx odottamattomille virheille.
+
+Esimerkki muutospyynnöstä:
+
+```bash
+curl -X POST http://localhost:1337/rest/con-groups/1/execute \
+  -H "X-API-Key: taisto_..." \
+  -H "Content-Type: application/json" \
+  -d '{"cpuPortId":"3"}'
+```
 
 ## Resurssit
 
@@ -39,6 +50,19 @@ Tämä dokumentti kuvaa `/rest`-polkuun lisätyn REST-rajapinnan. Rajapinta tarj
 | `PATCH` | `/cpu-ports/{id}` | Päivittää CPU-portin slug-kentän. Body: `{ "slug": "Työpiste 1" }`. |
 | `POST` | `/cpu-ports/{id}/kwm-connection` | Vaihtaa CPU-portin KWM-kytkennän. Body: `{ "conPort": "<conPortId>" }`. |
 | `DELETE` | `/cpu-ports/{id}/kwm-connection` | Katkaisee CPU-portin KWM-kytkennän. |
+
+### Output-ryhmät
+
+Output-ryhmä sisältää saman matriisin useita output-portteja. Ryhmän suoritus vaihtaa kaikki sen outputit samaan inputtiin lähettämällä yhden TCP-komennon outputtia kohti 10 ms välein. Suoritus ei ole laitetasolla atominen eräpäivitys.
+
+| Metodi | Polku | Kuvaus |
+| --- | --- | --- |
+| `GET` | `/con-groups` | Listaa output-ryhmät. |
+| `GET` | `/con-groups/{id}` | Hakee output-ryhmän. |
+| `POST` | `/con-groups` | Luo ryhmän. Body: `{ "slug": "Etuvalot", "matrixId": "1", "conPortIds": ["1", "2"] }`. |
+| `PATCH` | `/con-groups/{id}` | Päivittää ryhmän nimen ja/tai outputit. Body: `{ "slug": "...", "conPortIds": ["1", "2"] }`. |
+| `DELETE` | `/con-groups/{id}` | Poistaa ryhmän. |
+| `POST` | `/con-groups/{id}/execute` | Vaihtaa kaikki ryhmän outputit samaan inputtiin. Body: `{ "cpuPortId": "3" }`. Vastaa `202`, kun komennot on asetettu jonoon. |
 
 ### Kaaviot
 | Metodi | Polku | Kuvaus |

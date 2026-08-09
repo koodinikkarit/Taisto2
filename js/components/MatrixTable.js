@@ -1,252 +1,36 @@
-﻿import React from 'react';
-import ReactDOM from 'react-dom';
-import Measure from './Measure';
+import React from 'react';
 
-export default class extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            containerWidth: 0,
-            conTableWidth: 0
-        };
-    }
+const baseCell = { border: "1px solid #e2e8f0", minWidth: "88px", height: "48px", textAlign: "center" };
 
-    checkForConnection() {
-
-    }
-
+export default class MatrixTable extends React.Component {
     render() {
-        var that = this;
-        if (this.props.conPorts && this.props.cpuPorts) {
-            var styles = {
-                divContainer: {
-                    //minWidth: "100px",
-                    whiteSpace: "nowrap",
-                    width: "100%"
-                },
-                conTable: {
-                    display: "inline-block",
-                },
-                cpuTable: {
-                    table: {
-                        display: "inline-block",
-                        overflowX: "auto",
-                        width: this.state.containerWidth-this.state.conTableWidth
-                    },
-                    head: {
-                        //width: "100%"
-                    },
-                    body: {
-                        //width: "100%"
-                    }
-                },
-                matrixRow: {
-                    height: "50px"
-                },
-                matrixCpuColumn: {
-                    border: "solid white 1px",
-                    backgroundColor: "#EEE"                
-                },
-                matrixColumnHeader: {
-                    border: "solid white 1px",
-                    backgroundColor: "#EEE",
-                    minWidth: "70px",
-                },
-                matrixColumn: {
-                    border: "solid white 1px",
-                    backgroundColor: "rgb(179, 229, 220)",
-                    cursor: "pointer"
-                }
-            }
-            var videoConnectionColor = "rgb(244, 158, 66)";
-            var kwmConnectionColor = "red";
-            var videoConnectionAndKwmConnectionColor = "rgb(0, 153, 0)";
-
-            return (
-                <Measure style={{ width: "100%" }} onMeasure={(dimensions) => this.setState({ containerWidth: dimensions.width })}>
-                    <div style={styles.divContainer}>
-                        <Measure onMeasure={(dimensions) => this.setState({ conTableWidth: dimensions.width })}>
-                            <table style={styles.conTable}>
-                                <tbody>
-                                    <tr style={styles.matrixRow}><th style={styles.matrixCpuColumn}></th></tr>
-                                    {this.props.conPorts.map(conPort => (
-                                        <tr style={styles.matrixRow}><th style={styles.matrixCpuColumn}>{conPort.portNum + ". "}{conPort.slug}</th></tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </Measure>
-                        <table style={styles.cpuTable.table}>
-                            <thead style={styles.cpuTable.head}>
-                                <tr style={styles.matrixRow}>
-                                    {this.props.cpuPorts.map(cpuPort => (
-                                        <th style={styles.matrixColumnHeader}>{cpuPort.portNum + ". "}{cpuPort.slug}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody style={styles.cpuTable.body}>
-                                {this.props.conPorts.map(conPort => (
-                                    <tr style={styles.matrixRow}>
-                                        {this.props.cpuPorts.map(cpuPort => {
-                                            var videoConnectionPort = this.props.videoConnections ? this.props.videoConnections[conPort.id] : null;
-                                            var kwmConnectionPort = this.props.kwmConnections ? this.props.kwmConnections[cpuPort.id] : null;
-                                            var newStyle;
-                                            var leftClickAction;
-                                            var rightClickAction;
-                                            if (videoConnectionPort === cpuPort.id && kwmConnectionPort === conPort.id) {
-                                                 newStyle = {...styles.matrixColumn, backgroundColor: videoConnectionAndKwmConnectionColor};
-                                                 leftClickAction = () => {
-                                                    if (this.props.onTurnOffVideoConnection) this.props.onTurnOffVideoConnection(conPort.id);
-                                                 };
-                                                 rightClickAction = () => {
-                                                     if (this.props.onTurnOffKwmConnection) this.props.onTurnOffKwmConnection(cpuPort.id);
-                                                 }
-                                            } else if (videoConnectionPort === cpuPort.id) {
-                                                  newStyle = {...styles.matrixColumn, backgroundColor: videoConnectionColor};
-                                                  leftClickAction = () => {
-                                                      if (this.props.onTurnOffVideoConnection) this.props.onTurnOffVideoConnection(conPort.id);
-                                                  };
-                                                  rightClickAction = () => {
-                                                      if (this.props.onNewKwmConnection) this.props.onNewKwmConnection(conPort.id, cpuPort.id);
-                                                  };
-
-                                            } else if (kwmConnectionPort === conPort.id) {
-                                                newStyle = { ...styles.matrixColumn, backgroundColor: kwmConnectionColor };
-                                                leftClickAction = () => {
-                                                    if (this.props.onNewVideoConnection) this.props.onNewVideoConnection(conPort.id, cpuPort.id);
-                                                };
-                                                rightClickAction = () => {
-                                                    if (this.props.onTurnOffKwmConnection) this.props.onTurnOffKwmConnection(cpuPort.id);
-                                                };
-                                            } else {
-                                                newStyle = styles.matrixColumn;
-                                                leftClickAction = () => {
-                                                    if (this.props.onNewVideoConnection) this.props.onNewVideoConnection(conPort.id, cpuPort.id);
-                                                };
-                                                rightClickAction = () => {
-                                                    if (this.props.onNewKwmConnection) this.props.onNewKwmConnection(conPort.id, cpuPort.id);
-                                                };
-                                            }
-                                            return <td style={newStyle} title={`${cpuPort.portNum}. ${cpuPort.slug} => ${conPort.portNum}. ${conPort.slug}`} onClick={(e) => {
-                                                e.stopPropagation();
-												e.preventDefault();
-												leftClickAction();
-                                            }} onContextMenu={e => {
-                                                e.stopPropagation();
-												e.preventDefault();
-												rightClickAction();
-											}}></td>
-                                        })}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </Measure>
-            )
-        } else {
-            return <h1>Virheelliset parametrit</h1>
-        }
+        const { conPorts, cpuPorts } = this.props;
+        if (!conPorts || !cpuPorts) return <p>Matriisin portteja ei voitu ladata.</p>;
+        return <div>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", marginBottom: "14px", color: "#64748b", fontSize: "13px" }}>
+                <span>Vasen klikkaus vaihtaa videon. Oikea klikkaus vaihtaa KVM-yhteyden.</span>
+                <span><b style={{ color: "#e67e22" }}>Video</b> &nbsp; <b style={{ color: "#b42318" }}>KVM</b> &nbsp; <b style={{ color: "#16794b" }}>Molemmat</b></span>
+            </div>
+            <div style={{ overflowX: "auto", border: "1px solid #dfe5eb", borderRadius: "10px" }}>
+                <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, minWidth: "560px" }}>
+                    <thead><tr>
+                        <th style={{ ...baseCell, position: "sticky", left: 0, zIndex: 1, background: "#edf2f7", color: "#334155", textAlign: "left", padding: "0 12px" }}>{"Output / l\u00e4hde"}</th>
+                        {cpuPorts.map(cpu => <th key={cpu.id} style={{ ...baseCell, background: "#edf2f7", color: "#334155", padding: "6px" }}><small>{cpu.portNum}.</small><br />{cpu.slug}</th>)}
+                    </tr></thead>
+                    <tbody>{conPorts.map(con => <tr key={con.id}>
+                        <th style={{ ...baseCell, position: "sticky", left: 0, zIndex: 1, background: "#f8fafc", color: "#334155", textAlign: "left", padding: "0 12px" }}><small>{con.portNum}.</small> {con.slug}</th>
+                        {cpuPorts.map(cpu => {
+                            const video = this.props.videoConnections && this.props.videoConnections[con.id] === cpu.id;
+                            const kwm = this.props.kwmConnections && this.props.kwmConnections[cpu.id] === con.id;
+                            const color = video && kwm ? "#16794b" : video ? "#e67e22" : kwm ? "#b42318" : "#f8fafc";
+                            const active = video || kwm;
+                            const left = () => video ? this.props.onTurnOffVideoConnection && this.props.onTurnOffVideoConnection(con.id) : this.props.onNewVideoConnection && this.props.onNewVideoConnection(con.id, cpu.id);
+                            const right = () => kwm ? this.props.onTurnOffKwmConnection && this.props.onTurnOffKwmConnection(cpu.id) : this.props.onNewKwmConnection && this.props.onNewKwmConnection(con.id, cpu.id);
+                            return <td key={cpu.id} title={`${cpu.portNum}. ${cpu.slug} → ${con.portNum}. ${con.slug}`} onClick={left} onContextMenu={e => { e.preventDefault(); right(); }} style={{ ...baseCell, background: color, cursor: "pointer", transition: "background .15s", boxShadow: active ? "inset 0 0 0 2px rgba(255,255,255,.45)" : "none" }} />;
+                        })}
+                    </tr>)}</tbody>
+                </table>
+            </div>
+        </div>;
     }
-
 }
-
-
-
-        //var cpuLenght = (this.props.containerWidth / (this.props.cpus.length+1)) - 15 + "px";
-        // var cpuLenght = 100 / this.props.cpus.length + "%";
-        // var conHeight = "50px";
-        // var conLenght = this.props.containerHeight / this.props.cons.lenght;
-        // var minButtonWidth = "90px";
-        // var minButtonHeight = "50px";
-        // var maxButtonWidth = "140px";
-        // var table1MinWidth = 100;
-        // var table1Width = this.props.containerWidth / (this.props.cpus.length + 1);
-        // if (table1Width < table1MinWidth) {
-        //     table1Width = table1MinWidth;
-        // }
-        // var table2MinWidth = 90 * this.props.cpus;
-        // var table2Width = this.props.containerWidth - table1Width;
-        // var table2Width = table2Width - 1;
-
-
-                // <div style={{ width: table1Width, float: "left" }}>
-                //     <table>
-                //         <tbody>
-                //             <tr style={{ maxWidth: "50px", height: "50px" }}></tr>
-                //             {
-                //                 this.props.cons.map(con => {
-                //                     return (<tr key={con.id} style={{ height: "50px" }}><th>{con.name}</th></tr>);
-                //                 })
-                //             }
-                //         </tbody>
-                //     </table>
-                // </div>
-                // <div style={{ width: table2Width, float: "left", overflowX: "auto" }}>
-                //     <table style={{ width: table2Width }}>
-                //         <tbody>
-                //             <tr style={{ height: conHeight, minWidth: minButtonWidth, maxWidth: maxButtonWidth }}>
-                //                 {this.props.cpus.map(cpu => {
-                //                     return (<td key={cpu.id} style={
-                //                         {
-                //                             minHeight: minButtonHeight,
-                //                             minWidth: minButtonWidth,
-                //                             maxWidth: maxButtonWidth,
-                //                             width: cpuLenght
-                //                         }}>{cpu.name}</td>);
-                //                 })}
-                //             </tr>
-                //             {this.props.cons.map((con, index) => {
-                //                 return (
-                //                     <tr key={con.id}>
-                //                         {this.props.cpus.map((cpu, index) => {
-                //                             return (<td key={cpu.id} style={
-                //                                 {
-                //                                     minHeight: minButtonHeight,
-                //                                     minWidth: minButtonWidth,
-                //                                     maxWidth: maxButtonWidth,
-                //                                     width: cpuLenght,
-                //                                     border: "solid white 1px",
-                //                                     backgroundColor: (con.value == index) ? "red" : "rgb(179, 229, 220)",
-                //                                     height: "50px"
-                //                                 }} onClick={() => { if (that.props.onVideoConnectionChange) that.props.onVideoConnectionChange(cpu.id, index); } }></td>);
-                //                         })}
-                //                     </tr>
-                //                 );
-                //             })}
-                //         </tbody>
-                //     </table>
-                // </div>
-
-
-
-//<table>
-//    <thead>
-//        <tr style={{ height: conHeight, minWidth: minButtonWidth, maxWidth: maxButtonWidth }}>
-//            <th></th>
-//            {this.props.cpus.map(cpu => {
-//                return (<th>{cpu}</th>);
-//            }) }
-//        </tr>
-//    </thead>
-//    <tbody>
-//        {this.props.cons.map(con => {
-//            return (
-//                <tr style={{ height: conHeight, minWidth: minButtonWidth, maxWidth: maxButtonWidth }}>
-//                    <th style={{ width: cpuLenght }}>{con}</th>
-//                    {this.props.cpus.map(cpu => {
-//                        return (
-//                            <td style={
-//                                {
-//                                    minHeight: minButtonHeight,
-//                                    minWidth: minButtonWidth,
-//                                    maxWidth: maxButtonWidth,
-//                                    width: cpuLenght,
-//                                    border: "solid 1px black"
-//                                }}></td>
-//                        )
-//                    }) }
-//                </tr>);
-//        }) }
-
-//    </tbody>
-//</table>

@@ -15,7 +15,12 @@
 		"build": "webpack --mode production",
 		"dev": "cross-env NODE_ENV=development babel-node app.js -- -d -p 1337",
 		"watch": "cross-env NODE_ENV=development nodemon --watch backend --watch js --watch app.js --exec \"babel-node app.js -- -d -p 1337\"",
-		"testmatrix": "babel-node ./tests/MatrixTest.js"
+		"testmatrix": "babel-node ./tests/MatrixTest.js",
+		"mock:reset": "node scripts/reset-mock-data.js",
+		"db:migrate": "babel-node scripts/migrate-json-to-sqlite.js",
+		"db:export-json": "babel-node scripts/export-sqlite-to-json.js",
+		"dev:mock": "npm run mock:reset && npm run dev",
+		"start:mock": "npm run mock:reset && npm start"
 	},
 	"dependencies": {
 		"@apollo/client": "^3.14.1",

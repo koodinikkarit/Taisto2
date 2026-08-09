@@ -11,11 +11,6 @@ import {
 	TURN_OFF_CPU_PORT
 } from "./MatrixCommands";
 
-import {
-	db
-} from "../TaistoService";
-
-
 var connections = {};
 var emitters = {};
 
@@ -27,7 +22,8 @@ export default class extends Immutable.Record({
 	port: "",
     slug: "",
     numberOfConPorts: 0,
-    numberOfCpuPorts: 0
+    numberOfCpuPorts: 0,
+    mock: false
 }) {
 	constructor(props) {
 		super(props);
@@ -38,12 +34,20 @@ export default class extends Immutable.Record({
 	}
 
 	setVideoConnection(con, cpu) {
+		if (this.mock) {
+			emitMatrixEvent(this.id, "SET_VIDEO_CONNECTION", con, cpu);
+			return;
+		}
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
 			connection.write(new Buffer([2, SET_VIDEO_CONNECTION, 128+con, 128+cpu, 3]));
 		});
 	}
 
 	turnOffVideoConnection(con) {
+		if (this.mock) {
+			emitMatrixEvent(this.id, "TURN_OFF_CON_PORT", con);
+			return;
+		}
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
 			connection.write(new Buffer([2, TURN_OFF_CON_PORT, 128+con, 3]));
 		});
@@ -62,12 +66,20 @@ export default class extends Immutable.Record({
 	}
 
 	setKwmConnection(cpu, con) {
+		if (this.mock) {
+			emitMatrixEvent(this.id, "SET_KWM_CONNECTION", cpu, con);
+			return;
+		}
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
 			connection.write(new Buffer([2, SET_KWM_CONNECTION, 128+cpu, 128+con, 3]));
 		});
 	}
 
 	turnOffKwmConnection(cpu) {
+		if (this.mock) {
+			emitMatrixEvent(this.id, "TURN_OFF_CPU_PORT", cpu);
+			return;
+		}
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
 			connection.write(new Buffer([2, TURN_OFF_CPU_PORT, 128+cpu, 3]));
 		});
@@ -82,6 +94,10 @@ export default class extends Immutable.Record({
 	}
 
 	requestAllStates() {
+		if (this.mock) {
+			emitMatrixEvent(this.id, "REQUEST_ALL_STATES", {}, {});
+			return;
+		}
 		createConnection(this.id, this.ip, this.port, this.numberOfConPorts, this.numberOfCpuPorts).then(connection => {
 			connection.write(new Buffer([2, REQUEST_ALL_STATES, 3]));
 		});
@@ -108,12 +124,17 @@ export default class extends Immutable.Record({
     }
 
 	get conPorts() {
-		return db.conPorts.filter(p => p.matrixId === this.id).sort((a, b) => a.portNum - b.portNum);
+		return getDatabase().conPorts.filter(p => p.matrixId === this.id).sort((a, b) => a.portNum - b.portNum);
 	}
 
 	get cpuPorts() {
-		return db.cpuPorts.filter(p => p.matrixId === this.id).sort((a, b) => a.portNum - b.portNum);
+		return getDatabase().cpuPorts.filter(p => p.matrixId === this.id).sort((a, b) => a.portNum - b.portNum);
 	}
+}
+
+// Resolve the service lazily so Matrix can also be imported independently in tests.
+function getDatabase() {
+	return require("../TaistoService").db;
 }
 
 function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
@@ -150,6 +171,7 @@ function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
                                     emitter.emit("TURN_OFF_CPU_PORT", data[2]-128);
                                     break;
                                 case REQUEST_ALL_STATES:
+									var db = getDatabase();
                                     var conConnections = {}
                                     var cpuConnections = {};
                                     for (var i = 2; i < 2 + numberOfConPorts;i++) {
@@ -188,4 +210,9 @@ function createConnection(id, ip, port, numberOfConPorts, numberOfCpuPorts) {
 			}
 		}
 	});
+}
+
+function emitMatrixEvent(id, eventType, ...args) {
+	const emitter = emitters[id];
+	if (emitter) emitter.emit(eventType, ...args);
 }

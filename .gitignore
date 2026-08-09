@@ -7,4 +7,9 @@ public/app.js.map
 saves/*
 debug.log
 database.json
+database/*.sqlite
+database/*.sqlite-*
+database/database.pre-sqlite-backup.*.json
+database/database-export-*.json
+database/*.log
 npm-debug.log*

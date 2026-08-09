@@ -1,5 +1,6 @@
 import React from 'react';
-import { graphql, compose } from '@apollo/client/react/hoc';
+import { graphql } from '@apollo/client/react/hoc';
+import { compose } from 'redux';
 import gql from 'graphql-tag';
 
 class DefaultStateSelect extends React.Component {

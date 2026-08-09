@@ -17,6 +17,9 @@ export default class extends Immutable.Record({
     nextWeeklyTimerVideoConnectionId: 1,
     nextWeeklyTimerKwmConnectionId: 1,
     nextWeeklyTimerDefaultStateId: 1,
+	nextConGroupId: 1,
+	restApiKeys: [],
+	restApiAnonymousUntil: "",
 	matrixs: new Map(),
     conPorts: new Map(),
     cpuPorts: new Map(),
@@ -29,7 +32,8 @@ export default class extends Immutable.Record({
     weeklyTimers: new Map(),
     weeklyTimerVideoConnections: new Map(),
     weeklyTimerKwmConnections: new Map(),
-    weeklyTimerDefaultStates: new Map()
+	weeklyTimerDefaultStates: new Map(),
+	conGroups: new Map()
 }) {
 
 

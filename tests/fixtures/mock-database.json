@@ -1,0 +1,53 @@
+{
+  "nextMatrixId": 2,
+  "nextConPortId": 5,
+  "nextCpuPortId": 5,
+  "nextDiagramId": 2,
+  "nextDiagramScreenId": 3,
+  "nextDiagramScreenCpuPortId": 5,
+  "nextDefaultStateId": 2,
+  "nextDefaultStateVideoConnectionId": 5,
+  "nextDefaultStateKwmConnectionId": 1,
+  "nextWeeklyTimerId": 2,
+  "nextWeeklyTimerVideoConnectionId": 1,
+  "nextWeeklyTimerKwmConnectionId": 1,
+  "nextWeeklyTimerDefaultStateId": 2,
+	"nextConGroupId": 1,
+  "matrixs": { "1": { "id": 1, "ip": "192.0.2.10", "port": 5555, "slug": "Demo-matriisi", "numberOfConPorts": 4, "numberOfCpuPorts": 4, "mock": true } },
+  "conPorts": {
+    "1": { "id": 1, "slug": "Demo-näyttö 1", "matrixId": 1, "portNum": 1 },
+    "2": { "id": 2, "slug": "Demo-näyttö 2", "matrixId": 1, "portNum": 2 },
+    "3": { "id": 3, "slug": "Demo-tallennin", "matrixId": 1, "portNum": 3 },
+    "4": { "id": 4, "slug": "Demo-esiintyjä", "matrixId": 1, "portNum": 4 }
+  },
+  "cpuPorts": {
+    "1": { "id": 1, "slug": "Demo-PC 1", "matrixId": 1, "portNum": 1 },
+    "2": { "id": 2, "slug": "Demo-PC 2", "matrixId": 1, "portNum": 2 },
+    "3": { "id": 3, "slug": "Demo-kamera", "matrixId": 1, "portNum": 3 },
+    "4": { "id": 4, "slug": "Demo-ohjelma", "matrixId": 1, "portNum": 4 }
+  },
+  "diagrams": { "1": { "id": 1, "slug": "Demo-sali" } },
+  "diagramScreens": {
+    "1": { "id": 1, "slug": "Etunäyttö", "diagramId": 1, "matrixId": 1, "conPortId": 1 },
+    "2": { "id": 2, "slug": "Takaseinä", "diagramId": 1, "matrixId": 1, "conPortId": 2 }
+  },
+  "diagramScreenCpuPorts": {
+    "1": { "id": 1, "diagramScreenId": 1, "cpuPortId": 1 },
+    "2": { "id": 2, "diagramScreenId": 1, "cpuPortId": 3 },
+    "3": { "id": 3, "diagramScreenId": 2, "cpuPortId": 2 },
+    "4": { "id": 4, "diagramScreenId": 2, "cpuPortId": 4 }
+  },
+  "defaultStates": { "1": { "id": 1, "slug": "Demo-perustila", "matrixId": 1 } },
+  "defaultStateVideoConnections": {
+    "1": { "id": 1, "conPortId": 1, "cpuPortId": 1, "defaultStateId": 1 },
+    "2": { "id": 2, "conPortId": 2, "cpuPortId": 2, "defaultStateId": 1 },
+    "3": { "id": 3, "conPortId": 3, "cpuPortId": 3, "defaultStateId": 1 },
+    "4": { "id": 4, "conPortId": 4, "cpuPortId": 4, "defaultStateId": 1 }
+  },
+  "defaultStateKwmConnections": {},
+  "weeklyTimers": { "1": { "id": 1, "slug": "Demo-ajastus", "minutes": 0, "hours": 9, "active": false, "monday": true, "tuesday": false, "wednesday": false, "thursday": false, "friday": false, "saturday": false, "sunday": false } },
+  "weeklyTimerVideoConnections": {},
+  "weeklyTimerKwmConnections": {},
+  "weeklyTimerDefaultStates": { "1": { "id": 1, "weeklyTimerId": 1, "defaultStateId": 1 } },
+  "conGroups": {}
+}

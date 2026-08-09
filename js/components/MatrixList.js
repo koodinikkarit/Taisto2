@@ -1,7 +1,8 @@
 import React from 'react';
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { graphql, compose } from '@apollo/client/react/hoc';
+import { graphql } from '@apollo/client/react/hoc';
+import { compose } from 'redux';
 import gql from 'graphql-tag';
 
 import Settings from "../containers/Settings";

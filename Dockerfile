@@ -5,6 +5,7 @@ WORKDIR /usr/src
 COPY backend backend
 COPY js js
 COPY public public
+COPY scripts scripts
 ADD .babelrc ./.babelrc
 ADD package.json package.json
 ADD package-lock.json package-lock.json

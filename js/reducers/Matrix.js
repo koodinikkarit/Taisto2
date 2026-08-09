@@ -30,7 +30,7 @@ export default function (state = initialState, action) {
 			});
 		case NEW_KWM_CONNECTION:
 			return Object.assign({}, state, {
-				kwmConnections: state.kwmConnections.set(action.con, action.cpu)
+				kwmConnections: state.kwmConnections.set(action.cpu, action.con)
 			});
 		case NEW_VIDEO_CONNECTIONS:
 			return Object.assign({}, state, {

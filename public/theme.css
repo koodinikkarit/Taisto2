@@ -1,0 +1,198 @@
+:root {
+  --taisto-primary: #1668b8;
+  --taisto-primary-dark: #104d87;
+  --taisto-ink: #172b3a;
+  --taisto-muted: #64748b;
+  --taisto-border: #dce4ec;
+  --taisto-surface: #ffffff;
+  --taisto-background: #f4f7fa;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--taisto-background);
+  color: var(--taisto-ink);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#root { padding-top: 20px; padding-bottom: 56px; }
+
+.taisto-app > .row,
+.taisto-app > main,
+.taisto-app > .jumbotron {
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.navbar.bg-inverse {
+  background: #172b3a !important;
+  box-shadow: 0 2px 10px rgba(15, 38, 57, .18);
+}
+
+.navbar-brand { font-weight: 700; letter-spacing: .01em; }
+.navbar-inverse .navbar-nav .nav-link { color: #dbe7f0; }
+.navbar-inverse .navbar-nav .nav-link:hover { color: #fff; }
+.navbar-inverse .navbar-nav .nav-link.active,
+.navbar-inverse .navbar-nav .nav-link:focus { color: #fff; }
+.navbar .form-control { min-height: 36px; border: 0; box-shadow: none; }
+
+.taisto-navigation { padding: 0; min-height: 56px; }
+.taisto-navigation-inner { width: 100%; max-width: 1320px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; min-height: 56px; }
+.taisto-navigation-top { display: flex; align-items: center; }
+.taisto-navigation .navbar-brand { margin-right: 24px; }
+.taisto-navigation-menu { display: flex; flex: 1; align-items: center; }
+.taisto-navigation-menu .navbar-nav { display: flex; flex-direction: row; }
+.taisto-navigation-menu .nav-link { padding: 17px 12px; font-weight: 500; }
+.taisto-language { width: 120px; margin-left: auto; }
+.taisto-navigation-toggle { display: none; width: 40px; height: 36px; border: 1px solid rgba(255,255,255,.32); border-radius: 7px; background: transparent; padding: 8px; }
+.taisto-navigation-toggle span { display: block; height: 2px; margin: 3px 0; background: #fff; border-radius: 4px; }
+
+h1, h2, h3, h4 { color: var(--taisto-ink); font-weight: 650; letter-spacing: -.015em; }
+h1 { margin-bottom: 18px; }
+h2 { margin-top: 26px; margin-bottom: 14px; font-size: 25px; }
+h3 { font-size: 20px; }
+p { line-height: 1.55; }
+
+.jumbotron {
+  background: linear-gradient(135deg, #eef5fb 0%, #f8fafc 100%);
+  border: 1px solid var(--taisto-border);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(24, 39, 75, .05);
+}
+
+/* Legacy pages use Bootstrap rows directly. Give their lists and forms the same card language. */
+.taisto-app main,
+.taisto-app > .row > .col,
+.taisto-app > .row > [class*="col-"] {
+  min-width: 0;
+}
+
+.taisto-app .row + .row { margin-top: 18px; }
+.taisto-app .row-fluid { margin-bottom: 16px; }
+.taisto-app label { font-weight: 600; color: #40566b; margin-bottom: 6px; }
+.taisto-app input[type="checkbox"] { accent-color: var(--taisto-primary); }
+
+.taisto-app .table {
+  background: #fff;
+  border: 1px solid var(--taisto-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.taisto-app .table th {
+  background: #edf2f7;
+  color: #40566b;
+  border-color: var(--taisto-border);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.taisto-app .table td { border-color: #e3eaf1; vertical-align: middle; }
+.taisto-app .table-bordered td,
+.taisto-app .table-bordered th { border-color: var(--taisto-border); }
+
+.taisto-app .alert {
+  border: 0;
+  border-radius: 9px;
+  box-shadow: 0 2px 8px rgba(24, 39, 75, .05);
+}
+.taisto-app .alert-info { background: #eaf5ff; color: #15578a; }
+.taisto-app .alert-secondary { background: #eef2f6; color: #40566b; }
+
+.taisto-app .btn-default,
+.taisto-app .btn-outline-secondary {
+  background: #eef3f7;
+  border-color: #d6e0e9;
+  color: #40566b;
+}
+.taisto-app .btn-info { background: #2289b7; border-color: #2289b7; }
+.taisto-app .btn-outline-danger { border-color: #ce4f4f; color: #b83d3d; }
+.taisto-app .btn-outline-danger:hover { background: #ce4f4f; color: #fff; }
+
+.taisto-app .list-group { background: #fff; }
+.taisto-app .list-group-item { min-height: 58px; display: flex; align-items: center; }
+.taisto-app .list-group-item .row { flex: 1; align-items: center; }
+
+.sidebar { padding: 14px !important; }
+.sidebar .nav-link { padding: 10px 12px; font-weight: 600; }
+.sidebar .nav-link:not(.active):hover { background: #edf6ff; color: var(--taisto-primary-dark); }
+.sidebar + main { padding: 24px 28px !important; }
+
+.card, .list-group {
+  border: 1px solid var(--taisto-border);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(24, 39, 75, .05);
+  overflow: hidden;
+}
+
+.card { border-radius: 10px; }
+.card-header { background: #f8fafc; border-bottom-color: var(--taisto-border); }
+.card-block, .card-body { padding: 20px; }
+
+.list-group-item {
+  border-color: #e5ebf0;
+  padding: 15px 18px;
+}
+
+.list-group-item-action:hover,
+.list-group-item-action:focus {
+  color: var(--taisto-primary-dark);
+  background: #edf6ff;
+}
+
+.form-control {
+  min-height: 42px;
+  border-color: #cbd7e2;
+  border-radius: 7px;
+  color: var(--taisto-ink);
+}
+
+.form-control:focus {
+  border-color: var(--taisto-primary);
+  box-shadow: 0 0 0 .18rem rgba(22, 104, 184, .16);
+}
+
+.btn {
+  min-height: 38px;
+  border-radius: 7px;
+  font-weight: 600;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(15, 38, 57, .15); }
+.btn-primary { background: var(--taisto-primary); border-color: var(--taisto-primary); }
+.btn-success { background: #249b59; border-color: #249b59; }
+.btn-danger { background: #ce4f4f; border-color: #ce4f4f; }
+
+.sidebar {
+  background: #fff;
+  border-right-color: var(--taisto-border) !important;
+  box-shadow: 1px 0 5px rgba(24, 39, 75, .03);
+}
+
+.nav-pills .nav-link { color: #41566a; border-radius: 7px; margin-bottom: 4px; }
+.nav-pills .nav-link.active { background: var(--taisto-primary); }
+
+details { margin-top: 22px; padding: 12px 0; }
+summary { cursor: pointer; color: var(--taisto-primary-dark); font-weight: 600; }
+
+@media (max-width: 860px) {
+  body { padding-top: 56px !important; }
+  #root { padding-top: 8px; }
+  .jumbotron { padding: 22px; }
+  h1 { font-size: 30px; }
+  .sidebar { position: static !important; min-height: auto !important; border-right: 0 !important; border-bottom: 1px solid var(--taisto-border); }
+  .sidebar + main { padding: 20px 15px !important; }
+  .taisto-app .list-group-item { padding: 12px; }
+  .taisto-navigation-inner { display: block; padding: 0 12px; }
+  .taisto-navigation-top { min-height: 56px; justify-content: space-between; }
+  .taisto-navigation .navbar-brand { margin: 0; }
+  .taisto-navigation-toggle { display: block; }
+  .taisto-navigation-menu { display: none; padding: 4px 0 14px; border-top: 1px solid rgba(255,255,255,.14); }
+  .taisto-navigation-menu.is-open { display: block; }
+  .taisto-navigation-menu .navbar-nav { display: block; margin: 4px 0 10px; }
+  .taisto-navigation-menu .nav-link { display: block; padding: 10px 8px; border-radius: 6px; }
+  .taisto-navigation-menu .nav-link:hover { background: rgba(255,255,255,.1); }
+  .taisto-language { width: 100%; margin: 4px 0 0; }
+}

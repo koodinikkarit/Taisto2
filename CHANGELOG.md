@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+### Added
+- Added normalized SQLite persistence with schema migrations, transactions, foreign keys, and WAL journaling.
+- Added automatic one-time migration from `database/database.json`, including a timestamped JSON backup.
+- Added commands for explicit JSON-to-SQLite migration and SQLite-to-JSON export.
+
+### Changed
+- Application data, output groups, and REST API keys are now persisted in `database/taisto.sqlite`.
+- REST API keys remain stored in plaintext so they can be viewed again in Settings.
+
 ## [0.1.15] - 2026-08-09
 ### Fixed
 - Fixed route parameter handling in diagram, matrix, and default-state detail views, preventing blank pages when opening an item by name.

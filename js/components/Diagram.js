@@ -30,16 +30,22 @@ class Diagram extends React.Component {
         }
     }
     render() {
-        styles.customDiagramContainer.paddingBottom = (100 / this.props.aspectRatio) + "%";
+        const diagram = this.props.diagram;
         return (
-            <ul className="list-group">
-                {this.props.diagram && this.props.diagram.diagramScreens ? this.props.diagram.diagramScreens.map(diagramScreen => (
-                    <li className="list-group-item">
-                        <ActionShortcut diagramScreenId={diagramScreen.id} /> 
-                    </li>  
-                )) : ""}
-
-            </ul>
+            <main style={{ maxWidth: "1080px", margin: "0 auto", padding: "18px 0 48px" }}>
+                <div style={{ marginBottom: "24px" }}>
+                    <h1 style={{ marginBottom: "6px" }}>{diagram ? diagram.slug : "Kaavio"}</h1>
+                    <p style={{ margin: 0, color: "#64748b" }}>Valitse jokaiselle näytölle haluamasi lähde.</p>
+                </div>
+                <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "16px" }}>
+                    {diagram && diagram.diagramScreens ? diagram.diagramScreens.map(diagramScreen => (
+                        <li key={diagramScreen.id}>
+                            <ActionShortcut diagramScreenId={diagramScreen.id} />
+                        </li>
+                    )) : ""}
+                </ul>
+                {diagram && !diagram.diagramScreens.length && <div className="alert alert-info">Kaaviossa ei ole vielä näyttöjä.</div>}
+            </main>
         );
     }
 }
@@ -49,6 +55,7 @@ export default graphql(gql`
 query ($slug: String!) {
     diagram: diagramBySlug(slug: $slug) {
         id
+		slug
         diagramScreens {
             id
             slug

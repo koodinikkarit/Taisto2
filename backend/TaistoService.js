@@ -1,7 +1,13 @@
 var net = require("net");
 var events = require("events");
 
-import fs from "fs";
+import crypto from "crypto";
+import {
+	initializeDatabaseStorage,
+	saveDatabase,
+	exportDatabaseToJson,
+	getSqlitePath
+} from "./storage/SqliteStorage";
 
 import TaistoDb from "./records/TaistoDb";
 import Matrix from "./records/Matrix";
@@ -17,6 +23,7 @@ import WeeklyTimer from "./records/WeeklyTimer";
 import WeeklyTimerVideConnection from "./records/WeeklyTimerVideoConnection";
 import WeeklyTimerKwmConnection from "./records/WeeklyTimerKwmConnection";
 import WeeklyTimerDefaultState from "./records/WeeklyTimerDefaultState";
+import ConGroup from "./records/ConGroup";
 
 import { Map } from "immutable";
 
@@ -38,9 +45,12 @@ var tcpServer = net.createServer(function(socket) {
 
 var saveScheduled = false;
 
-fs.readFile("./database/database.json", "utf8", (err, data) => {
-	if (!err && data !== "undefined") {
-		var loadedDatabase = JSON.parse(data);
+const loadedDatabase = initializeDatabaseStorage({
+	sqlitePath: "./database/taisto.sqlite",
+	jsonPath: "./database/database.json"
+});
+
+if (loadedDatabase) {
 		db = db.withMutations(db => {
 			db.nextMatrixId = loadedDatabase.nextMatrixId
 				? loadedDatabase.nextMatrixId
@@ -72,8 +82,8 @@ fs.readFile("./database/database.json", "utf8", (err, data) => {
 			db.nextWeeklyTimerId = loadedDatabase.nextWeeklyTimerId
 				? loadedDatabase.nextWeeklyTimerId
 				: 1;
-			db.nextWeeklyTimerVideoConnectionsId = loadedDatabase.nextWeeklyTimerVideoConnectionsId
-				? loadedDatabase.nextWeeklyTimerVideoConnectionsId
+			db.nextWeeklyTimerVideoConnectionId = loadedDatabase.nextWeeklyTimerVideoConnectionId
+				? loadedDatabase.nextWeeklyTimerVideoConnectionId
 				: 1;
 			db.nextWeeklyTimerKwmConnectionId = loadedDatabase.nextWeeklyTimerKwmConnectionId
 				? loadedDatabase.nextWeeklyTimerKwmConnectionId
@@ -81,6 +91,13 @@ fs.readFile("./database/database.json", "utf8", (err, data) => {
 			db.nextWeeklyTimerDefaultStateId = loadedDatabase.nextWeeklyTimerDefaultStateId
 				? loadedDatabase.nextWeeklyTimerDefaultStateId
 				: 1;
+			db.nextConGroupId = loadedDatabase.nextConGroupId
+				? loadedDatabase.nextConGroupId
+				: 1;
+			db.restApiKeys = Array.isArray(loadedDatabase.restApiKeys)
+				? loadedDatabase.restApiKeys.map(key => Object.assign({ enabled: true, name: "Nimetön avain", useCount: 0, lastUsedAt: "" }, key))
+				: [];
+			db.restApiAnonymousUntil = loadedDatabase.restApiAnonymousUntil || "";
 
 			if (loadedDatabase.matrixs) {
 				db.matrixs = db.matrixs.withMutations(matrixs => {
@@ -266,30 +283,33 @@ fs.readFile("./database/database.json", "utf8", (err, data) => {
 					}
 				);
 			}
+			if (loadedDatabase.conGroups) {
+				db.conGroups = db.conGroups.withMutations(conGroups => {
+					Object.keys(loadedDatabase.conGroups).forEach(id => {
+						conGroups.set(parseInt(id), new ConGroup(loadedDatabase.conGroups[id]));
+					});
+				});
+			}
 		});
 		db.matrixs.forEach(matrix => {
 			registerMatrixEvents(matrix);
 		});
+		initializeMockMatrixStates();
 	}
-});
 
 export const setDb = newDatabase => {
 	if (newDatabase !== db) {
 		db = newDatabase;
 		if (!saveScheduled) {
 			setTimeout(() => {
-				fs.writeFile(
-					"./database/database.json",
-					JSON.stringify(db),
-					err => {
-						if (!err) {
-							saveScheduled = false;
-							console.log("saved");
-						} else {
-							console.log("error while saving", err);
-						}
-					}
-				);
+				try {
+					saveDatabase(JSON.parse(JSON.stringify(db)));
+					console.log("saved to sqlite");
+				} catch (error) {
+					console.log("error while saving", error);
+				} finally {
+					saveScheduled = false;
+				}
 			}, 2000);
 			saveScheduled = true;
 		}
@@ -526,6 +546,143 @@ export const executeDefaultState = defaultStateId => {
 	}
 };
 
+export const exportDatabase = outputPath => exportDatabaseToJson(outputPath);
+export const getDatabasePath = () => getSqlitePath();
+
+export const getRestApiKeyStatus = () => ({
+	configured: db.restApiKeys.length > 0,
+	keys: db.restApiKeys.map(key => Object.assign({}, key)),
+	anonymousUntil: db.restApiAnonymousUntil || "",
+	anonymousActive: Boolean(db.restApiAnonymousUntil && new Date(db.restApiAnonymousUntil).getTime() > Date.now())
+});
+
+export const createRestApiKey = (name, expiresInDays) => {
+	const apiKey = `taisto_${crypto.randomBytes(32).toString("base64url")}`;
+	const days = Number(expiresInDays);
+	const expiresAt = Number.isFinite(days) && days > 0
+		? new Date(Date.now() + Math.min(days, 3650) * 24 * 60 * 60 * 1000).toISOString()
+		: "";
+	const key = {
+		id: crypto.randomBytes(12).toString("hex"),
+		key: apiKey,
+		name: String(name || "").trim().slice(0, 80) || "Nimetön avain",
+		createdAt: new Date().toISOString(),
+		expiresAt,
+		enabled: true,
+		useCount: 0,
+		lastUsedAt: ""
+	};
+	setDb(db.set("restApiKeys", db.restApiKeys.concat(key)));
+	return key;
+};
+
+export const revokeRestApiKey = id => {
+	const nextKeys = db.restApiKeys.filter(key => key.id !== id);
+	if (nextKeys.length === db.restApiKeys.length) return false;
+	setDb(db.set("restApiKeys", nextKeys));
+	return true;
+};
+
+export const setRestApiKeyEnabled = (id, enabled) => {
+	const index = db.restApiKeys.findIndex(key => key.id === id);
+	if (index === -1) return null;
+	const nextKeys = db.restApiKeys.map(key => key.id === id ? Object.assign({}, key, { enabled: Boolean(enabled) }) : key);
+	setDb(db.set("restApiKeys", nextKeys));
+	return nextKeys[index];
+};
+
+export const setRestApiKeyName = (id, name) => {
+	const index = db.restApiKeys.findIndex(key => key.id === id);
+	if (index === -1) return null;
+	const normalizedName = String(name || "").trim().slice(0, 80) || "Nimetön avain";
+	const nextKeys = db.restApiKeys.map(key => key.id === id ? Object.assign({}, key, { name: normalizedName }) : key);
+	setDb(db.set("restApiKeys", nextKeys));
+	return nextKeys[index];
+};
+
+export const setRestApiKeyExpiration = (id, expiresAt) => {
+	const index = db.restApiKeys.findIndex(key => key.id === id);
+	if (index === -1) return null;
+	let normalizedExpiration = "";
+	if (expiresAt) {
+		const timestamp = new Date(expiresAt).getTime();
+		if (!Number.isFinite(timestamp)) return false;
+		normalizedExpiration = new Date(timestamp).toISOString();
+	}
+	const nextKeys = db.restApiKeys.map(key => key.id === id ? Object.assign({}, key, { expiresAt: normalizedExpiration }) : key);
+	setDb(db.set("restApiKeys", nextKeys));
+	return nextKeys[index];
+};
+
+export const allowAnonymousRestApi = durationMinutes => {
+	const minutes = Number(durationMinutes);
+	if (!Number.isFinite(minutes) || minutes < 1 || minutes > 43200) return null;
+	const anonymousUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
+	setDb(db.set("restApiAnonymousUntil", anonymousUntil));
+	return anonymousUntil;
+};
+
+export const disableAnonymousRestApi = () => {
+	setDb(db.set("restApiAnonymousUntil", ""));
+};
+
+export const validateRestApiKey = apiKey => {
+	if (!apiKey) return false;
+	const validKey = db.restApiKeys.find(entry => {
+		if (entry.enabled === false) return false;
+		if (entry.expiresAt && new Date(entry.expiresAt).getTime() <= Date.now()) return false;
+		const actual = Buffer.from(apiKey);
+		const expected = Buffer.from(entry.key || "");
+		return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+	});
+	if (!validKey) return false;
+	const nextKeys = db.restApiKeys.map(entry => entry.id === validKey.id
+		? Object.assign({}, entry, { useCount: Number(entry.useCount || 0) + 1, lastUsedAt: new Date().toISOString() })
+		: entry);
+	setDb(db.set("restApiKeys", nextKeys));
+	return true;
+};
+
+export const createConGroup = (slug, matrixId, conPortIds) => {
+	let conGroup;
+	setDb(db.withMutations(database => {
+		const id = database.nextConGroupId++;
+		conGroup = new ConGroup({ id, slug, matrixId, conPortIds });
+		database.conGroups = database.conGroups.set(id, conGroup);
+	}));
+	return conGroup;
+};
+
+export const updateConGroup = (id, slug, conPortIds) => {
+	let conGroup = db.conGroups.get(id);
+	if (!conGroup) return null;
+	conGroup = conGroup.withMutations(group => {
+		if (slug != null) group.slug = slug;
+		if (conPortIds != null) group.conPortIds = conPortIds;
+	});
+	setDb(db.set("conGroups", db.conGroups.set(id, conGroup)));
+	return conGroup;
+};
+
+export const removeConGroup = id => {
+	if (!db.conGroups.has(id)) return false;
+	setDb(db.set("conGroups", db.conGroups.delete(id)));
+	return true;
+};
+
+export const executeConGroup = (id, cpuPortId) => {
+	const group = db.conGroups.get(id);
+	const cpuPort = db.cpuPorts.get(cpuPortId);
+	if (!group || !cpuPort || cpuPort.matrixId !== group.matrixId) return false;
+	const conPorts = group.conPorts;
+	if (!conPorts.length || conPorts.some(conPort => conPort.matrixId !== group.matrixId)) return false;
+	conPorts.forEach((conPort, index) => {
+		setTimeout(() => conPort.setValue(cpuPort.id), index * 10);
+	});
+	setTimeout(() => group.matrix.requestAllStates(), Math.max(300, conPorts.length * 10 + 50));
+	return true;
+};
+
 export const createWeeklyTimer = slug => {
 	var weeklyTimer;
 	setDb(
@@ -646,6 +803,20 @@ function registerMatrixEvents(matrix) {
 	matrix.on("MATRIX_CONNECTION_STATE_CHANGED", matrixConnectionStateChanged);
 
 	function requestAllStates(videoConnections, kwmConnections) {
+		if (matrix.mock) {
+			videoConnections = {};
+			kwmConnections = {};
+			db.conPorts.forEach(conPort => {
+				if (conPort.matrixId === id && currentVideoConnections[String(conPort.id)]) {
+					videoConnections[String(conPort.id)] = currentVideoConnections[String(conPort.id)];
+				}
+			});
+			db.cpuPorts.forEach(cpuPort => {
+				if (cpuPort.matrixId === id && currentKwmConnections[String(cpuPort.id)]) {
+					kwmConnections[String(cpuPort.id)] = currentKwmConnections[String(cpuPort.id)];
+				}
+			});
+		}
 		if (db.matrixs.has(id)) {
 			if (videoConnections) {
 				currentVideoConnections = Object.assign(
@@ -738,12 +909,32 @@ function registerMatrixEvents(matrix) {
 	matrix.requestAllStates();
 }
 
+function initializeMockMatrixStates() {
+	db.defaultStateVideoConnections.forEach(connection => {
+		const conPort = db.conPorts.get(connection.conPortId);
+		const cpuPort = db.cpuPorts.get(connection.cpuPortId);
+		const matrix = conPort && db.matrixs.get(conPort.matrixId);
+		if (matrix && matrix.mock && cpuPort && cpuPort.matrixId === matrix.id) {
+			currentVideoConnections[String(conPort.id)] = String(cpuPort.id);
+		}
+	});
+	db.defaultStateKwmConnections.forEach(connection => {
+		const conPort = db.conPorts.get(connection.conPortId);
+		const cpuPort = db.cpuPorts.get(connection.cpuPortId);
+		const matrix = cpuPort && db.matrixs.get(cpuPort.matrixId);
+		if (matrix && matrix.mock && conPort && conPort.matrixId === matrix.id) {
+			currentKwmConnections[String(cpuPort.id)] = String(conPort.id);
+		}
+	});
+}
+
 export const removeMatrix = id => {
 	setDb(
 		db.withMutations(db => {
 			var matrix = db.matrixs.get(id);
 			if (matrix) matrix.destroy();
 			db.matrixs = db.matrixs.delete(id);
+			db.conGroups = db.conGroups.filterNot(group => group.matrixId === id);
 
 			db.defaultStateKwmConnections = db.defaultStateKwmConnections.filterNot(
 				p =>

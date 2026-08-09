@@ -13,6 +13,18 @@ npm run dev
 
 Sovellus avautuu osoitteessa `http://localhost:1337`. Tuotantotilassa käytä `npm start`. Selainpaketin rakentaa `npm run build` ja matriisitestin ajaa `npm run testmatrix`.
 
+### Anonymisoitu mock-data
+
+Projektissa on anonymisoitu testitietokanta tiedostossa [tests/fixtures/mock-database.json](tests/fixtures/mock-database.json). Se perustuu tuotantotietokannan rakenteeseen, mutta sisältää vain kuvitteellisia matriiseja, IP-osoitteita ja laitenimiä. Mock-matriisin osoite `192.0.2.10` kuuluu dokumentaatiolle varattuun TEST-NET-alueeseen. Sen `mock: true` -asetus simuloi kytkentäpalautteet paikallisesti, joten **Vaihda laite** toimii ilman oikeaa laitetta.
+
+Käynnistä sovellus mock-datalla:
+
+```powershell
+npm run dev:mock
+```
+
+Komento kopioi mock-datan väliaikaiseen `database/database.json`-tiedostoon, poistaa paikallisen mock-SQLite-tietokannan ja käynnistää kehityspalvelimen. Ensimmäinen käynnistys tuo JSON-datan automaattisesti tiedostoon `database/taisto.sqlite`. Voit palauttaa mock-datan ilman palvelimen käynnistämistä komennolla `npm run mock:reset`. Älä käytä näitä komentoja tuotantopalvelimella: ne korvaavat paikallisen tietokannan.
+
 ## Käyttöliittymä
 
 - Kieli voidaan vaihtaa suomen ja englannin välillä valikosta.
@@ -46,6 +58,12 @@ docker pull ghcr.io/koodinikkarit/taisto2:latest
 docker run --rm -p 1337:80 -e TAISTO_PASSWORD="vahva-salasana" ghcr.io/koodinikkarit/taisto2:latest
 ```
 
+Tuotannossa tietokantahakemisto liitetään pysyvään levyyn:
+
+```powershell
+docker run --name taisto -p 1337:80 -v B:\database:/usr/src/database ghcr.io/koodinikkarit/taisto2:latest
+```
+
 `latest` tarkoittaa viimeisintä onnistuneesti julkaistua tag-buildia. Käytä tuotannossa mieluummin tarkkaa versiota, esimerkiksi `ghcr.io/koodinikkarit/taisto2:0.1.9`.
 
 ## Julkaisut ja GitHub Actions
@@ -67,8 +85,40 @@ git push origin v0.1.8
 
 - GraphQL on osoitteessa `/api`; kehitystilassa GraphiQL on käytettävissä samassa osoitteessa.
 - REST-rajapinta on `/rest`. Katso tarkemmat pyynnöt tiedostosta `REST_API.md`, koneellisesti luettava määritys tiedostosta `openapi.yaml` ja selainkäyttöliittymästä `/api-docs`.
-- Sovelluksen data tallentuu tiedostoon `database/database.json`. Ota siitä varmuuskopiot ennen päivityksiä.
+- REST-rajapinnan muuttavat pyynnöt vaativat API-avaimen. Avaimia luodaan ja hallitaan sivulla **Asetukset → API-avaimet**. Avaimen voi lähettää `X-API-Key`-otsakkeessa tai Bearer-tokenina; lukuoperaatiot eivät vaadi avainta.
+- API-avaimet voidaan nimetä, asettaa vanhenemaan tai jättää pysyvästi voimassa oleviksi sekä ottaa yksitellen pois käytöstä. Samalta asetussivulta voidaan sallia muuttavat REST-pyynnöt 15 minuutiksi, tunniksi, neljäksi tunniksi, päiväksi, viikoksi tai 30 päiväksi ilman avainta; lupa päättyy automaattisesti valitun ajan jälkeen.
+- Avaimet, käyttölaskurit ja viimeisimmät käyttöajat tallennetaan pyynnöstä selväkielisinä SQLite-tietokannan `rest_api_keys`-tauluun.
+- Sovelluksen pysyvä data on tiedostossa `database/taisto.sqlite`. Docker-imagessa polku on `/usr/src/database/taisto.sqlite`, joten koko `/usr/src/database`-hakemisto tulee liittää pysyvään levyyn.
 - Paikallinen Bitfocus Companion -moduuli on hakemistossa `companion-module-taisto/`.
+
+### Siirtyminen database.json-tiedostosta SQLiteen
+
+Jos `database/taisto.sqlite` ei ole vielä alustettu mutta `database/database.json` löytyy, sovellus tuo vanhan JSON-tietokannan automaattisesti SQLiteen ennen palvelimen käynnistymistä. Tuonti tehdään yhdessä tietokantatransaktiossa ja alkuperäisestä JSON-tiedostosta luodaan aikaleimattu `database.pre-sqlite-backup.*.json`-varmuuskopio. Vanhaa JSON-tiedostoa ei poisteta.
+
+Migraation voi tehdä myös erikseen:
+
+```powershell
+npm run db:migrate
+```
+
+Omien polkujen käyttö:
+
+```powershell
+npm run db:migrate -- --json B:\database.json --sqlite B:\database\taisto.sqlite
+```
+
+SQLite-tietokannan voi viedä takaisin vanhan rakenteen JSON-varmuuskopioksi:
+
+```powershell
+npm run db:export-json
+npm run db:export-json -- --sqlite B:\database\taisto.sqlite --output B:\backup\database.json
+```
+
+Tee varmuuskopio mieluiten vientikomennolla palvelimen ollessa käynnissä. Jos kopioit SQLite-tiedoston suoraan, pysäytä palvelin ensin, jotta WAL-tiedoston keskeneräiset muutokset eivät jää kopiosta pois.
+
+### Output-ryhmät
+
+**Asetukset → Output-ryhmät** -sivulla voidaan luoda ryhmä saman matriisin output-porteista. Suoritus valitulla inputilla vaihtaa kaikki ryhmän outputit siihen. Taisto lähettää yhden TCP-komennon outputtia kohden 10 ms välein ja pyytää lopuksi matriisilta tilapäivityksen. Ryhmän REST-rajapinta on `/rest/con-groups`; tarkat pyynnöt ovat [REST_API.md](REST_API.md)-tiedostossa ja OpenAPI-kuvauksessa.
 
 ## Deployment
 

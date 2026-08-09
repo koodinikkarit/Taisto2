@@ -16,9 +16,10 @@ export default class extends React.Component {
                     <title>{this.props.title}</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
                     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" crossOrigin="anonymous" />
+					<link rel="stylesheet" href="/static/theme.css?v=2" />
                 </head>
-                <body style={{ paddingTop: "60px" }}>
-                    <div className="container-fluid" id="root" dangerouslySetInnerHTML={{__html: this.props.content}}></div>
+                <body style={{ paddingTop: "72px" }}>
+                    <div className="container-fluid taisto-app" id="root" dangerouslySetInnerHTML={{__html: this.props.content}}></div>
                     <script dangerouslySetInnerHTML={{
                         __html: `window.__APOLLO_STATE__=${JSON.stringify(this.props.state)};`,
                     }} />                  

@@ -10,7 +10,18 @@ import ReactDOMServer from "react-dom/server";
 import schema from "./backend/graphql/RootTypes";
 import PageFrame from "./js/components/PageFrame";
 
-import { listen, connectMarix } from "./backend/TaistoService";
+import {
+	listen,
+	connectMarix,
+	getRestApiKeyStatus,
+	createRestApiKey,
+	revokeRestApiKey,
+	setRestApiKeyEnabled,
+	setRestApiKeyName,
+	setRestApiKeyExpiration,
+	allowAnonymousRestApi,
+	disableAnonymousRestApi
+} from "./backend/TaistoService";
 
 import { createService } from "./backend/TaistoWebsocketService";
 import restRouter from "./backend/rest/router";
@@ -99,6 +110,35 @@ app.post("/login", (req, res) => {
 
 app.use(["/promode", "/settings"], requireProtectedAreaPassword);
 
+app.get("/settings/api-key/config", (req, res) => res.json(getRestApiKeyStatus()));
+app.post("/settings/api-key/config", express.json(), (req, res) => {
+	res.status(201).json(createRestApiKey(req.body.name, req.body.expiresInDays));
+});
+app.patch("/settings/api-key/config/:id", express.json(), (req, res) => {
+	if (typeof req.body.enabled !== "boolean" && typeof req.body.name !== "string" && req.body.expiresAt === undefined) return res.status(400).json({ error: { message: "enabled, name or expiresAt is required" } });
+	let key = typeof req.body.enabled === "boolean" ? setRestApiKeyEnabled(req.params.id, req.body.enabled) : null;
+	if (typeof req.body.name === "string") key = setRestApiKeyName(req.params.id, req.body.name);
+	if (req.body.expiresAt !== undefined) {
+		key = setRestApiKeyExpiration(req.params.id, req.body.expiresAt);
+		if (key === false) return res.status(400).json({ error: { message: "expiresAt must be an ISO date or empty" } });
+	}
+	if (!key) return res.status(404).json({ error: { message: "API key not found" } });
+	return res.json(key);
+});
+app.delete("/settings/api-key/config/:id", (req, res) => {
+	if (!revokeRestApiKey(req.params.id)) return res.status(404).json({ error: { message: "API key not found" } });
+	return res.status(204).end();
+});
+app.post("/settings/api-key/anonymous", express.json(), (req, res) => {
+	const anonymousUntil = allowAnonymousRestApi(req.body.durationMinutes);
+	if (!anonymousUntil) return res.status(400).json({ error: { message: "durationMinutes must be between 1 and 43200" } });
+	return res.json({ anonymousUntil, anonymousActive: true });
+});
+app.delete("/settings/api-key/anonymous", (req, res) => {
+	disableAnonymousRestApi();
+	return res.status(204).end();
+});
+
 app.use("/rest", restRouter);
 
 const webpackEntry = {
@@ -108,6 +148,10 @@ const webpackEntry = {
 const webpackModule = {
 	rules: [
 		{
+			test: /\.md$/,
+			type: "asset/source"
+		},
+		{
 			test: /\.js$/,
 			exclude: /node_modules/,
 			use: {
@@ -115,6 +159,12 @@ const webpackModule = {
 			}
 		}
 	]
+};
+
+const webpackResolve = {
+	alias: {
+		"@apollo/client/react/hoc": path.resolve(__dirname, "js", "apollo-hoc.js")
+	}
 };
 
 const webpackOutput = {
@@ -130,6 +180,7 @@ if (development) {
 		mode: "development",
 		devtool: "eval",
 		entry: webpackEntry,
+		resolve: webpackResolve,
 		module: webpackModule,
 		output: webpackOutput
 	});

@@ -4,12 +4,33 @@ import { graphql } from "graphql";
 import schema from "../graphql/RootTypes";
 import {
   db,
-  getVideoConnectionForConPort
+  getVideoConnectionForConPort,
+  createConGroup,
+  updateConGroup,
+  removeConGroup,
+  executeConGroup,
+  getRestApiKeyStatus,
+  validateRestApiKey
 } from "../TaistoService";
 
 const router = express.Router();
 
 router.use(express.json());
+
+router.use((req, res, next) => {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+  const apiKeyStatus = getRestApiKeyStatus();
+  if (apiKeyStatus.anonymousActive) return next();
+  if (!apiKeyStatus.configured) {
+    return res.status(503).json({ error: { message: "REST API key has not been configured" } });
+  }
+  const authorization = req.get("authorization") || "";
+  const apiKey = req.get("x-api-key") || (authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "");
+  if (!validateRestApiKey(apiKey)) {
+    return res.status(401).json({ error: { message: "Invalid or missing API key" } });
+  }
+  return next();
+});
 
 const MATRIX_FIELDS = `
   id
@@ -135,11 +156,67 @@ router.get(
         "diagrams",
         "diagram-screens",
         "default-states",
-        "weekly-timers"
+        "weekly-timers",
+        "con-groups"
       ]
     });
   })
 );
+
+const conGroupJson = group => ({
+  id: String(group.id),
+  slug: group.slug,
+  matrix: group.matrix ? { id: String(group.matrix.id), slug: group.matrix.slug } : null,
+  conPorts: group.conPorts.map(port => ({ id: String(port.id), slug: port.slug, portNum: port.portNum }))
+});
+
+const validateConGroupPorts = (matrixId, conPortIds) => {
+  if (!Array.isArray(conPortIds) || conPortIds.length === 0) return "conPortIds must contain at least one output";
+  if (new Set(conPortIds.map(String)).size !== conPortIds.length) return "conPortIds must not contain duplicates";
+  if (!db.matrixs.has(matrixId)) return "Matrix not found";
+  if (conPortIds.some(id => !db.conPorts.has(Number(id)) || db.conPorts.get(Number(id)).matrixId !== matrixId)) return "Every output must belong to the selected matrix";
+  return null;
+};
+
+router.get("/con-groups", asyncHandler(async (req, res) => {
+  res.json(db.conGroups.valueSeq().toArray().map(conGroupJson));
+}));
+
+router.get("/con-groups/:id", asyncHandler(async (req, res) => {
+  const group = db.conGroups.get(Number(req.params.id));
+  if (!group) return res.status(404).json({ error: { message: "Output group not found" } });
+  res.json(conGroupJson(group));
+}));
+
+router.post("/con-groups", asyncHandler(async (req, res) => {
+  const { slug, matrixId, conPortIds } = req.body || {};
+  const matrixIdNumber = Number(matrixId);
+  const error = !slug ? "slug is required" : validateConGroupPorts(matrixIdNumber, conPortIds);
+  if (error) return res.status(400).json({ error: { message: error } });
+  const group = createConGroup(slug, matrixIdNumber, conPortIds.map(Number));
+  res.status(201).json(conGroupJson(group));
+}));
+
+router.patch("/con-groups/:id", asyncHandler(async (req, res) => {
+  const group = db.conGroups.get(Number(req.params.id));
+  if (!group) return res.status(404).json({ error: { message: "Output group not found" } });
+  const { slug, conPortIds } = req.body || {};
+  const error = conPortIds == null ? null : validateConGroupPorts(group.matrixId, conPortIds);
+  if (error) return res.status(400).json({ error: { message: error } });
+  res.json(conGroupJson(updateConGroup(group.id, slug, conPortIds == null ? null : conPortIds.map(Number))));
+}));
+
+router.delete("/con-groups/:id", asyncHandler(async (req, res) => {
+  if (!removeConGroup(Number(req.params.id))) return res.status(404).json({ error: { message: "Output group not found" } });
+  res.status(204).end();
+}));
+
+router.post("/con-groups/:id/execute", asyncHandler(async (req, res) => {
+  const cpuPortId = Number((req.body || {}).cpuPortId);
+  if (!Number.isInteger(cpuPortId)) return res.status(400).json({ error: { message: "cpuPortId is required" } });
+  if (!executeConGroup(Number(req.params.id), cpuPortId)) return res.status(400).json({ error: { message: "Group, input, or output validation failed" } });
+  res.status(202).json({ status: "queued" });
+}));
 
 // Matrix endpoints
 router.get(
