@@ -2,7 +2,7 @@ import path from "path";
 import express from "express";
 import webpack from "webpack";
 import WebpackMiddleware from "webpack-dev-middleware";
-import graphQLHTTP from "express-graphql";
+import { createHandler } from "graphql-http/lib/use/express";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 import ApolloClient, { createNetworkInterface } from "apollo-client";
@@ -64,14 +64,7 @@ const webpackOutput = {
 };
 
 if (development) {
-	app.use(
-		"/api",
-		graphQLHTTP({
-			schema,
-			graphiql: true,
-			pretty: true
-		})
-	);
+	app.all("/api", createHandler({ schema, graphiql: true }));
 
 	const compiler = webpack({
 		mode: "development",
@@ -105,14 +98,7 @@ if (development) {
 
 	// });
 
-	app.use(
-		"/api",
-		graphQLHTTP({
-			schema,
-			graphiql: false,
-			pretty: false
-		})
-	);
+	app.all("/api", createHandler({ schema }));
 	app.get("/js/app.js", function(req, res, next) {
 		res.sendFile(__dirname + "/public/app.js");
 	});

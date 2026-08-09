@@ -92,7 +92,11 @@ const asyncHandler = handler => (req, res) => {
 };
 
 async function execute(query, variables = {}) {
-  const result = await graphql(schema, query, null, null, variables);
+  const result = await graphql({
+    schema,
+    source: query,
+    variableValues: variables
+  });
 
   if (result.errors && result.errors.length > 0) {
     const error = new Error(result.errors.map(err => err.message).join("; "));

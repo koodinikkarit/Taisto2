@@ -1,10 +1,13 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taisto
   labels:
     app: taisto
 spec:
+  selector:
+    matchLabels:
+      app: taisto
   template:
     metadata:
       labels:
