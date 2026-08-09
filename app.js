@@ -80,6 +80,9 @@ function requireProtectedAreaPassword(req, res, next) {
 app.use("/static", express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 
+app.get("/openapi.yaml", (req, res) => res.sendFile(path.resolve(__dirname, "openapi.yaml")));
+app.get("/api-docs", (req, res) => res.sendFile(path.resolve(__dirname, "public", "api-docs.html")));
+
 app.get("/login", (req, res) => res.send(loginPage(safeNext(req.query.next))));
 app.post("/login", (req, res) => {
 	const next = safeNext(req.body.next);

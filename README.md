@@ -66,7 +66,7 @@ git push origin v0.1.8
 ## Rajapinnat ja data
 
 - GraphQL on osoitteessa `/api`; kehitystilassa GraphiQL on käytettävissä samassa osoitteessa.
-- REST-rajapinta on `/rest`. Katso tarkemmat pyynnöt tiedostosta `REST_API.md` ja koneellisesti luettava määritys tiedostosta `openapi.yaml`.
+- REST-rajapinta on `/rest`. Katso tarkemmat pyynnöt tiedostosta `REST_API.md`, koneellisesti luettava määritys tiedostosta `openapi.yaml` ja selainkäyttöliittymästä `/api-docs`.
 - Sovelluksen data tallentuu tiedostoon `database/database.json`. Ota siitä varmuuskopiot ennen päivityksiä.
 - Paikallinen Bitfocus Companion -moduuli on hakemistossa `companion-module-taisto/`.
 
