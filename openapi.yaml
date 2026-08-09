@@ -1,0 +1,100 @@
+openapi: 3.0.3
+info:
+  title: Taisto REST API
+  version: 0.1.7
+  description: REST interface for managing Taisto matrices, diagrams, default states and weekly timers.
+servers:
+  - url: http://localhost:1337/rest
+paths:
+  /:
+    get:
+      summary: List API resources
+      responses: { '200': { description: Resource list } }
+  /matrices:
+    get: { summary: List matrices, responses: { '200': { description: Matrix list, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Matrix' } } } } } } }
+    post: { summary: Create matrix, requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMatrix' } } } }, responses: { '201': { description: Created }, '400': { $ref: '#/components/responses/Error' } } }
+  /matrices/{id}:
+    parameters: [ { $ref: '#/components/parameters/Id' } ]
+    get: { summary: Get matrix, responses: { '200': { description: Matrix }, '404': { $ref: '#/components/responses/Error' } } }
+    patch: { summary: Update matrix, requestBody: { $ref: '#/components/requestBodies/MatrixUpdate' }, responses: { '200': { description: Updated }, '404': { $ref: '#/components/responses/Error' } } }
+    delete: { summary: Delete matrix, responses: { '204': { description: Deleted }, '404': { $ref: '#/components/responses/Error' } } }
+  /matrices/slug/{slug}:
+    get: { summary: Get matrix by slug, parameters: [ { $ref: '#/components/parameters/Slug' } ], responses: { '200': { description: Matrix }, '404': { $ref: '#/components/responses/Error' } } }
+  /con-ports/{id}:
+    patch: { summary: Rename Con port, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { $ref: '#/components/requestBodies/Slug' }, responses: { '200': { description: Updated } } }
+  /con-ports/{id}/video-connection:
+    parameters: [ { $ref: '#/components/parameters/Id' } ]
+    get: { summary: Get video connection status, responses: { '200': { description: Connection status }, '404': { $ref: '#/components/responses/Error' } } }
+    post: { summary: Connect Con port to CPU port, requestBody: { $ref: '#/components/requestBodies/CpuPort' }, responses: { '201': { description: Connected }, '400': { $ref: '#/components/responses/Error' } } }
+    delete: { summary: Disconnect video connection, responses: { '204': { description: Disconnected } } }
+  /cpu-ports/{id}:
+    patch: { summary: Rename CPU port, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { $ref: '#/components/requestBodies/Slug' }, responses: { '200': { description: Updated } } }
+  /cpu-ports/{id}/kwm-connection:
+    parameters: [ { $ref: '#/components/parameters/Id' } ]
+    post: { summary: Connect CPU port to Con port, requestBody: { $ref: '#/components/requestBodies/ConPort' }, responses: { '201': { description: Connected } } }
+    delete: { summary: Disconnect KWM connection, responses: { '204': { description: Disconnected } } }
+  /diagrams:
+    get: { summary: List diagrams, responses: { '200': { description: Diagram list } } }
+    post: { summary: Create diagram, requestBody: { $ref: '#/components/requestBodies/Slug' }, responses: { '201': { description: Created } } }
+  /diagrams/{id}:
+    parameters: [ { $ref: '#/components/parameters/Id' } ]
+    get: { summary: Get diagram, responses: { '200': { description: Diagram } } }
+    patch: { summary: Update diagram, requestBody: { $ref: '#/components/requestBodies/Slug' }, responses: { '200': { description: Updated } } }
+    delete: { summary: Delete diagram, responses: { '204': { description: Deleted } } }
+  /diagram-screens:
+    get: { summary: List diagram screens, responses: { '200': { description: Diagram screen list } } }
+    post: { summary: Create diagram screen, requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DiagramScreenInput' } } } }, responses: { '201': { description: Created } } }
+  /diagram-screens/{id}:
+    parameters: [ { $ref: '#/components/parameters/Id' } ]
+    get: { summary: Get diagram screen, responses: { '200': { description: Diagram screen } } }
+    patch: { summary: Update diagram screen, requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DiagramScreenInput' } } } }, responses: { '200': { description: Updated } } }
+    delete: { summary: Delete diagram screen, responses: { '204': { description: Deleted } } }
+  /diagram-screens/{id}/cpus:
+    post: { summary: Add CPU port to diagram screen, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { $ref: '#/components/requestBodies/CpuPort' }, responses: { '201': { description: Created } } }
+  /diagram-screens/{id}/cpus/{cpuPort}:
+    delete: { summary: Remove CPU port from diagram screen, parameters: [ { $ref: '#/components/parameters/Id' }, { name: cpuPort, in: path, required: true, schema: { type: string } } ], responses: { '204': { description: Deleted } } }
+  /default-states:
+    get: { summary: List default states, responses: { '200': { description: Default state list } } }
+    post: { summary: Create default state, requestBody: { required: true, content: { application/json: { schema: { type: object, required: [slug, matrix], properties: { slug: { type: string }, matrix: { type: string } } } } } }, responses: { '201': { description: Created } } }
+  /default-states/{id}:
+    parameters: [ { $ref: '#/components/parameters/Id' } ]
+    get: { summary: Get default state, responses: { '200': { description: Default state } } }
+    delete: { summary: Delete default state, responses: { '204': { description: Deleted } } }
+  /default-states/{id}/execute:
+    post: { summary: Execute default state, parameters: [ { $ref: '#/components/parameters/Id' } ], responses: { '202': { description: Queued } } }
+  /default-states/{id}/video-connections:
+    post: { summary: Add video connection, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { $ref: '#/components/requestBodies/Connection' }, responses: { '201': { description: Created } } }
+  /default-states/{id}/kwm-connections:
+    post: { summary: Add KWM connection, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { $ref: '#/components/requestBodies/Connection' }, responses: { '201': { description: Created } } }
+  /weekly-timers:
+    get: { summary: List weekly timers, responses: { '200': { description: Timer list } } }
+    post: { summary: Create weekly timer, responses: { '201': { description: Created } } }
+  /weekly-timers/{id}:
+    parameters: [ { $ref: '#/components/parameters/Id' } ]
+    get: { summary: Get weekly timer, responses: { '200': { description: Weekly timer } } }
+    patch: { summary: Update weekly timer, requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/WeeklyTimerUpdate' } } } }, responses: { '200': { description: Updated } } }
+    delete: { summary: Delete weekly timer, responses: { '204': { description: Deleted } } }
+  /weekly-timers/{id}/video-connections:
+    post: { summary: Add video connection, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { $ref: '#/components/requestBodies/Connection' }, responses: { '201': { description: Created } } }
+  /weekly-timers/{id}/kwm-connections:
+    post: { summary: Add KWM connection, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { $ref: '#/components/requestBodies/Connection' }, responses: { '201': { description: Created } } }
+  /weekly-timers/{id}/default-states:
+    post: { summary: Add default state to timer, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { required: true, content: { application/json: { schema: { type: object, required: [defaultState], properties: { defaultState: { type: string } } } } } }, responses: { '201': { description: Created } } }
+components:
+  parameters:
+    Id: { name: id, in: path, required: true, schema: { type: string } }
+    Slug: { name: slug, in: path, required: true, schema: { type: string } }
+  requestBodies:
+    Slug: { required: true, content: { application/json: { schema: { type: object, required: [slug], properties: { slug: { type: string } } } } } }
+    CpuPort: { required: true, content: { application/json: { schema: { type: object, required: [cpuPort], properties: { cpuPort: { type: string } } } } } }
+    ConPort: { required: true, content: { application/json: { schema: { type: object, required: [conPort], properties: { conPort: { type: string } } } } } }
+    Connection: { required: true, content: { application/json: { schema: { type: object, required: [conPort, cpuPort], properties: { conPort: { type: string }, cpuPort: { type: string } } } } } }
+    MatrixUpdate: { content: { application/json: { schema: { $ref: '#/components/schemas/CreateMatrix' } } } }
+  responses:
+    Error: { description: Error response, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  schemas:
+    Matrix: { type: object, properties: { id: { type: string }, slug: { type: string }, ip: { type: string }, port: { type: integer } } }
+    CreateMatrix: { type: object, required: [slug, ip, port, conPortAmount, cpuPortAmount], properties: { slug: { type: string }, ip: { type: string }, port: { type: integer }, conPortAmount: { type: integer }, cpuPortAmount: { type: integer } } }
+    DiagramScreenInput: { type: object, properties: { diagram: { type: string }, slug: { type: string }, conPort: { type: string }, matrix: { type: string } } }
+    WeeklyTimerUpdate: { type: object, properties: { slug: { type: string }, minutes: { type: integer }, hours: { type: integer }, active: { type: boolean }, monday: { type: boolean }, tuesday: { type: boolean }, wednesday: { type: boolean }, thursday: { type: boolean }, friday: { type: boolean }, saturday: { type: boolean }, sunday: { type: boolean } } }
+    Error: { type: object, properties: { error: { type: object, properties: { message: { type: string } } } } }
