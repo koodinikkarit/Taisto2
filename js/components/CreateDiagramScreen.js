@@ -54,7 +54,7 @@ class CreateDiagramScreen extends React.Component {
 					<br />
 					{selectedMatrix ?
 					<div>
-						<label>NÃ¤yttÃ¶laite</label>
+						<label>Näyttölaite</label>
 						<select value={selectedConPort}
 						className="form-control"
 						onChange={e => {
@@ -99,7 +99,7 @@ class CreateDiagramScreen extends React.Component {
 										this.props.onDiagramScreenCreated();
 								})
 							}}>
-							LisÃ¤Ã¤
+							Lisää
 						</button>
 					</div>
 				</div>

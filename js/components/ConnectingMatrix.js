@@ -48,7 +48,7 @@ class ConnectingMatrix extends React.Component {
 				</div>
 				<div className="row">
 					<div className="col-6">
-						Con porttien mÃ¤Ã¤rÃ¤
+						Con porttien määrä
 						<div>
 							<input type="number" className="form-control"
 							 onChange={e => {
@@ -57,7 +57,7 @@ class ConnectingMatrix extends React.Component {
 						</div>
 					</div>
 					<div className="col-6">
-						Cpu porttien mÃ¤Ã¤rÃ¤
+						Cpu porttien määrä
 						<div>
 							<input type="number" className="form-control"
 							 onChange={e => {
@@ -79,7 +79,7 @@ class ConnectingMatrix extends React.Component {
 							}).then(matrix => {
 								 if (this.props.onMatrixCreated) this.props.onMatrixCreated();
 							});
-						 }}>YhdistÃ¤</button>
+						 }}>Yhdistä</button>
 					</div>
 				</div>
 			</div>

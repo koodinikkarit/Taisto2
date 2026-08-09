@@ -40,7 +40,7 @@ class EditDiagramScreen extends React.Component {
 					</div>
 					<div className="row">		
 						<div className="col">
-							<label>NÃ¤yttÃ¶:</label>
+							<label>Näyttö:</label>
 							<select className="form-control"
 								value={this.props.diagramScreen.conPort ?
 								this.props.diagramScreen.conPort.id : null}>
@@ -63,7 +63,7 @@ class EditDiagramScreen extends React.Component {
 												  addingNewCpu: true
 											  });
 										  }}>
-										  LisÃ¤Ã¤ laite
+										  Lisää laite
 										</button>
 										<br/>
 										{this.state.addingNewCpu ?

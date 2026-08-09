@@ -52,7 +52,7 @@ class DiagramSettings extends React.Component {
 					<br />		
 					<div className="row-fluid">
 						<div className="col">
-							<h1>Kaavion nÃ¤ytÃ¶t</h1>
+							<h1>Kaavion näytöt</h1>
 						</div>
 						<div className="col">
 							<button className="btn btn-success"
@@ -61,7 +61,7 @@ class DiagramSettings extends React.Component {
 									 addingScreen: true
 								 });
 							 }}>
-								LisÃ¤Ã¤ nÃ¤yttÃ¶
+								Lisää näyttö
 							</button>
 						</div>
 					</div>
@@ -169,7 +169,7 @@ export default compose(
 										 });
 									 })
 								 }}>
-									LisÃ¤Ã¤
+									Lisää
 								</button>
 								<button className="btn"
 								 onClick={e => {

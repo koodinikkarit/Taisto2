@@ -83,7 +83,7 @@ export default compose(
 							//console.log("updatee", mutationResult, id, prev);
 							// return {weeklyTimer:{...mutationResult.data.weeklyTimer}}
 							// //if (mutationResult.data.weeklyTimer.id === id) {
-							// 	console.log("lÃ¤pi menmi", Object.assign({}, prev, {
+							// 	console.log("läpi menmi", Object.assign({}, prev, {
 							// 		weeklyTimer: mutationResult.data.weeklyTimer
 							// 	}), prev);
 							// 	prev.weeklyTimer.active = true;

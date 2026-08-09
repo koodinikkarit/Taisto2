@@ -39,7 +39,7 @@ class MatrixList extends React.Component {
 						<button className="btn btn-success"
 						onClick={e => {
 							this.setState({ connectingNewMatrix: true });
-						}}>YhtistÃ¤ uusi matriisi</button>
+						}}>Yhtistä uusi matriisi</button>
 					</div>
 				</div>
 				<div className="row">

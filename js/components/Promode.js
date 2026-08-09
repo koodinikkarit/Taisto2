@@ -71,7 +71,7 @@ class Promode extends React.Component {
 								 if (selectedMatrix)
 								 this.props.requestAllStates(selectedMatrix.id);
 							 }}>
-								PÃ¤ivitÃ¤
+								Päivitä
 							</button>
 						</div>
 						<div className="col-4">
@@ -97,7 +97,7 @@ class Promode extends React.Component {
 				</div>
 			);
 		} else {
-			return <h1>Et ole vielÃ¤ yhdistÃ¤nyt yhtÃ¤kÃ¤Ã¤n matriisia.</h1>
+			return <h1>Et ole vielä yhdistänyt yhtäkään matriisia.</h1>
 		}
 	}
 }
