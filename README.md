@@ -147,3 +147,7 @@ $env:TAISTO_PASSWORD = "choose-a-strong-password"
 $env:TAISTO_USER = "taisto"
 npm start
 ```
+
+# Releases
+
+Pushing a Git tag such as `v0.1.5` starts the Docker workflow. The tag version is written into the build's `package.json`, displayed by the application, and published as the matching container-image tag.
