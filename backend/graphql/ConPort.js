@@ -8,8 +8,7 @@ import {
 } from "graphql";
 
 import Matrix from "./Matrix";
-
-const valueOf = (record, key) => typeof record.get === "function" ? record.get(key) : record[key];
+import { valueOf } from "./immutable";
 
 export default new GraphQLObjectType({
     name: "ConPort",
@@ -24,7 +23,7 @@ export default new GraphQLObjectType({
         },
         matrix: {
             type: Matrix,
-            resolve: port => port.matrix
+            resolve: port => valueOf(port, "matrix")
         },
         portNum: {
             type: GraphQLInt,

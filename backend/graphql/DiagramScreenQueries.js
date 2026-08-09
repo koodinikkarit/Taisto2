@@ -16,13 +16,14 @@ import {
  */
 
 import DiagramScreenGraphqlObject from "./DiagramScreen";
+import { valuesOf } from "./immutable";
 
 export default {
 	diagramScreens: {
 		name: "diagramScreens",
 		type: new GraphQLList(DiagramScreenGraphqlObject),
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.diagramScreens);
+			resolve(valuesOf(db.diagramScreens));
 		})
 	},
 	diagramScreenById: {
@@ -46,7 +47,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.diagramScreens.find(p => p.slug === args.slug));
+			resolve(db.diagramScreens.find(p => p.get("slug") === args.slug));
 		})
 	}
 }

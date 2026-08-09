@@ -5,18 +5,22 @@ import {
 
 import WeeklyTimer from "./WeeklyTimer";
 import DefaultState from "./DefaultState";
+import { valueOf } from "./immutable";
 
 export default new GraphQLObjectType({
 	name: "WeeklyTimerDefaultState",
 	fields: () => ({
 		id: {
-			type: GraphQLString
+			type: GraphQLString,
+			resolve: connection => String(valueOf(connection, "id"))
 		},
 		weeklyTimer: {
-			type: WeeklyTimer
+			type: WeeklyTimer,
+			resolve: connection => valueOf(connection, "weeklyTimer")
 		},
 		defaultState: {
-			type: DefaultState
+			type: DefaultState,
+			resolve: connection => valueOf(connection, "defaultState")
 		}
 	})
 });

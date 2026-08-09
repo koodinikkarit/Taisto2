@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.14] - 2026-08-09
+### Fixed
+- Fixed every GraphQL list to return database records rather than Immutable Map key-value pairs.
+- Fixed diagrams, diagram screens, default states, weekly timers, matrix ports, and their nested lists so existing database content appears in the interface.
+
 ## [0.1.13] - 2026-08-09
 ### Fixed
 - Added JSON request-body parsing for GraphQL POST requests, restoring data loading in the browser interface.

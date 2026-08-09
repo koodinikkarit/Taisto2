@@ -9,6 +9,7 @@ import DefaultState from "./DefaultState";
 import {
 	db
 } from "../TaistoService";
+import { valuesOf } from "./immutable";
 
 export default {
 	defaultStates: {
@@ -16,7 +17,7 @@ export default {
 		description: "makkara",
 		type: new GraphQLList(DefaultState),
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.defaultStates);
+			resolve(valuesOf(db.defaultStates));
 		})
 	},
 	defaultStateBydId: {
@@ -40,7 +41,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.defaultStates.find(p => p.slug === args.slug));
+			resolve(db.defaultStates.find(p => p.get("slug") === args.slug));
 		})
 	}
 }

@@ -5,18 +5,22 @@ import {
 
 import ConPort from "./ConPort";
 import CpuPort from "./CpuPort";
+import { valueOf } from "./immutable";
 
 export default new GraphQLObjectType({
 	name: "DefaultStateKwmConnection",
 	fields: () => ({
 		id: {
-			type: GraphQLString
+			type: GraphQLString,
+			resolve: connection => String(valueOf(connection, "id"))
 		},
 		conPort: {
-			type: ConPort
+			type: ConPort,
+			resolve: connection => valueOf(connection, "conPort")
 		},
 		cpuPort: {
-			type: CpuPort
+			type: CpuPort,
+			resolve: connection => valueOf(connection, "cpuPort")
 		}
 	})
 });

@@ -16,6 +16,7 @@ import {
  */
 
 import DiagramGraphqlObject from "./Diagram";
+import { valuesOf } from "./immutable";
 
 
 export default {
@@ -24,7 +25,7 @@ export default {
 		description: "Hakee kaikki kaaviot",
 		type: new GraphQLList(DiagramGraphqlObject),
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.diagrams);
+			resolve(valuesOf(db.diagrams));
 		})
 	},
 	diagramById: {
@@ -48,7 +49,7 @@ export default {
 			}
 		},
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.diagrams.find(p => p.slug === args.slug));
+			resolve(db.diagrams.find(p => p.get("slug") === args.slug));
 		})
 	}
 }

@@ -9,18 +9,22 @@ import {
 
 
 import DiagramScreen from "./DiagramScreen";
+import { valueOf, valuesOf } from "./immutable";
 
 export default new GraphQLObjectType({
 	name: "Diagram",
 	fields: () => ({
 		id: {
-			type: GraphQLString
+			type: GraphQLString,
+			resolve: diagram => String(valueOf(diagram, "id"))
 		},
 		slug: {
-			type: GraphQLString
+			type: GraphQLString,
+			resolve: diagram => valueOf(diagram, "slug")
 		},
 		diagramScreens: {
-			type: new GraphQLList(DiagramScreen)
+			type: new GraphQLList(DiagramScreen),
+			resolve: diagram => valuesOf(valueOf(diagram, "diagramScreens"))
 		}
 	})
 });

@@ -7,8 +7,7 @@ import {
 
 import ConPort from "./ConPort";
 import CpuPort from "./CpuPort";
-
-const valueOf = (record, key) => typeof record.get === "function" ? record.get(key) : record[key];
+import { valueOf, valuesOf } from "./immutable";
 
 export default new GraphQLObjectType({
     name: "Matrix",
@@ -39,11 +38,11 @@ export default new GraphQLObjectType({
         },
         conPorts: {
             type: new GraphQLList(ConPort),
-            resolve: matrix => matrix.conPorts && typeof matrix.conPorts.toArray === "function" ? matrix.conPorts.toArray() : matrix.conPorts || []
+            resolve: matrix => valuesOf(valueOf(matrix, "conPorts"))
         },
         cpuPorts: {
             type: new GraphQLList(CpuPort),
-            resolve: matrix => matrix.cpuPorts && typeof matrix.cpuPorts.toArray === "function" ? matrix.cpuPorts.toArray() : matrix.cpuPorts || []
+            resolve: matrix => valuesOf(valueOf(matrix, "cpuPorts"))
         }
     })
 });

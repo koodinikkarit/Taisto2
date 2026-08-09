@@ -10,21 +10,26 @@ import {
 import MatrixGraphqlObjectType from "./Matrix"
 import ConPortGraphqlObjectType from "./ConPort";
 import CpuPortGraphqlObjectType from "./CpuPort";
+import { valueOf } from "./immutable";
 
 export default new GraphQLObjectType({
 	name: "KwmConnection",
 	fields: () => ({
 		id: {
-			type: GraphQLString
+			type: GraphQLString,
+			resolve: connection => String(valueOf(connection, "id"))
 		},
 		matrix: {
-			type: MatrixGraphqlObjectType
+			type: MatrixGraphqlObjectType,
+			resolve: connection => valueOf(connection, "matrix")
 		},
 		conPort: {
-			type: ConPortGraphqlObjectType
+			type: ConPortGraphqlObjectType,
+			resolve: connection => valueOf(connection, "conPort")
 		},
 		cpuPort: {
-			type: CpuPortGraphqlObjectType
+			type: CpuPortGraphqlObjectType,
+			resolve: connection => valueOf(connection, "cpuPort")
 		}
 	})
 });

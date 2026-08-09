@@ -6,21 +6,26 @@ import {
 import WeeklyTimer from "./WeeklyTimer";
 import ConPort from "./ConPort";
 import CpuPort from "./CpuPort";
+import { valueOf } from "./immutable";
 
 export default new GraphQLObjectType({
 	name: "WeeklyTimerVideoConnection",
 	fields: () => ({
 		id: {
-			type: GraphQLString
+			type: GraphQLString,
+			resolve: connection => String(valueOf(connection, "id"))
 		},
 		weeklyTimer: {
-			type: WeeklyTimer
+			type: WeeklyTimer,
+			resolve: connection => valueOf(connection, "weeklyTimer")
 		},
 		conPort: {
-			type: ConPort
+			type: ConPort,
+			resolve: connection => valueOf(connection, "conPort")
 		},
 		cpuPort: {
 			type: CpuPort
+			,resolve: connection => valueOf(connection, "cpuPort")
 		}
 	})
 })
