@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.9] - 2026-08-09
+### Fixed
+- Docker build now includes `CHANGELOG.md`, allowing the embedded Help-page changelog to compile.
+
 ## [0.1.8] - 2026-08-09
 ### Fixed
 - GraphQL now resolves Immutable Matrix, ConPort and CpuPort records correctly instead of returning `null` fields.

@@ -46,7 +46,7 @@ docker pull ghcr.io/koodinikkarit/taisto2:latest
 docker run --rm -p 1337:80 -e TAISTO_PASSWORD="vahva-salasana" ghcr.io/koodinikkarit/taisto2:latest
 ```
 
-`latest` tarkoittaa viimeisintä onnistuneesti julkaistua tag-buildia. Käytä tuotannossa mieluummin tarkkaa versiota, esimerkiksi `ghcr.io/koodinikkarit/taisto2:0.1.7`.
+`latest` tarkoittaa viimeisintä onnistuneesti julkaistua tag-buildia. Käytä tuotannossa mieluummin tarkkaa versiota, esimerkiksi `ghcr.io/koodinikkarit/taisto2:0.1.9`.
 
 ## Julkaisut ja GitHub Actions
 
