@@ -27,7 +27,7 @@ export default {
 		name: "Matrixs",
 		type: new GraphQLList(MatrixGraphqlObject),
 		resolve: (_, args) => new Promise((resolve, reject) => {
-			resolve(db.matrixs.toArray());
+			resolve(db.matrixs.valueSeq().toArray());
 		})
 	},
 	matrixById: {
