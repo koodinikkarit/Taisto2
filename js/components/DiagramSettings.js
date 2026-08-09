@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 import Settings from "../containers/Settings";
@@ -52,7 +52,7 @@ class DiagramSettings extends React.Component {
 					<br />		
 					<div className="row-fluid">
 						<div className="col">
-							<h1>Kaavion näytöt</h1>
+							<h1>Kaavion nÃ¤ytÃ¶t</h1>
 						</div>
 						<div className="col">
 							<button className="btn btn-success"
@@ -61,7 +61,7 @@ class DiagramSettings extends React.Component {
 									 addingScreen: true
 								 });
 							 }}>
-								Lisää näyttö
+								LisÃ¤Ã¤ nÃ¤yttÃ¶
 							</button>
 						</div>
 					</div>
@@ -169,7 +169,7 @@ export default compose(
 										 });
 									 })
 								 }}>
-									Lisää
+									LisÃ¤Ã¤
 								</button>
 								<button className="btn"
 								 onClick={e => {

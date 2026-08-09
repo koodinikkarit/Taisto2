@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 
@@ -83,7 +83,7 @@ export default compose(
 							//console.log("updatee", mutationResult, id, prev);
 							// return {weeklyTimer:{...mutationResult.data.weeklyTimer}}
 							// //if (mutationResult.data.weeklyTimer.id === id) {
-							// 	console.log("läpi menmi", Object.assign({}, prev, {
+							// 	console.log("lÃ¤pi menmi", Object.assign({}, prev, {
 							// 		weeklyTimer: mutationResult.data.weeklyTimer
 							// 	}), prev);
 							// 	prev.weeklyTimer.active = true;

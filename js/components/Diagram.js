@@ -1,9 +1,9 @@
-﻿import React from 'react';
-import { graphql } from 'react-apollo';
+import React from 'react';
+import { graphql } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 import {
     Link
-} from "react-router";
+} from "react-router-dom";
 
 import ActionShortcut from "./ActionShortcut";
 

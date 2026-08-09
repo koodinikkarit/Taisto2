@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 
@@ -54,7 +54,7 @@ class CreateDiagramScreen extends React.Component {
 					<br />
 					{selectedMatrix ?
 					<div>
-						<label>Näyttölaite</label>
+						<label>NÃ¤yttÃ¶laite</label>
 						<select value={selectedConPort}
 						className="form-control"
 						onChange={e => {
@@ -99,7 +99,7 @@ class CreateDiagramScreen extends React.Component {
 										this.props.onDiagramScreenCreated();
 								})
 							}}>
-							Lisää
+							LisÃ¤Ã¤
 						</button>
 					</div>
 				</div>

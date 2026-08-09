@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 class EditDiagramScreen extends React.Component {
@@ -40,7 +40,7 @@ class EditDiagramScreen extends React.Component {
 					</div>
 					<div className="row">		
 						<div className="col">
-							<label>Näyttö:</label>
+							<label>NÃ¤yttÃ¶:</label>
 							<select className="form-control"
 								value={this.props.diagramScreen.conPort ?
 								this.props.diagramScreen.conPort.id : null}>
@@ -63,7 +63,7 @@ class EditDiagramScreen extends React.Component {
 												  addingNewCpu: true
 											  });
 										  }}>
-										  Lisää laite
+										  LisÃ¤Ã¤ laite
 										</button>
 										<br/>
 										{this.state.addingNewCpu ?

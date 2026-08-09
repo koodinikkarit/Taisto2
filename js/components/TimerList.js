@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 import Measure from 'react-measure';

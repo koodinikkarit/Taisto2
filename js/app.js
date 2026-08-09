@@ -1,20 +1,19 @@
-﻿import ReactDOM from 'react-dom';
-import React from 'react';
-import {
-    Router,
-    browserHistory
-} from 'react-router';
-import { ApolloProvider } from 'react-apollo';
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { ApolloProvider } from "@apollo/client";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
 
 import store from "./store";
 import client from "./client";
+import Routes from "./routes";
 
-
-import routes from "./routes";
-
-ReactDOM.render(
-    <ApolloProvider store={store} client={client}>
-        <Router history={browserHistory} routes={routes} />
-    </ApolloProvider>,
-    document.getElementById('root')
+createRoot(document.getElementById("root")).render(
+  <Provider store={store}>
+    <ApolloProvider client={client}>
+      <BrowserRouter>
+        <Routes />
+      </BrowserRouter>
+    </ApolloProvider>
+  </Provider>
 );

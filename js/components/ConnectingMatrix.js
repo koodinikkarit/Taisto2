@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 class ConnectingMatrix extends React.Component {
@@ -48,7 +48,7 @@ class ConnectingMatrix extends React.Component {
 				</div>
 				<div className="row">
 					<div className="col-6">
-						Con porttien määrä
+						Con porttien mÃ¤Ã¤rÃ¤
 						<div>
 							<input type="number" className="form-control"
 							 onChange={e => {
@@ -57,7 +57,7 @@ class ConnectingMatrix extends React.Component {
 						</div>
 					</div>
 					<div className="col-6">
-						Cpu porttien määrä
+						Cpu porttien mÃ¤Ã¤rÃ¤
 						<div>
 							<input type="number" className="form-control"
 							 onChange={e => {
@@ -79,7 +79,7 @@ class ConnectingMatrix extends React.Component {
 							}).then(matrix => {
 								 if (this.props.onMatrixCreated) this.props.onMatrixCreated();
 							});
-						 }}>Yhdistä</button>
+						 }}>YhdistÃ¤</button>
 					</div>
 				</div>
 			</div>

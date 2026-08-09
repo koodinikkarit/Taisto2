@@ -1,7 +1,7 @@
 import React from 'react';
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 import Settings from "../containers/Settings";
@@ -39,7 +39,7 @@ class MatrixList extends React.Component {
 						<button className="btn btn-success"
 						onClick={e => {
 							this.setState({ connectingNewMatrix: true });
-						}}>Yhtistä uusi matriisi</button>
+						}}>YhtistÃ¤ uusi matriisi</button>
 					</div>
 				</div>
 				<div className="row">

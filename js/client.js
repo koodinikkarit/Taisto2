@@ -1,11 +1,6 @@
-import ApolloClient, { createNetworkInterface } from 'apollo-client';
+import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 
 export default new ApolloClient({
-	// addTypename: true,
-	dataIdFromObject: o => {
-		console.log("o", o, `${o.__typename}-${o.id}`);
-		 return `${o.__typename}-${o.id},`
-	},
-	initialState: window.__APOLLO_STATE__,
-	networkInterface: createNetworkInterface({ uri: `http://${location.hostname}:${location.port}/api` }),
+  cache: new InMemoryCache().restore(window.__APOLLO_STATE__ || {}),
+  link: new HttpLink({ uri: "/api" })
 });

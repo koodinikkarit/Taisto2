@@ -5,16 +5,9 @@ import WebpackMiddleware from "webpack-dev-middleware";
 import { createHandler } from "graphql-http/lib/use/express";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
-import ApolloClient, { createNetworkInterface } from "apollo-client";
-import { createLocalInterface } from "apollo-local-query";
-import { ApolloProvider, renderToStringWithData } from "react-apollo";
-import { match, RouterContext } from "react-router";
-
-const graphql = require("graphql");
 
 import schema from "./backend/graphql/RootTypes";
 import PageFrame from "./js/components/PageFrame";
-import routes from "./js/routes";
 
 import { listen, connectMarix } from "./backend/TaistoService";
 
@@ -107,39 +100,10 @@ if (development) {
 
 function ssr() {
 	app.use((req, res) => {
-		//console.log("\n\n\n\nroutes", "\n\n\n routes \n\n\n", routes, "\n\n\n graphql \n\n", graphql, "\n\n schema \n\n", schema, "\n\n\n\n\n");
-		match(
-			{ routes, location: req.originalUrl },
-			(error, redirectLocation, renderProps) => {
-				const client = new ApolloClient({
-					ssrMode: true,
-					// Remember that this is the interface the SSR server will use to connect to the
-					// API server, so we need to ensure it isn't firewalled, etc
-					networkInterface: createLocalInterface(graphql, schema)
-				});
-				const app = (
-					<ApolloProvider client={client}>
-						<RouterContext {...renderProps} />
-					</ApolloProvider>
-				);
-
-				renderToStringWithData(app).then(content => {
-					const initialState = {
-						[client.reduxRootKey]: {
-							data: client.store.getState()[client.reduxRootKey]
-								.data
-						}
-					};
-
-					res.status(200);
-					res.send(
-						`<!doctype html>\n${ReactDOMServer.renderToString(
-							<PageFrame content={content} state={initialState} />
-						)}`
-					);
-					res.end();
-				});
-			}
+		res.status(200).send(
+			`<!doctype html>\n${ReactDOMServer.renderToString(
+				<PageFrame content="" state={{}} />
+			)}`
 		);
 	});
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 import MatrixsSelect from "./MatrixsSelect";
@@ -197,7 +197,7 @@ class WeeklyTimerListItem extends React.Component {
 							</tr>
 							<tr>
 								<th><button className="btn btn-success"
-									onClick={e => this.setState({ creatingNewCommand: true })}>Lisää Suoritettavat komento</button></th>
+									onClick={e => this.setState({ creatingNewCommand: true })}>LisÃ¤Ã¤ Suoritettavat komento</button></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -325,7 +325,7 @@ class WeeklyTimerListItem extends React.Component {
 																</div>
 																<div className="row">
 																	<div className="col">
-																		Näyttö:
+																		NÃ¤yttÃ¶:
 																	</div>
 																	<div className="col">
 																		{`${videoConnection.conPort.portNum}. ${videoConnection.conPort.slug}`}
@@ -358,7 +358,7 @@ class WeeklyTimerListItem extends React.Component {
 										</AccordionCard> : ""}
 										{this.props.weeklyTimer.kwmConnections &&
 										 this.props.weeklyTimer.kwmConnections.length > 0 ?
-										<AccordionCard header="Näppäimistöyhteydet">
+										<AccordionCard header="NÃ¤ppÃ¤imistÃ¶yhteydet">
 											{this.props.weeklyTimer.kwmConnections.map(kwmConnection => (
 												<li className="list-group-item">
 													<div className="row" style={{ width: "100%" }}>
@@ -373,7 +373,7 @@ class WeeklyTimerListItem extends React.Component {
 															</div>
 															<div className="row">
 																<div className="col">
-																	Näppäimistö:
+																	NÃ¤ppÃ¤imistÃ¶:
 																</div>
 																<div className="col">
 																	{`${kwmConnection.conPort.portNum}. ${kwmConnection.conPort.slug}`}

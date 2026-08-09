@@ -7,6 +7,11 @@ module.exports = {
   entry: {
     app: path.resolve(__dirname, "js", "app.js")
   },
+  resolve: {
+    alias: {
+      "@apollo/client/react/hoc": path.resolve(__dirname, "js", "apollo-hoc.js")
+    }
+  },
   module: {
     rules: [
       {

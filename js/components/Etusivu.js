@@ -1,8 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import {
     Link
-} from "react-router";
+} from "react-router-dom";
 
 export default class extends React.Component {
         render() {

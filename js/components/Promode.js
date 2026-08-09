@@ -1,7 +1,7 @@
 import React from 'react';
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { graphql, compose } from 'react-apollo';
+import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
 import MatrixTable from "./MatrixTable";
@@ -71,7 +71,7 @@ class Promode extends React.Component {
 								 if (selectedMatrix)
 								 this.props.requestAllStates(selectedMatrix.id);
 							 }}>
-								Päivitä
+								PÃ¤ivitÃ¤
 							</button>
 						</div>
 						<div className="col-4">
@@ -97,7 +97,7 @@ class Promode extends React.Component {
 				</div>
 			);
 		} else {
-			return <h1>Et ole vielä yhdistänyt yhtäkään matriisia.</h1>
+			return <h1>Et ole vielÃ¤ yhdistÃ¤nyt yhtÃ¤kÃ¤Ã¤n matriisia.</h1>
 		}
 	}
 }
