@@ -1,6 +1,8 @@
 import React from "react";
 import helpMarkdown from "../../apua.md";
 import { useI18n } from "../i18n";
+import packageInfo from "../../package.json";
+import buildInfo from "../build-info";
 
 function renderInline(text) {
   const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^\)]+\))/g);
@@ -41,5 +43,5 @@ export default function Help() {
   });
   flushList();
 
-  return <div className="row"><main className="col"><div className="jumbotron">{content}</div></main></div>;
+  return <div className="row"><main className="col"><div className="jumbotron">{content}<hr /><small>Version {packageInfo.version} · Build {buildInfo.id}</small></div></main></div>;
 }

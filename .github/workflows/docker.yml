@@ -44,6 +44,8 @@ jobs:
         with:
           context: .
           push: true
+          build-args: |
+            BUILD_ID=${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
