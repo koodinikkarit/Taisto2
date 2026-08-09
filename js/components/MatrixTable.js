@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import ReactDOM from 'react-dom';
-import Measure from 'react-measure';
+import Measure from './Measure';
 
 export default class extends React.Component {
     constructor(props) {

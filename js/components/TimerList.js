@@ -2,8 +2,6 @@ import React from 'react';
 import { graphql, compose } from '@apollo/client/react/hoc';
 import gql from 'graphql-tag';
 
-import Measure from 'react-measure';
-
 import CreateNewTimer from "../components/CreateNewTimer";
 import WeeklyTimerListItemSummary from "./WeeklyTimerListItemSummary";
 import WeeklyTimerOnOff from "./WeeklyTimerOnOff";

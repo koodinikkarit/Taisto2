@@ -1,5 +1,5 @@
 import React from 'react';
-import Measure from 'react-measure';
+import Measure from './Measure';
 
 import PageLayout from "./PageLayout";
 

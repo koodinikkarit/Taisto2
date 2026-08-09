@@ -30,7 +30,6 @@
 		"react": "^18.3.1",
 		"react-bootstrap": "*",
 		"react-dom": "^18.3.1",
-		"react-measure": "1.4.5",
 		"react-redux": "^7.2.9",
 		"react-router-dom": "^5.3.4",
 		"redux": "^4.2.1",
