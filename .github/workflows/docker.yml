@@ -2,9 +2,7 @@ name: Build and publish Docker image
 
 on:
   push:
-    branches: [master]
     tags: ["v*"]
-  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -25,11 +23,8 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION="$(node -p "require('./package.json').version")"
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            VERSION="${GITHUB_REF_NAME#v}"
-            npm version "$VERSION" --no-git-tag-version --ignore-scripts
-          fi
+          VERSION="${GITHUB_REF_NAME#v}"
+          node -e "const fs=require('fs'); const version=process.argv[1]; for (const file of ['package.json','package-lock.json']) { const data=JSON.parse(fs.readFileSync(file)); data.version=version; if (data.packages && data.packages['']) data.packages[''].version=version; fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\\n'); }" "$VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GitHub Container Registry
