@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.18] - 2026-08-12
+### Fixed
+- Protected Promode and Settings content now waits for browser-side session validation before rendering, including navigation without a full page reload.
+- Open protected pages now revalidate the session periodically and return to login when the session expires.
+- Audit log entries now use a responsive card layout that does not require horizontal scrolling on narrow screens.
+
 ## [0.1.17] - 2026-08-12
 ### Changed
 - Tag builds now assign the GHCR `latest` tag only to the newest stable semantic version and create a GitHub Release with the Companion ZIP attached.

@@ -59,12 +59,17 @@ function signSession(expiresAt) {
 	return Buffer.from(`${payload}.${signature}`).toString("base64url");
 }
 
-function hasValidSession(req) {
+function getValidSessionExpiresAt(req) {
 	const cookie = (req.get("cookie") || "").split(";").map(value => value.trim()).find(value => value.startsWith(`${sessionCookieName}=`));
-	if (!cookie || !protectedPassword) return false;
+	if (!cookie || !protectedPassword) return null;
 	const [user, expiresAt, signature] = Buffer.from(cookie.slice(sessionCookieName.length + 1), "base64url").toString("utf8").split(".");
-	if (!user || !expiresAt || !signature || Number(expiresAt) < Date.now()) return false;
-	return credentialsMatch(user, protectedUser) && credentialsMatch(signature, crypto.createHmac("sha256", protectedPassword).update(`${user}.${expiresAt}`).digest("base64url"));
+	if (!user || !expiresAt || !signature || Number(expiresAt) <= Date.now()) return null;
+	const valid = credentialsMatch(user, protectedUser) && credentialsMatch(signature, crypto.createHmac("sha256", protectedPassword).update(`${user}.${expiresAt}`).digest("base64url"));
+	return valid ? Number(expiresAt) : null;
+}
+
+function hasValidSession(req) {
+	return getValidSessionExpiresAt(req) !== null;
 }
 
 function safeNext(value) {
@@ -106,6 +111,15 @@ app.get("/openapi.yaml", (req, res) => res.sendFile(path.resolve(__dirname, "ope
 app.get("/api-docs", (req, res) => res.sendFile(path.resolve(__dirname, "public", "api-docs.html")));
 
 app.get("/login", (req, res) => res.send(loginPage(safeNext(req.query.next))));
+app.get("/auth/status", (req, res) => {
+	const expiresAt = getValidSessionExpiresAt(req);
+	res.set("Cache-Control", "no-store");
+	res.json({
+		required: Boolean(protectedPassword),
+		authenticated: !protectedPassword || expiresAt !== null,
+		expiresAt
+	});
+});
 app.post("/login", (req, res) => {
 	const next = safeNext(req.body.next);
 	if (!protectedPassword) return res.redirect(next);

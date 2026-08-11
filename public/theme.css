@@ -177,6 +177,40 @@ p { line-height: 1.55; }
 details { margin-top: 22px; padding: 12px 0; }
 summary { cursor: pointer; color: var(--taisto-primary-dark); font-weight: 600; }
 
+.taisto-auth-check {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--taisto-background);
+  color: var(--taisto-muted);
+  font-weight: 600;
+}
+.taisto-auth-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #d6e0e9;
+  border-top-color: var(--taisto-primary);
+  border-radius: 50%;
+  animation: taisto-spin .8s linear infinite;
+}
+@keyframes taisto-spin { to { transform: rotate(360deg); } }
+
+.taisto-audit-list { display: grid; }
+.taisto-audit-entry { min-width: 0; padding: 18px; border-bottom: 1px solid var(--taisto-border); }
+.taisto-audit-entry:last-child { border-bottom: 0; }
+.taisto-audit-entry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.taisto-audit-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 14px 22px; margin-top: 15px; }
+.taisto-audit-fields > div { min-width: 0; }
+.taisto-audit-label { display: block; margin-bottom: 4px; color: var(--taisto-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+.taisto-audit-secondary { color: var(--taisto-muted); font-size: 12px; }
+.taisto-audit-break { overflow-wrap: anywhere; word-break: break-word; }
+.taisto-audit-details { margin: 10px 0 0; padding: 0; }
+.taisto-audit-details pre { max-width: 100% !important; overflow-wrap: anywhere; }
+
 @media (max-width: 860px) {
   body { padding-top: 56px !important; }
   #root { padding-top: 8px; }
@@ -195,4 +229,6 @@ summary { cursor: pointer; color: var(--taisto-primary-dark); font-weight: 600; 
   .taisto-navigation-menu .nav-link { display: block; padding: 10px 8px; border-radius: 6px; }
   .taisto-navigation-menu .nav-link:hover { background: rgba(255,255,255,.1); }
   .taisto-language { width: 100%; margin: 4px 0 0; }
+  .taisto-audit-entry { padding: 14px; }
+  .taisto-audit-entry-header { align-items: flex-start; }
 }

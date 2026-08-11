@@ -39,7 +39,6 @@ export default class AuditLogs extends React.Component {
       page: { maxWidth: "1180px", paddingBottom: "48px" },
       intro: { color: "#64748b", marginBottom: "20px" },
       card: { border: "1px solid #dfe5eb", borderRadius: "10px", background: "white", overflow: "hidden" },
-      table: { width: "100%", minWidth: "900px", margin: 0 },
       badge: success => ({ display: "inline-block", padding: "3px 9px", borderRadius: "999px", fontSize: "12px", fontWeight: 600, color: success ? "#166534" : "#991b1b", background: success ? "#dcfce7" : "#fee2e2" }),
       code: { whiteSpace: "pre-wrap", wordBreak: "break-word", maxWidth: "460px", marginTop: "8px", fontSize: "12px" }
     };
@@ -54,19 +53,19 @@ export default class AuditLogs extends React.Component {
         </div>
         {this.state.error && <div className="alert alert-danger">{this.state.error}</div>}
         <div style={styles.card}>
-          <div style={{ overflowX: "auto" }}>
-            <table className="table table-hover" style={styles.table}>
-              <thead><tr><th>{t("time")}</th><th>{t("status")}</th><th>{t("action")}</th><th>{t("actor")}</th><th>{t("target")}</th><th>{t("ipAddress")}</th></tr></thead>
-              <tbody>{this.state.rows.map(entry => <tr key={entry.id}>
-                <td style={{ whiteSpace: "nowrap" }}>{formatLocalTime(entry.createdAt, language)}</td>
-                <td><span style={styles.badge(entry.success)}>{entry.success ? t("succeeded") : `${t("error")} ${entry.statusCode}`}</span></td>
-                <td><strong>{entry.action}</strong><div style={{ color: "#64748b", fontSize: "12px" }}>{entry.method} · HTTP {entry.statusCode}</div></td>
-                <td>{actorLabel(entry)}{entry.actorId && <div style={{ color: "#64748b", fontSize: "12px" }}>{entry.actorId}</div>}</td>
-                <td><code>{entry.path}</code>{entry.details && Object.keys(entry.details).length > 0 && <details><summary style={{ cursor: "pointer", color: "#1677c8" }}>{t("details")}</summary><pre style={styles.code}>{JSON.stringify(entry.details, null, 2)}</pre></details>}</td>
-                <td>{entry.ipAddress || "—"}</td>
-              </tr>)}</tbody>
-            </table>
-          </div>
+          <div className="taisto-audit-list">{this.state.rows.map(entry => <article className="taisto-audit-entry" key={entry.id}>
+            <div className="taisto-audit-entry-header">
+              <div><strong>{entry.action}</strong><div className="taisto-audit-secondary">{entry.method} · HTTP {entry.statusCode}</div></div>
+              <span style={styles.badge(entry.success)}>{entry.success ? t("succeeded") : `${t("error")} ${entry.statusCode}`}</span>
+            </div>
+            <div className="taisto-audit-fields">
+              <div><span className="taisto-audit-label">{t("time")}</span>{formatLocalTime(entry.createdAt, language)}</div>
+              <div><span className="taisto-audit-label">{t("actor")}</span>{actorLabel(entry)}{entry.actorId && <div className="taisto-audit-secondary taisto-audit-break">{entry.actorId}</div>}</div>
+              <div><span className="taisto-audit-label">{t("target")}</span><code className="taisto-audit-break">{entry.path}</code></div>
+              <div><span className="taisto-audit-label">{t("ipAddress")}</span>{entry.ipAddress || "—"}</div>
+            </div>
+            {entry.details && Object.keys(entry.details).length > 0 && <details className="taisto-audit-details"><summary>{t("details")}</summary><pre style={styles.code}>{JSON.stringify(entry.details, null, 2)}</pre></details>}
+          </article>)}</div>
           {!this.state.loading && this.state.rows.length === 0 && <div style={{ padding: "28px", textAlign: "center", color: "#64748b" }}>{t("noAuditEvents")}</div>}
         </div>
         <p style={{ color: "#64748b", fontSize: "13px", marginTop: "12px" }}>{t("auditRetention")}</p>
