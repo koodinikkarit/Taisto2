@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Taisto REST API
   version: 0.1.7
-  description: REST interface for managing Taisto matrices, diagrams, default states, output groups and weekly timers. All POST, PATCH, PUT and DELETE operations require an enabled, non-expired API key unless temporary anonymous write access has been enabled in Settings. API keys may also be configured without an expiration date. GET, HEAD and OPTIONS operations are public.
+  description: REST interface for managing Taisto matrices, diagrams, default states, output groups and weekly timers. All POST, PATCH, PUT and DELETE operations require an enabled, non-expired API key unless temporary anonymous write access has been enabled in Settings. API keys may also be configured without an expiration date. GET, HEAD and OPTIONS operations are public. Mutating requests, including rejected authentication attempts, are recorded in the SQLite audit log without storing API key values.
 servers:
   - url: http://localhost:1337/rest
 paths:

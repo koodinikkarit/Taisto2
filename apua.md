@@ -9,6 +9,16 @@ Tuki: [atk-tuki@turunhelluntaisrk.fi](mailto:atk-tuki@turunhelluntaisrk.fi)
 
 Rajapintadokumentaatio: [API-dokumentaatio](/api-docs)
 
+## Bitfocus Companion
+
+[Lataa Taisto Companion -moduuli (ZIP)](/downloads/taisto-companion.zip)
+
+Pura ZIP-tiedosto ja valitse Companionissa **Settings → Modules → Install module from local folder**. Moduulin asetuksiin annetaan Taisto-palvelimen osoite, portti ja Asetukset-sivulla luotu REST API-avain. Moduuli tukee yksittäisiä videokytkentöjä, output-ryhmien suorittamista sekä projektorin ohjausta.
+
+## Audit-loki
+
+**Asetukset → Audit-loki** näyttää REST- ja käyttöliittymämuutokset, matriisin video- ja KVM-ohjaukset, API-avaimen nimen, lähdeosoitteen sekä pyynnön onnistumisen. Säilytysaika asetetaan palvelimen ympäristömuuttujalla `TAISTO_AUDIT_RETENTION_DAYS`; oletus on 90 päivää ja arvo `0` estää automaattisen poistamisen. Ajat näytetään selaimen paikallisessa ajassa. Salasanoja tai API-avainten sisältöä ei tallenneta lokiin.
+
 ## Aloittaminen
 
 1. Avaa **Asetukset** ja yhdistä matriisi.
@@ -37,6 +47,16 @@ Changes: [Changelog](https://github.com/koodinikkarit/Taisto2/blob/master/CHANGE
 Support: [atk-tuki@turunhelluntaisrk.fi](mailto:atk-tuki@turunhelluntaisrk.fi)
 
 API reference: [API documentation](/api-docs)
+
+## Bitfocus Companion
+
+[Download the Taisto Companion module (ZIP)](/downloads/taisto-companion.zip)
+
+Extract the ZIP and select **Settings → Modules → Install module from local folder** in Companion. Configure the Taisto server address, port and a REST API key created in Settings. The module supports individual video connections, output-group execution and projector control.
+
+## Audit log
+
+**Settings → Audit log** shows REST and UI changes, matrix video and KVM commands, the API key name, source address and request result. Retention is configured with the server environment variable `TAISTO_AUDIT_RETENTION_DAYS`; it defaults to 90 days and `0` disables automatic deletion. Times are displayed in the browser's local timezone. Passwords and API key values are never stored in the log.
 
 ## Getting started
 

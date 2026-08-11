@@ -25,6 +25,8 @@ import {
 
 import { createService } from "./backend/TaistoWebsocketService";
 import restRouter from "./backend/rest/router";
+import { auditHttpMutations } from "./backend/audit";
+import { listAuditLogs, getAuditRetentionDays } from "./backend/storage/SqliteStorage";
 
 const app = express();
 
@@ -91,6 +93,14 @@ function requireProtectedAreaPassword(req, res, next) {
 app.use("/static", express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 app.use("/api", express.json());
+app.use(auditHttpMutations({ hasValidSession }));
+
+app.get("/downloads/taisto-companion.zip", (req, res) => {
+	res.download(
+		path.resolve(__dirname, "public", "taisto-companion.zip"),
+		"taisto-companion.zip"
+	);
+});
 
 app.get("/openapi.yaml", (req, res) => res.sendFile(path.resolve(__dirname, "openapi.yaml")));
 app.get("/api-docs", (req, res) => res.sendFile(path.resolve(__dirname, "public", "api-docs.html")));
@@ -137,6 +147,12 @@ app.post("/settings/api-key/anonymous", express.json(), (req, res) => {
 app.delete("/settings/api-key/anonymous", (req, res) => {
 	disableAnonymousRestApi();
 	return res.status(204).end();
+});
+
+app.get("/settings/audit-logs/data", (req, res) => {
+	res.json(Object.assign(listAuditLogs({ limit: req.query.limit, offset: req.query.offset }), {
+		retentionDays: getAuditRetentionDays()
+	}));
 });
 
 app.use("/rest", restRouter);

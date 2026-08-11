@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.1.16] - 2026-08-11
 ### Added
 - Added normalized SQLite persistence with schema migrations, transactions, foreign keys, and WAL journaling.
 - Added automatic one-time migration from `database/database.json`, including a timestamped JSON backup.
@@ -9,6 +9,11 @@
 ### Changed
 - Application data, output groups, and REST API keys are now persisted in `database/taisto.sqlite`.
 - REST API keys remain stored in plaintext so they can be viewed again in Settings.
+- npm dependency resolution now requires releases to be at least seven days old and disables dependency install scripts.
+- GitHub Actions verifies the dependency lock against the npm safety policy before building a release image.
+- The Companion module can execute output groups, load group/input choices from Taisto, and authenticate mutations with a REST API key.
+- The tag-triggered GitHub Actions release builds the Companion module, uploads its ZIP as a workflow artifact, and includes the same download on the Help page inside the Docker image.
+- SQLite-backed audit logging now records REST changes, GraphQL mutations, API-key administration, login attempts, and WebSocket video/KVM commands without storing credentials. Retention is time-based, configured with `TAISTO_AUDIT_RETENTION_DAYS`, and defaults to 90 days.
 
 ## [0.1.15] - 2026-08-09
 ### Fixed

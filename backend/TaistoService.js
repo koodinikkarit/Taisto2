@@ -626,8 +626,8 @@ export const disableAnonymousRestApi = () => {
 	setDb(db.set("restApiAnonymousUntil", ""));
 };
 
-export const validateRestApiKey = apiKey => {
-	if (!apiKey) return false;
+export const authenticateRestApiKey = apiKey => {
+	if (!apiKey) return null;
 	const validKey = db.restApiKeys.find(entry => {
 		if (entry.enabled === false) return false;
 		if (entry.expiresAt && new Date(entry.expiresAt).getTime() <= Date.now()) return false;
@@ -635,13 +635,15 @@ export const validateRestApiKey = apiKey => {
 		const expected = Buffer.from(entry.key || "");
 		return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
 	});
-	if (!validKey) return false;
+	if (!validKey) return null;
 	const nextKeys = db.restApiKeys.map(entry => entry.id === validKey.id
 		? Object.assign({}, entry, { useCount: Number(entry.useCount || 0) + 1, lastUsedAt: new Date().toISOString() })
 		: entry);
 	setDb(db.set("restApiKeys", nextKeys));
-	return true;
+	return { id: validKey.id, name: validKey.name || "NimetÃ¶n avain" };
 };
+
+export const validateRestApiKey = apiKey => Boolean(authenticateRestApiKey(apiKey));
 
 export const createConGroup = (slug, matrixId, conPortIds) => {
 	let conGroup;

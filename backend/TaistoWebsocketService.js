@@ -18,6 +18,26 @@ import {
 } from "./TaistoService";
 
 import { Server as SocketIOServer } from "socket.io";
+import { appendAuditLog } from "./storage/SqliteStorage";
+
+const auditSocketMutation = (socket, action, target, details, success) => {
+	try {
+		appendAuditLog({
+			actorType: "websocket",
+			actorName: "Taisto WebSocket client",
+			action,
+			target,
+			method: "WEBSOCKET",
+			path: socket.handshake && socket.handshake.url ? socket.handshake.url : "/socket.io",
+			statusCode: success ? 200 : 400,
+			success,
+			ipAddress: socket.handshake && socket.handshake.address ? socket.handshake.address : "",
+			details
+		});
+	} catch (error) {
+		console.error("WebSocket audit log write failed", error);
+	}
+};
 
 export const createService = (server) => {
 	const io = new SocketIOServer(server);
@@ -43,18 +63,21 @@ export const createService = (server) => {
 			if (conPort) {
 				conPort.setValue(parseInt(connection.cpu));
 			}
+			auditSocketMutation(socket, "matrix.video.set", `con-port/${connection.con}`, { cpuPortId: connection.cpu }, Boolean(conPort));
 		});
 		socket.on(SET_KWM_CONNECTION, connection => {
 			var cpuPort = db.cpuPorts.get(parseInt(connection.cpu));
 			if (cpuPort) {
 				cpuPort.setValue(parseInt(connection.con));
 			}
+			auditSocketMutation(socket, "matrix.kvm.set", `cpu-port/${connection.cpu}`, { conPortId: connection.con }, Boolean(cpuPort));
 		});
 		socket.on(TURN_OFF_VIDEO_CONNECTION, con => {
 			var conPort = db.conPorts.get(parseInt(con));
 			if (conPort) {
 				conPort.turnOffPort();
 			}
+			auditSocketMutation(socket, "matrix.video.turn_off", `con-port/${con}`, {}, Boolean(conPort));
 
 		});
 		socket.on(TURN_OFF_KWM_CONNECTION, cpu => {
@@ -62,6 +85,7 @@ export const createService = (server) => {
 			if (cpuPort) {
 				cpuPort.turnOffPort();
 			}
+			auditSocketMutation(socket, "matrix.kvm.turn_off", `cpu-port/${cpu}`, {}, Boolean(cpuPort));
 		});
 		socket.on("REQUEST_ALL_STATES", matrixId => {
 			var matrix = db.matrixs.get(parseInt(matrixId));

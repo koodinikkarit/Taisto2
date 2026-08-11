@@ -3,6 +3,7 @@
 ## Configuration
 - Host: `localhost`
 - Port: `1337`
+- Taisto REST API key: API key created in **Settings → API keys**
 - Poll interval: `1000` ms
 - Projector poll interval: `1000` ms
 - Projector host: `localhost`
@@ -12,6 +13,7 @@
 ## Actions
 - Set video connection
 - Turn off video connection
+- Execute output group
 - Tykki power
 - Tykki pikakomento
 - Tykki power on
@@ -29,3 +31,5 @@ Projector power commands default to category `4054` and code `15`. If your proje
 Projector status is read from `current_power_is_on` in the GET response.
 Projector input feedback uses `current_input` (`input1`..`input5`).
 Current input label feedback uses `label` from the GET response.
+
+`Execute output group` loads output groups and matrix inputs from Taisto and switches every output in the selected group to the selected input. Taisto actions send the configured API key in the `X-API-Key` header.

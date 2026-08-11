@@ -3,9 +3,12 @@
 ## Summary
 Bitfocus Companion module for the Taisto REST API. Provides an action to set a video connection and a feedback that turns the button red when the connection is active in REST state.
 
+Dependency releases must be at least seven days old, and dependency install scripts are disabled by the module's `.npmrc`.
+
 ## Configuration
 - Host: `localhost`
 - Port: `1337`
+- Taisto REST API key: API key created in **Settings → API keys**
 - Poll interval: `1000` ms
 - Projector poll interval: `1000` ms
 - Projector host: `localhost`
@@ -22,6 +25,8 @@ npm install
 3. Go to `Settings` -> `Modules` -> `Install module from local folder`.
 4. Select the `companion-module-taisto` folder.
 
+Validate and build the module with `npm run check` and `npm run build`. Yarn is not required.
+
 ## Usage
 1. Add the module instance and fill in Host/Port.
 2. Add a button action `Set video connection`.
@@ -35,10 +40,12 @@ npm install
 10. Set `Con port id` to `35`.
 11. Optional: add action `Tykki power` or `Tykki power on/off`.
 12. Configure projector host/port/path if they differ from defaults.
+13. To control an output group, add `Execute output group` and select the group and input. The lists refresh from Taisto automatically.
 
 ## Action
 - Set video connection
 - Turn off video connection
+- Execute output group
 - Tykki power
 - Tykki pikakomento
 - Tykki power on
@@ -50,6 +57,12 @@ Options for "Set video connection":
 
 Options for "Turn off video connection":
 - Con port id
+
+Options for "Execute output group":
+- Output group
+- Input
+
+All Taisto actions send the configured API key in the `X-API-Key` header. Read-only status requests continue to work without a key.
 
 Options for projector actions:
 - Category (default `4054`)

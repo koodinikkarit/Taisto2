@@ -10,7 +10,7 @@ import {
   removeConGroup,
   executeConGroup,
   getRestApiKeyStatus,
-  validateRestApiKey
+  authenticateRestApiKey
 } from "../TaistoService";
 
 const router = express.Router();
@@ -20,15 +20,22 @@ router.use(express.json());
 router.use((req, res, next) => {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
   const apiKeyStatus = getRestApiKeyStatus();
-  if (apiKeyStatus.anonymousActive) return next();
+  if (apiKeyStatus.anonymousActive) {
+    req.auditActor = { type: "anonymous", id: "", name: "Anonymous REST access" };
+    return next();
+  }
   if (!apiKeyStatus.configured) {
+    req.auditActor = { type: "unauthenticated", id: "", name: "No API key configured" };
     return res.status(503).json({ error: { message: "REST API key has not been configured" } });
   }
   const authorization = req.get("authorization") || "";
   const apiKey = req.get("x-api-key") || (authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "");
-  if (!validateRestApiKey(apiKey)) {
+  const authenticatedKey = authenticateRestApiKey(apiKey);
+  if (!authenticatedKey) {
+    req.auditActor = { type: "invalid_api_key", id: "", name: "Invalid API key" };
     return res.status(401).json({ error: { message: "Invalid or missing API key" } });
   }
+  req.auditActor = { type: "api_key", id: authenticatedKey.id, name: authenticatedKey.name };
   return next();
 });
 

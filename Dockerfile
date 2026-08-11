@@ -1,12 +1,14 @@
 FROM node:24
 ARG BUILD_ID=local
 ENV TAISTO_BUILD_ID=$BUILD_ID
+ENV TAISTO_AUDIT_RETENTION_DAYS=90
 WORKDIR /usr/src
 COPY backend backend
 COPY js js
 COPY public public
 COPY scripts scripts
 ADD .babelrc ./.babelrc
+COPY .npmrc .npmrc
 ADD package.json package.json
 ADD package-lock.json package-lock.json
 ADD webpack.config.js webpack.config.js

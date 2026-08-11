@@ -81,6 +81,10 @@ class TaistoModule extends InstanceBase {
     this.projectorConsecutiveErrors = 0;
     this.lastMatrixPollAt = 0;
     this.lastProjectorPollAt = 0;
+    this.lastResourceRefreshAt = 0;
+    this.conGroups = [];
+    this.matrices = [];
+    this.resourceSignature = "";
   }
 
   async init(config) {
@@ -97,6 +101,7 @@ class TaistoModule extends InstanceBase {
 
   async configUpdated(config) {
     this.config = config;
+    this.resourceSignature = "";
     this.initActions();
     this.initFeedbacks();
     this.startPolling();
@@ -120,6 +125,13 @@ class TaistoModule extends InstanceBase {
         min: 1,
         max: 65535,
         default: 1337
+      },
+      {
+        type: "textinput",
+        id: "apiKey",
+        label: "Taisto REST API key",
+        width: 12,
+        default: ""
       },
       {
         type: "number",
@@ -217,7 +229,62 @@ class TaistoModule extends InstanceBase {
     return fallback ? fallback.label : String(inputId);
   }
 
+  getOutputGroupChoices() {
+    const choices = this.conGroups.map(group => ({
+      id: String(group.id),
+      label: group.matrix && group.matrix.slug
+        ? `${group.slug} (${group.matrix.slug})`
+        : group.slug
+    }));
+    return choices.length > 0
+      ? choices
+      : [{ id: "", label: "No output groups found" }];
+  }
+
+  getCpuPortChoices() {
+    const choices = [];
+    this.matrices.forEach(matrix => {
+      (matrix.cpuPorts || []).forEach(port => {
+        choices.push({
+          id: String(port.id),
+          label: `${matrix.slug}: ${port.portNum}. ${port.slug}`
+        });
+      });
+    });
+    return choices.length > 0
+      ? choices
+      : [{ id: "", label: "No inputs found" }];
+  }
+
+  async refreshTaistoResources(rebuildActions = true) {
+    if (!this.config.host) return;
+    try {
+      const [groupsResponse, matricesResponse] = await Promise.all([
+        this.taistoFetch("/rest/con-groups"),
+        this.taistoFetch("/rest/matrices")
+      ]);
+      if (!groupsResponse.ok || !matricesResponse.ok) {
+        throw new Error(`Resource refresh failed (groups ${groupsResponse.status}, matrices ${matricesResponse.status})`);
+      }
+
+      const conGroups = await groupsResponse.json();
+      const matrices = await matricesResponse.json();
+      const signature = JSON.stringify({ conGroups, matrices });
+      const changed = signature !== this.resourceSignature;
+      this.conGroups = Array.isArray(conGroups) ? conGroups : [];
+      this.matrices = Array.isArray(matrices) ? matrices : [];
+      this.resourceSignature = signature;
+      this.lastResourceRefreshAt = Date.now();
+      if (changed && rebuildActions) this.initActions();
+    } catch (err) {
+      this.lastResourceRefreshAt = Date.now();
+      this.log("warn", `Taisto resource refresh failed: ${err?.message || err}`);
+    }
+  }
+
   initActions() {
+    const outputGroupChoices = this.getOutputGroupChoices();
+    const cpuPortChoices = this.getCpuPortChoices();
     this.setActionDefinitions({
       set_video_connection: {
         name: "Set video connection",
@@ -243,14 +310,9 @@ class TaistoModule extends InstanceBase {
           if (!conPort || !cpuPort) return;
 
           try {
-            const url = this.buildUrl(
-              `/rest/con-ports/${encodeURIComponent(conPort)}/video-connection`
-            );
-            const res = await fetch(url, {
+            const res = await this.taistoFetch(
+              `/rest/con-ports/${encodeURIComponent(conPort)}/video-connection`, {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
               body: JSON.stringify({ cpuPort })
             });
 
@@ -280,15 +342,59 @@ class TaistoModule extends InstanceBase {
           if (!conPort) return;
 
           try {
-            const url = this.buildUrl(
-              `/rest/con-ports/${encodeURIComponent(conPort)}/video-connection`
+            const res = await this.taistoFetch(
+              `/rest/con-ports/${encodeURIComponent(conPort)}/video-connection`,
+              { method: "DELETE" }
             );
-            const res = await fetch(url, { method: "DELETE" });
 
             if (!res.ok && res.status !== 204) {
               throw new Error(`HTTP ${res.status}`);
             }
 
+            this.updateStatus(InstanceStatus.Ok);
+          } catch (err) {
+            this.updateStatus(InstanceStatus.ConnectionFailure, String(err));
+          }
+        }
+      },
+      execute_output_group: {
+        name: "Execute output group",
+        options: [
+          {
+            type: "dropdown",
+            label: "Output group",
+            id: "conGroup",
+            default: outputGroupChoices[0].id,
+            choices: outputGroupChoices,
+            allowCustom: true
+          },
+          {
+            type: "dropdown",
+            label: "Input",
+            id: "cpuPort",
+            default: cpuPortChoices[0].id,
+            choices: cpuPortChoices,
+            allowCustom: true,
+            minChoicesForSearch: 10
+          }
+        ],
+        callback: async (action) => {
+          const conGroup = String(action.options.conGroup || "").trim();
+          const cpuPortId = String(action.options.cpuPort || "").trim();
+          if (!conGroup || !cpuPortId) {
+            this.updateStatus(InstanceStatus.BadConfig, "Output group and input are required");
+            return;
+          }
+
+          try {
+            const res = await this.taistoFetch(
+              `/rest/con-groups/${encodeURIComponent(conGroup)}/execute`,
+              {
+                method: "POST",
+                body: JSON.stringify({ cpuPortId })
+              }
+            );
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             this.updateStatus(InstanceStatus.Ok);
           } catch (err) {
             this.updateStatus(InstanceStatus.ConnectionFailure, String(err));
@@ -509,6 +615,16 @@ class TaistoModule extends InstanceBase {
     return `http://${host}:${port}${path}`;
   }
 
+  taistoFetch(path, options = {}) {
+    const headers = Object.assign({}, options.headers || {});
+    if (options.body && !headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
+    const apiKey = String(this.config.apiKey || "").trim();
+    if (apiKey) headers["X-API-Key"] = apiKey;
+    return fetch(this.buildUrl(path), Object.assign({}, options, { headers }));
+  }
+
   buildProjectorUrl() {
     const host = this.config.projectorHost || "localhost";
     const port = this.config.projectorPort || 8001;
@@ -555,6 +671,10 @@ class TaistoModule extends InstanceBase {
     const matrixActive = conPorts.length > 0;
     const projectorActive = this.projectorUsed;
 
+    if (now - this.lastResourceRefreshAt >= 30000) {
+      await this.refreshTaistoResources(true);
+    }
+
     if (conPorts.length > 0 && !this.config.host) {
       this.updateStatus(InstanceStatus.BadConfig, "Host is required");
       return;
@@ -579,10 +699,10 @@ class TaistoModule extends InstanceBase {
       this.lastMatrixPollAt = now;
       for (const conPortId of conPorts) {
         try {
-          const url = this.buildUrl(
-            `/rest/con-ports/${encodeURIComponent(conPortId)}/video-connection`
+          const res = await this.taistoFetch(
+            `/rest/con-ports/${encodeURIComponent(conPortId)}/video-connection`,
+            { method: "GET" }
           );
-          const res = await fetch(url, { method: "GET" });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
           const data = await res.json();

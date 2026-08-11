@@ -13,6 +13,12 @@ npm run dev
 
 Sovellus avautuu osoitteessa `http://localhost:1337`. Tuotantotilassa käytä `npm start`. Selainpaketin rakentaa `npm run build` ja matriisitestin ajaa `npm run testmatrix`.
 
+### Riippuvuuksien turvallisuuspolitiikka
+
+Projektin `.npmrc` hyväksyy vain vähintään seitsemän päivää vanhat pakettijulkaisut ja estää riippuvuuksien asennusskriptit. Projekti vaatii npm-version 11.10 tai uudemman. `npm run build`, `npm start` ja muut erikseen käynnistetyt projektikomennot toimivat edelleen, mutta pakettien `preinstall`-, `install`- ja `postinstall`-skriptejä ei ajeta.
+
+GitHub Actions tarkistaa ennen Docker-buildia, että `package-lock.json` vastaa tätä politiikkaa. Docker-image kopioi saman `.npmrc`-tiedoston ennen `npm ci` -asennusta.
+
 ### Anonymisoitu mock-data
 
 Projektissa on anonymisoitu testitietokanta tiedostossa [tests/fixtures/mock-database.json](tests/fixtures/mock-database.json). Se perustuu tuotantotietokannan rakenteeseen, mutta sisältää vain kuvitteellisia matriiseja, IP-osoitteita ja laitenimiä. Mock-matriisin osoite `192.0.2.10` kuuluu dokumentaatiolle varattuun TEST-NET-alueeseen. Sen `mock: true` -asetus simuloi kytkentäpalautteet paikallisesti, joten **Vaihda laite** toimii ilman oikeaa laitetta.
@@ -90,6 +96,15 @@ git push origin v0.1.8
 - Avaimet, käyttölaskurit ja viimeisimmät käyttöajat tallennetaan pyynnöstä selväkielisinä SQLite-tietokannan `rest_api_keys`-tauluun.
 - Sovelluksen pysyvä data on tiedostossa `database/taisto.sqlite`. Docker-imagessa polku on `/usr/src/database/taisto.sqlite`, joten koko `/usr/src/database`-hakemisto tulee liittää pysyvään levyyn.
 - Paikallinen Bitfocus Companion -moduuli on hakemistossa `companion-module-taisto/`.
+- Ohjesivulta voi ladata valmiiksi rakennetun Companion-moduulin osoitteesta `/downloads/taisto-companion.zip`. Tagistä käynnistyvä GitHub Actions -julkaisutyö rakentaa ZIPin, julkaisee sen workflow-artifaktina ja sisällyttää saman paketin Docker-kuvaan.
+
+### Audit-loki
+
+SQLite-tietokannan `audit_logs`-tauluun kirjataan muuttavat REST-pyynnöt, GraphQL-mutaatiot, API-avainasetusten muutokset, kirjautumisyritykset sekä käyttöliittymän WebSocketilla tekemät video- ja KVM-ohjaukset. Merkintä sisältää UTC-aikaleiman, toiminnon, kohteen, tekijän tai API-avaimen tunnisteen, IP-osoitteen ja onnistumistilan. API-avaimia, salasanoja ja Authorization-otsakkeita ei tallenneta.
+
+Lokit näkyvät sivulla **Asetukset → Audit-loki** paikallisessa ajassa. Näkymä näyttää 200 uusinta tapahtumaa. Säilytysaika asetetaan ympäristömuuttujalla `TAISTO_AUDIT_RETENTION_DAYS`; oletus on `90` päivää ja arvo `0` estää automaattisen poistamisen. Sallitut arvot ovat kokonaislukuja väliltä 0–3650. Vanheneminen lasketaan tietokantaan tallennetusta UTC-ajasta. Audit-loki säilyy `database/taisto.sqlite`-tiedostossa muun pysyvän datan kanssa, eikä sitä sisällytetä JSON-vientiin.
+
+Docker-esimerkki: `docker run -e TAISTO_AUDIT_RETENTION_DAYS=30 ...`
 
 ### Siirtyminen database.json-tiedostosta SQLiteen
 

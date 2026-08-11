@@ -1,13 +1,14 @@
 {
 	"name": "taisto",
-	"version": "0.1.15",
+	"version": "0.1.16",
 	"description": "Taisto",
 	"main": "app.js",
 	"author": {
 		"name": "Jaska"
 	},
 	"engines": {
-		"node": ">=24.0.0"
+		"node": ">=24.0.0",
+		"npm": ">=11.10.0"
 	},
 	"scripts": {
 		"start": "cross-env NODE_ENV=production babel-node app.js -- -p 1337",

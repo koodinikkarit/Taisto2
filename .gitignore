@@ -4,6 +4,7 @@ node_modules/*
 .vscode/*
 public/app.js
 public/app.js.map
+public/taisto-companion.zip
 saves/*
 debug.log
 database.json

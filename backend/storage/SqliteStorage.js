@@ -56,6 +56,38 @@ function migrateSchema(db) {
       COMMIT;
     `);
   }
+  if (version < 2) {
+    db.exec(`
+      BEGIN;
+      CREATE TABLE audit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        created_at TEXT NOT NULL,
+        actor_type TEXT NOT NULL,
+        actor_id TEXT NOT NULL DEFAULT '',
+        actor_name TEXT NOT NULL DEFAULT '',
+        action TEXT NOT NULL,
+        target TEXT NOT NULL DEFAULT '',
+        method TEXT NOT NULL,
+        path TEXT NOT NULL,
+        status_code INTEGER NOT NULL,
+        success INTEGER NOT NULL,
+        ip_address TEXT NOT NULL DEFAULT '',
+        details TEXT NOT NULL DEFAULT '{}'
+      );
+      CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at DESC);
+      CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+      CREATE INDEX idx_audit_logs_actor_id ON audit_logs(actor_id);
+      INSERT INTO schema_migrations(version, applied_at) VALUES (2, datetime('now'));
+      COMMIT;
+    `);
+  }
+  if (version < 3) {
+    db.exec(`
+      BEGIN;
+      INSERT INTO schema_migrations(version, applied_at) VALUES (3, datetime('now'));
+      COMMIT;
+    `);
+  }
 }
 
 function tableHasData(db) {
@@ -139,6 +171,7 @@ export function initializeDatabaseStorage({ sqlitePath, jsonPath }) {
   fs.mkdirSync(path.dirname(sqliteFile), { recursive: true });
   database = new DatabaseSync(sqliteFile);
   migrateSchema(database);
+  getAuditRetentionDays();
   if (!tableHasData(database) && jsonPath && fs.existsSync(jsonPath)) {
     const sourcePath = path.resolve(jsonPath);
     const source = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
@@ -162,4 +195,72 @@ export function exportDatabaseToJson(outputPath) {
 
 export function getSqlitePath() {
   return sqliteFile;
+}
+
+export function appendAuditLog(entry) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const details = typeof entry.details === "string" ? entry.details : JSON.stringify(entry.details || {});
+  const result = database.prepare(`
+    INSERT INTO audit_logs (
+      created_at, actor_type, actor_id, actor_name, action, target,
+      method, path, status_code, success, ip_address, details
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    entry.createdAt || new Date().toISOString(),
+    entry.actorType || "unknown",
+    entry.actorId || "",
+    entry.actorName || "",
+    entry.action || "unknown",
+    entry.target || "",
+    entry.method || "",
+    entry.path || "",
+    Number(entry.statusCode || 0),
+    entry.success ? 1 : 0,
+    entry.ipAddress || "",
+    details.slice(0, 8000)
+  );
+  purgeExpiredAuditLogs();
+  return Number(result.lastInsertRowid);
+}
+
+export function listAuditLogs({ limit = 200, offset = 0 } = {}) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  purgeExpiredAuditLogs();
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 200, 500));
+  const safeOffset = Math.max(0, Number(offset) || 0);
+  const rows = database.prepare(`
+    SELECT id, created_at AS createdAt, actor_type AS actorType,
+      actor_id AS actorId, actor_name AS actorName, action, target,
+      method, path, status_code AS statusCode, success,
+      ip_address AS ipAddress, details
+    FROM audit_logs
+    ORDER BY id DESC
+    LIMIT ? OFFSET ?
+  `).all(safeLimit, safeOffset).map(row => {
+    try {
+      row.details = JSON.parse(row.details || "{}");
+    } catch (error) {
+      row.details = {};
+    }
+    row.success = Boolean(row.success);
+    return row;
+  });
+  const total = Number(database.prepare("SELECT COUNT(*) AS total FROM audit_logs").get().total);
+  return { rows, total, limit: safeLimit, offset: safeOffset };
+}
+
+export function getAuditRetentionDays() {
+  const configuredValue = process.env.TAISTO_AUDIT_RETENTION_DAYS;
+  const retentionDays = configuredValue == null || configuredValue === "" ? 90 : Number(configuredValue);
+  if (!Number.isInteger(retentionDays) || retentionDays < 0 || retentionDays > 3650) {
+    throw new Error("TAISTO_AUDIT_RETENTION_DAYS must be an integer between 0 and 3650");
+  }
+  return retentionDays;
+}
+
+function purgeExpiredAuditLogs() {
+  const retentionDays = getAuditRetentionDays();
+  if (retentionDays === 0) return;
+  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString();
+  database.prepare("DELETE FROM audit_logs WHERE created_at < ?").run(cutoff);
 }
