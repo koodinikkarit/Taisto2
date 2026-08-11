@@ -17,7 +17,7 @@ Sovellus avautuu osoitteessa `http://localhost:1337`. Tuotantotilassa käytä `n
 
 Projektin `.npmrc` hyväksyy vain vähintään seitsemän päivää vanhat pakettijulkaisut ja estää riippuvuuksien asennusskriptit. Projekti vaatii npm-version 11.10 tai uudemman. `npm run build`, `npm start` ja muut erikseen käynnistetyt projektikomennot toimivat edelleen, mutta pakettien `preinstall`-, `install`- ja `postinstall`-skriptejä ei ajeta.
 
-GitHub Actions tarkistaa ennen Docker-buildia, että `package-lock.json` vastaa tätä politiikkaa. Docker-image kopioi saman `.npmrc`-tiedoston ennen `npm ci` -asennusta.
+GitHub Actions tarkistaa ennen Docker-buildia, että `package-lock.json` vastaa tätä politiikkaa. Docker-image kopioi saman `.npmrc`-tiedoston ennen `npm ci` -asennusta. Tagijulkaisu luo lisäksi GitHub Releasen automaattisilla julkaisutiedoilla ja liittää siihen valmiin Companion-ZIPin. Vain semanttisesti uusin vakaa `vMAJOR.MINOR.PATCH`-tagi päivittää GHCR:n `latest`-tagin ja GitHubin Latest release -merkinnän.
 
 ### Anonymisoitu mock-data
 

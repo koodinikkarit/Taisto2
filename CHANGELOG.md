@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.17] - 2026-08-12
+### Changed
+- Tag builds now assign the GHCR `latest` tag only to the newest stable semantic version and create a GitHub Release with the Companion ZIP attached.
+
 ## [0.1.16] - 2026-08-11
 ### Added
 - Added normalized SQLite persistence with schema migrations, transactions, foreign keys, and WAL journaling.

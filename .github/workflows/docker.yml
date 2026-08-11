@@ -12,12 +12,14 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -41,6 +43,22 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           node -e "const fs=require('fs'); const version=process.argv[1]; for (const file of ['package.json','package-lock.json','companion-module-taisto/package.json','companion-module-taisto/package-lock.json']) { const data=JSON.parse(fs.readFileSync(file)); data.version=version; if (data.packages && data.packages['']) data.packages[''].version=version; fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\\n'); } const manifestFile='companion-module-taisto/companion/manifest.json'; const manifest=JSON.parse(fs.readFileSync(manifestFile)); manifest.version=version; fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\\n');" "$VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Determine latest stable tag
+        id: latest
+        shell: bash
+        run: |
+          LATEST_TAG="$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No stable vMAJOR.MINOR.PATCH tag was found" >&2
+            exit 1
+          fi
+          if [ "$GITHUB_REF_NAME" = "$LATEST_TAG" ]; then
+            echo "is_latest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_latest=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "latest_tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Build Companion module
         working-directory: companion-module-taisto
@@ -77,6 +95,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate Docker tags
+        id: docker-tags
+        shell: bash
+        run: |
+          {
+            echo "tags<<EOF"
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
+            if [ "${{ steps.latest.outputs.is_latest }}" = "true" ]; then
+              echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build and publish Docker image
         uses: docker/build-push-action@v6
         with:
@@ -84,7 +116,35 @@ jobs:
           push: true
           build-args: |
             BUILD_ID=${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+          tags: ${{ steps.docker-tags.outputs.tags }}
+
+      - name: Create GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" \
+              'public/taisto-companion.zip#Taisto Companion module' \
+              --clobber
+          else
+            if [ "${{ steps.latest.outputs.is_latest }}" = "true" ]; then
+              LATEST_FLAG="--latest"
+            else
+              LATEST_FLAG="--latest=false"
+            fi
+            gh release create "$GITHUB_REF_NAME" \
+              'public/taisto-companion.zip#Taisto Companion module' \
+              --verify-tag \
+              --generate-notes \
+              --title "Taisto ${{ steps.version.outputs.version }}" \
+              "$LATEST_FLAG"
+          fi
+          if [ "${{ steps.latest.outputs.is_latest }}" = "true" ]; then
+            gh release edit "$GITHUB_REF_NAME" --latest
+          else
+            RELEASE_ID="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME" --jq '.id')"
+            gh api --method PATCH \
+              "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
+              -f make_latest=false >/dev/null
+          fi
