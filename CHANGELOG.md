@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.1.21] - 2026-08-16
+### Fixed
+- Dependency safety validation now uses the committed lockfile directly and no longer regenerates platform-specific lockfile entries on Linux runners.
+
 ## [0.1.20] - 2026-08-16
 ### Fixed
 - Docker release builds now synchronize the application version before validating the dependency lockfile.

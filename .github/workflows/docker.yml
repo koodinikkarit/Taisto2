@@ -41,8 +41,7 @@ jobs:
       - name: Verify dependency safety policy
         shell: bash
         run: |
-          npm install --package-lock-only
-          git diff --exit-code -- package-lock.json
+          npm ci --ignore-scripts
 
       - name: Determine latest stable tag
         id: latest
