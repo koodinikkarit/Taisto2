@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { DatabaseSync } from "node:sqlite";
 
 const COUNTERS = [
@@ -99,6 +100,36 @@ function migrateSchema(db) {
         PRIMARY KEY (con_group_id, cpu_port_id)
       );
       INSERT INTO schema_migrations(version, applied_at) VALUES (4, datetime('now'));
+      COMMIT;
+    `);
+  }
+  if (version < 5) {
+    db.exec(`
+      BEGIN;
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL COLLATE NOCASE UNIQUE,
+        password_hash TEXT NOT NULL,
+        password_salt TEXT NOT NULL,
+        role TEXT NOT NULL CHECK (role IN ('admin', 'user')),
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+      CREATE TABLE auth_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+      INSERT INTO schema_migrations(version, applied_at) VALUES (5, datetime('now'));
+      COMMIT;
+    `);
+  }
+  if (version < 6) {
+    db.exec(`
+      BEGIN;
+      ALTER TABLE users ADD COLUMN last_login_at TEXT NOT NULL DEFAULT '';
+      ALTER TABLE users ADD COLUMN login_count INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE users ADD COLUMN last_login_ip TEXT NOT NULL DEFAULT '';
+      INSERT INTO schema_migrations(version, applied_at) VALUES (6, datetime('now'));
       COMMIT;
     `);
   }
@@ -217,6 +248,137 @@ export function getSqlitePath() {
   return sqliteFile;
 }
 
+export function closeDatabaseStorage() {
+  if (database) database.close();
+  database = null;
+  sqliteFile = "";
+}
+
+const publicUser = row => row ? {
+  id: Number(row.id),
+  username: row.username,
+  role: row.role,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+  lastLoginAt: row.last_login_at || "",
+  loginCount: Number(row.login_count || 0),
+  lastLoginIp: row.last_login_ip || ""
+} : null;
+
+const normalizeUsername = username => String(username || "").trim();
+const normalizeRole = role => role === "user" ? "user" : role === "admin" ? "admin" : "";
+
+function passwordDigest(password, salt) {
+  return crypto.scryptSync(String(password), salt, 64).toString("base64url");
+}
+
+function assertUserInput(username, password, role, passwordRequired = true) {
+  const normalizedUsername = normalizeUsername(username);
+  if (normalizedUsername.length < 3 || normalizedUsername.length > 64) throw new Error("Username must be between 3 and 64 characters");
+  if (!/^[\p{L}\p{N}_.@-]+$/u.test(normalizedUsername)) throw new Error("Username contains unsupported characters");
+  if (passwordRequired && String(password || "").length < 8) throw new Error("Password must contain at least 8 characters");
+  if (!normalizeRole(role)) throw new Error("Role must be admin or user");
+  return { username: normalizedUsername, role: normalizeRole(role) };
+}
+
+export function countUsers() {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  return Number(database.prepare("SELECT COUNT(*) AS total FROM users").get().total);
+}
+
+export function countAdminUsers() {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  return Number(database.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin'").get().total);
+}
+
+export function listUsers() {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  return database.prepare("SELECT id, username, role, created_at, updated_at, last_login_at, login_count, last_login_ip FROM users ORDER BY username COLLATE NOCASE").all().map(publicUser);
+}
+
+export function getUserById(id) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  return publicUser(database.prepare("SELECT id, username, role, created_at, updated_at, last_login_at, login_count, last_login_ip FROM users WHERE id = ?").get(Number(id)));
+}
+
+export function authenticateUser(username, password) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const row = database.prepare("SELECT * FROM users WHERE username = ? COLLATE NOCASE").get(normalizeUsername(username));
+  if (!row) return null;
+  const actual = Buffer.from(passwordDigest(password || "", row.password_salt), "base64url");
+  const expected = Buffer.from(row.password_hash, "base64url");
+  return actual.length === expected.length && crypto.timingSafeEqual(actual, expected) ? publicUser(row) : null;
+}
+
+export function recordUserLogin(id, ipAddress = "") {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  database.prepare(`
+    UPDATE users
+    SET last_login_at = ?, login_count = login_count + 1, last_login_ip = ?
+    WHERE id = ?
+  `).run(new Date().toISOString(), String(ipAddress || "").slice(0, 120), Number(id));
+  return getUserById(id);
+}
+
+export function createUser({ username, password, role }) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const input = assertUserInput(username, password, countUsers() === 0 ? "admin" : role);
+  const salt = crypto.randomBytes(16).toString("base64url");
+  const now = new Date().toISOString();
+  const result = database.prepare(`
+    INSERT INTO users(username, password_hash, password_salt, role, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(input.username, passwordDigest(password, salt), salt, input.role, now, now);
+  return getUserById(result.lastInsertRowid);
+}
+
+export function updateUser(id, changes, { allowNoAdmin = false } = {}) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const numericId = Number(id);
+  const current = database.prepare("SELECT * FROM users WHERE id = ?").get(numericId);
+  if (!current) return null;
+  const username = changes.username === undefined ? current.username : normalizeUsername(changes.username);
+  const role = changes.role === undefined ? current.role : normalizeRole(changes.role);
+  assertUserInput(username, changes.password, role, false);
+  if (current.role === "admin" && role !== "admin") {
+    const admins = Number(database.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin'").get().total);
+    if (admins <= 1 && !allowNoAdmin) throw new Error("The last admin cannot be demoted without an environment admin credential");
+  }
+  let passwordHash = current.password_hash;
+  let passwordSalt = current.password_salt;
+  if (changes.password !== undefined && changes.password !== "") {
+    if (String(changes.password).length < 8) throw new Error("Password must contain at least 8 characters");
+    passwordSalt = crypto.randomBytes(16).toString("base64url");
+    passwordHash = passwordDigest(changes.password, passwordSalt);
+  }
+  database.prepare(`
+    UPDATE users SET username = ?, password_hash = ?, password_salt = ?, role = ?, updated_at = ? WHERE id = ?
+  `).run(username, passwordHash, passwordSalt, role, new Date().toISOString(), numericId);
+  return getUserById(numericId);
+}
+
+export function deleteUser(id, { allowNoAdmin = false } = {}) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const numericId = Number(id);
+  const current = database.prepare("SELECT id, role FROM users WHERE id = ?").get(numericId);
+  if (!current) return false;
+  if (current.role === "admin") {
+    const admins = Number(database.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin'").get().total);
+    if (admins <= 1 && !allowNoAdmin) throw new Error("The last admin cannot be removed without an environment admin credential");
+  }
+  database.prepare("DELETE FROM users WHERE id = ?").run(numericId);
+  return true;
+}
+
+export function getAuthSessionSecret() {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const existing = database.prepare("SELECT value FROM auth_settings WHERE key = 'session_secret'").get();
+  if (existing) return existing.value;
+  const secret = crypto.randomBytes(32).toString("base64url");
+  database.prepare("INSERT INTO auth_settings(key, value) VALUES ('session_secret', ?)").run(secret);
+  return secret;
+}
+
 export function appendAuditLog(entry) {
   if (!database) throw new Error("SQLite storage has not been initialized");
   const details = typeof entry.details === "string" ? entry.details : JSON.stringify(entry.details || {});
@@ -243,20 +405,55 @@ export function appendAuditLog(entry) {
   return Number(result.lastInsertRowid);
 }
 
-export function listAuditLogs({ limit = 200, offset = 0 } = {}) {
+export function listAuditLogs({ limit = 200, offset = 0, search = "", success = "", actorType = "", action = "", from = "", to = "" } = {}) {
   if (!database) throw new Error("SQLite storage has not been initialized");
   purgeExpiredAuditLogs();
   const safeLimit = Math.max(1, Math.min(Number(limit) || 200, 500));
   const safeOffset = Math.max(0, Number(offset) || 0);
+  const conditions = [];
+  const parameters = [];
+  const safeSearch = String(search || "").trim().slice(0, 120);
+  const safeActorType = String(actorType || "").trim().slice(0, 60);
+  const safeAction = String(action || "").trim().slice(0, 120);
+  if (safeSearch) {
+    const pattern = `%${safeSearch}%`;
+    conditions.push("(action LIKE ? OR actor_name LIKE ? OR actor_id LIKE ? OR target LIKE ? OR path LIKE ? OR ip_address LIKE ?)");
+    parameters.push(pattern, pattern, pattern, pattern, pattern, pattern);
+  }
+  if (success === true || success === "true" || success === "1") {
+    conditions.push("success = 1");
+  } else if (success === false || success === "false" || success === "0") {
+    conditions.push("success = 0");
+  }
+  if (safeActorType) {
+    conditions.push("actor_type = ?");
+    parameters.push(safeActorType);
+  }
+  if (safeAction) {
+    conditions.push("action LIKE ?");
+    parameters.push(`%${safeAction}%`);
+  }
+  const fromTime = from ? new Date(from) : null;
+  const toTime = to ? new Date(to) : null;
+  if (fromTime && Number.isFinite(fromTime.getTime())) {
+    conditions.push("created_at >= ?");
+    parameters.push(fromTime.toISOString());
+  }
+  if (toTime && Number.isFinite(toTime.getTime())) {
+    conditions.push("created_at <= ?");
+    parameters.push(toTime.toISOString());
+  }
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
   const rows = database.prepare(`
     SELECT id, created_at AS createdAt, actor_type AS actorType,
       actor_id AS actorId, actor_name AS actorName, action, target,
       method, path, status_code AS statusCode, success,
       ip_address AS ipAddress, details
     FROM audit_logs
+    ${where}
     ORDER BY id DESC
     LIMIT ? OFFSET ?
-  `).all(safeLimit, safeOffset).map(row => {
+  `).all(...parameters, safeLimit, safeOffset).map(row => {
     try {
       row.details = JSON.parse(row.details || "{}");
     } catch (error) {
@@ -265,8 +462,9 @@ export function listAuditLogs({ limit = 200, offset = 0 } = {}) {
     row.success = Boolean(row.success);
     return row;
   });
-  const total = Number(database.prepare("SELECT COUNT(*) AS total FROM audit_logs").get().total);
-  return { rows, total, limit: safeLimit, offset: safeOffset };
+  const total = Number(database.prepare(`SELECT COUNT(*) AS total FROM audit_logs ${where}`).get(...parameters).total);
+  const unfilteredTotal = Number(database.prepare("SELECT COUNT(*) AS total FROM audit_logs").get().total);
+  return { rows, total, unfilteredTotal, limit: safeLimit, offset: safeOffset };
 }
 
 export function getAuditRetentionDays() {

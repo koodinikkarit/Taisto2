@@ -19,12 +19,15 @@ import {
 
 import { Server as SocketIOServer } from "socket.io";
 import { appendAuditLog } from "./storage/SqliteStorage";
+import { getSessionIdentity } from "./auth";
 
 const auditSocketMutation = (socket, action, target, details, success) => {
 	try {
+		const identity = getSessionIdentity(socket.request);
 		appendAuditLog({
-			actorType: "websocket",
-			actorName: "Taisto WebSocket client",
+			actorType: identity ? "user" : "websocket",
+			actorId: identity ? String(identity.id || "") : "",
+			actorName: identity ? identity.username : "Taisto WebSocket client",
 			action,
 			target,
 			method: "WEBSOCKET",

@@ -37,13 +37,21 @@ Komento kopioi mock-datan väliaikaiseen `database/database.json`-tiedostoon, po
 - Ohjesivu on reitissä `/apua`. Sen lähdetiedosto on [apua.md](apua.md), jossa on suomen- ja englanninkielinen sisältö.
 - Sovellus näyttää alanurkassa versionumeron ja build-tunnisteen. Paikallisessa ajossa tunniste on `local`.
 
-## Salasanasuojaus
+## Käyttäjät ja salasanasuojaus
 
-Promode (`/promode`) ja Asetukset (`/settings`) suojataan kirjautumissivulla vain, kun `TAISTO_PASSWORD` on asetettu. Onnistunut kirjautuminen käyttää 8 tuntia voimassa olevaa HTTP-only-istuntocookiea. Ilman salasanaa suojaus ei ole käytössä.
+Käyttäjiä hallitaan sivulla **Asetukset → Käyttäjät**. Salasanat tallennetaan SQLite-tietokantaan `scrypt`-tiivisteinä, ei selväkielisinä. Käyttäjäkortti näyttää viimeisimmän kirjautumisen, kirjautumiskertojen määrän, viimeisimmän IP-osoitteen sekä luonti- ja muokkausajat. Ajat tallennetaan UTC-muodossa ja näytetään selaimen paikallisessa ajassa. Onnistunut kirjautuminen käyttää 8 tuntia voimassa olevaa, HTTP-only- ja SameSite-istuntocookiea.
+
+- `admin` voi käyttää koko sovellusta ja hallita asetuksia sekä käyttäjiä.
+- `user` voi nähdä ja käyttää kaavioita, näyttöryhmiä, oletustiloja ja Promodea, mutta ei pääse Asetuksiin eikä voi suorittaa asetuksia muuttavia GraphQL-mutaatioita.
+- Viimeistä tietokannan admin-käyttäjää ei voi poistaa tai muuttaa tavalliseksi käyttäjäksi, ellei palvelimelle ole asetettu `TAISTO_PASSWORD`-ympäristömuuttujaa korvaavaksi admin-tunnukseksi.
+
+Kun tietokannassa ei vielä ole käyttäjiä, `TAISTO_USER` ja `TAISTO_PASSWORD` toimivat admin-tason aloitustunnuksena. Ensimmäinen tietokantaan luotu käyttäjä pakotetaan adminiksi. Ympäristötunnus toimii lisäksi varatunnuksena aina, kun tietokannassa ei ole yhtään admin-käyttäjää. Kun tietokannassa on admin, uudet ympäristötunnuksen kirjautumiset poistuvat käytöstä; jo avattu istunto säilyy voimassa normaalin päättymisaikansa loppuun.
+
+Jos tietokannassa ei ole käyttäjiä eikä `TAISTO_PASSWORD`-muuttujaa ole asetettu, anonyymi käyttö toimii entiseen tapaan eikä kirjautumista vaadita. Kun tunnistautuminen on käytössä, Promode vaatii `admin`- tai `user`-kirjautumisen ja Asetukset vaativat `admin`-roolin.
 
 ```powershell
 $env:TAISTO_PASSWORD = "vahva-salasana"
-$env:TAISTO_USER = "taisto" # valinnainen; oletus on taisto
+$env:TAISTO_USER = "taisto" # valinnainen aloitustunnus; oletus on taisto
 npm start
 ```
 
@@ -127,13 +135,15 @@ git push origin v0.1.8
 
 ### Audit-loki
 
-SQLite-tietokannan `audit_logs`-tauluun kirjataan muuttavat REST-pyynnöt, GraphQL-mutaatiot, API-avainasetusten muutokset, kirjautumisyritykset sekä käyttöliittymän WebSocketilla tekemät video- ja KVM-ohjaukset. Merkintä sisältää UTC-aikaleiman, toiminnon, kohteen, tekijän tai API-avaimen tunnisteen, IP-osoitteen ja onnistumistilan. API-avaimia, salasanoja ja Authorization-otsakkeita ei tallenneta.
+SQLite-tietokannan `audit_logs`-tauluun kirjataan muuttavat REST-pyynnöt, GraphQL-mutaatiot, API-avainasetusten muutokset, kirjautumisyritykset sekä käyttöliittymän WebSocketilla tekemät video- ja KVM-ohjaukset. Merkintä sisältää UTC-aikaleiman, toiminnon, kohteen, tekijän tai API-avaimen tunnisteen, IP-osoitteen ja onnistumistilan. Kun selaimessa on voimassa oleva käyttäjäistunto, myös anonyymisti sallitut REST-, GraphQL- ja WebSocket-toiminnot kirjataan kyseisen käyttäjän tekemiksi. Nimenomaisesti API-avaimella tehty pyyntö kirjataan edelleen API-avaimelle. API-avaimia, salasanoja ja Authorization-otsakkeita ei tallenneta.
 
-Lokit näkyvät sivulla **Asetukset → Audit-loki** paikallisessa ajassa. Näkymä näyttää 200 uusinta tapahtumaa. Säilytysaika asetetaan ympäristömuuttujalla `TAISTO_AUDIT_RETENTION_DAYS`; oletus on `90` päivää ja arvo `0` estää automaattisen poistamisen. Sallitut arvot ovat kokonaislukuja väliltä 0–3650. Vanheneminen lasketaan tietokantaan tallennetusta UTC-ajasta. Audit-loki säilyy `database/taisto.sqlite`-tiedostossa muun pysyvän datan kanssa, eikä sitä sisällytetä JSON-vientiin.
+Lokit näkyvät sivulla **Asetukset → Audit-loki** paikallisessa ajassa. Näkymä näyttää 200 uusinta suodatukseen sopivaa tapahtumaa. Lokia voi suodattaa vapaalla haulla, toiminnolla, onnistumistilalla, tekijätyypillä ja paikallisessa ajassa annetulla aikavälillä. Säilytysaika asetetaan ympäristömuuttujalla `TAISTO_AUDIT_RETENTION_DAYS`; oletus on `90` päivää ja arvo `0` estää automaattisen poistamisen. Sallitut arvot ovat kokonaislukuja väliltä 0–3650. Vanheneminen lasketaan tietokantaan tallennetusta UTC-ajasta. Audit-loki säilyy `database/taisto.sqlite`-tiedostossa muun pysyvän datan kanssa, eikä sitä sisällytetä JSON-vientiin.
 
 Docker-esimerkki: `docker run -e TAISTO_AUDIT_RETENTION_DAYS=30 ...`
 
 ### Siirtyminen database.json-tiedostosta SQLiteen
+
+Nykyisen SQLite-tietokannan täydellinen rakenne on tiedostossa [`backend/storage/schema.sql`](backend/storage/schema.sql). Se toimii luettavana skeemakuvauksena ja sillä voi alustaa uuden tyhjän SQLite-tietokannan. Sovelluksen käyttämät versioidut päivitysmigraatiot ovat edelleen `backend/storage/SqliteStorage.js`-tiedostossa ja ne suoritetaan automaattisesti käynnistyksen yhteydessä.
 
 Jos `database/taisto.sqlite` ei ole vielä alustettu mutta `database/database.json` löytyy, sovellus tuo vanhan JSON-tietokannan automaattisesti SQLiteen ennen palvelimen käynnistymistä. Tuonti tehdään yhdessä tietokantatransaktiossa ja alkuperäisestä JSON-tiedostosta luodaan aikaleimattu `database.pre-sqlite-backup.*.json`-varmuuskopio. Vanhaa JSON-tiedostoa ei poisteta.
 

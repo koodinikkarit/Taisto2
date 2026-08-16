@@ -9,9 +9,11 @@ import MatrixTable from "./MatrixTable";
 import MatrixBoard from "./MatrixBoard";
 
 import * as actions from "../actions/Promode";
+import { AuthContext } from "./ProtectedApp";
 
 
 class Promode extends React.Component {
+	static contextType = AuthContext;
 	changeMatrix(slug) {
 		this.props.history.push(`/promode/${slug}/matriisi`);
 	}
@@ -96,7 +98,8 @@ class Promode extends React.Component {
 				</div>
 			);
 		} else {
-			return <div style={{ maxWidth: "680px", margin: "48px auto", padding: "28px", textAlign: "center", background: "#fff", border: "1px solid #dfe5eb", borderRadius: "12px" }}><h1>Ei matriiseja</h1><p>Yhdistä ensin matriisi asetuksista, jotta voit käyttää Promodea.</p><a className="btn btn-primary" href="/settings/matriisit">Avaa asetukset</a></div>
+			const canManageSettings = !this.context.required || this.context.role === "admin";
+			return <div style={{ maxWidth: "680px", margin: "48px auto", padding: "28px", textAlign: "center", background: "#fff", border: "1px solid #dfe5eb", borderRadius: "12px" }}><h1>Ei matriiseja</h1><p>{canManageSettings ? "Yhdistä ensin matriisi asetuksista, jotta voit käyttää Promodea." : "Admin ei ole vielä yhdistänyt matriisia."}</p>{canManageSettings && <a className="btn btn-primary" href="/settings/matriisit">Avaa asetukset</a>}</div>
 		}
 	}
 }

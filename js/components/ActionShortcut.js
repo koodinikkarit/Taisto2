@@ -18,6 +18,11 @@ class ActionShortcut extends React.Component {
     render() {
         if (this.props.diagramScreen) {
             var activeDevice = this.props.diagramScreen.matrix.cpuPorts.find(p => p.id === this.props.videoConnections[this.props.diagramScreen.conPort.id]);
+            const displayDevice = this.props.diagramScreen.conPort;
+            const displayDeviceName = displayDevice.slug || this.props.diagramScreen.slug;
+            const displayDeviceLabel = displayDevice.portNum !== null && displayDevice.portNum !== undefined
+                ? `${displayDevice.portNum}. ${displayDeviceName}`
+                : displayDeviceName;
             const styles = {
                 card: { border: "1px solid #dfe5eb", borderRadius: "12px", background: "#fff", boxShadow: "0 3px 12px rgba(24,39,75,.06)", overflow: "hidden" },
                 header: { padding: "16px 18px", background: "linear-gradient(135deg,#edf6ff,#f8fbfe)", borderBottom: "1px solid #dfe5eb" },
@@ -30,7 +35,7 @@ class ActionShortcut extends React.Component {
                 <article style={styles.card}>
                     <header style={styles.header}>
                         <div style={styles.caption}>Näyttölaite</div>
-                        <div style={styles.value}>{this.props.diagramScreen.conPort.slug || this.props.diagramScreen.slug}</div>
+                        <div style={styles.value}>{displayDeviceLabel}</div>
                     </header>
                     <div style={styles.body}>
                         <div style={styles.caption}>Aktiivinen laite</div>

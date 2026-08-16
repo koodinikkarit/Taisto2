@@ -19,6 +19,10 @@ Pura ZIP-tiedosto ja valitse Companionissa **Settings → Modules → Install mo
 
 **Asetukset → Audit-loki** näyttää REST- ja käyttöliittymämuutokset, matriisin video- ja KVM-ohjaukset, API-avaimen nimen, lähdeosoitteen sekä pyynnön onnistumisen. Säilytysaika asetetaan palvelimen ympäristömuuttujalla `TAISTO_AUDIT_RETENTION_DAYS`; oletus on 90 päivää ja arvo `0` estää automaattisen poistamisen. Ajat näytetään selaimen paikallisessa ajassa. Salasanoja tai API-avainten sisältöä ei tallenneta lokiin.
 
+## Käyttäjät
+
+Admin hallitsee käyttäjiä sivulla **Asetukset → Käyttäjät**. `admin` voi muuttaa asetuksia, kun taas `user` voi käyttää kaavioita, näyttöryhmiä, oletustiloja ja Promodea ilman pääsyä asetuksiin. Viimeistä tietokannan adminia ei voi poistaa tai muuttaa käyttäjäksi ilman `TAISTO_PASSWORD`-ympäristömuuttujalla määritettyä korvaavaa admin-tunnusta. Ympäristötunnus toimii aloitus- ja varatunnuksena silloin, kun tietokannassa ei ole adminia. Ilman tietokantakäyttäjiä ja ympäristömuuttujan salasanaa sovellus säilyy anonyymisti käytettävänä.
+
 ## Aloittaminen
 
 1. Avaa **Asetukset** ja yhdistä matriisi.
@@ -57,6 +61,10 @@ Extract the ZIP and select **Settings → Modules → Install module from local 
 ## Audit log
 
 **Settings → Audit log** shows REST and UI changes, matrix video and KVM commands, the API key name, source address and request result. Retention is configured with the server environment variable `TAISTO_AUDIT_RETENTION_DAYS`; it defaults to 90 days and `0` disables automatic deletion. Times are displayed in the browser's local timezone. Passwords and API key values are never stored in the log.
+
+## Users
+
+Admins manage accounts under **Settings → Users**. An `admin` can change settings, while a `user` can operate diagrams, output groups, default states and Promode without access to Settings. The final database admin cannot be removed or demoted unless `TAISTO_PASSWORD` provides a replacement environment admin. The environment credential acts as a bootstrap and fallback whenever the database has no admin. Without database users or an environment password, the application remains available anonymously.
 
 ## Getting started
 

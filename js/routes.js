@@ -20,6 +20,7 @@ import ConGroupList from "./components/ConGroupList";
 import ApiKeySettings from "./components/ApiKeySettings";
 import AuditLogs from "./components/AuditLogs";
 import ConGroupRunner from "./components/ConGroupRunner";
+import UserSettings from "./components/UserSettings";
 
 export default function Routes() {
   return (
@@ -39,6 +40,7 @@ export default function Routes() {
 	  <Route exact path="/settings/output-groups" component={ConGroupList} />
 	  <Route exact path="/settings/api-key" component={ApiKeySettings} />
 	  <Route exact path="/settings/audit-logs" component={AuditLogs} />
+	  <Route exact path="/settings/users" component={UserSettings} />
       <Route exact path="/settings/diagram/:slug" component={DiagramSettings} />
       <Route exact path="/settings/diagrams" component={DiagramList} />
       <Route exact path="/settings/translations" component={TranslationList} />

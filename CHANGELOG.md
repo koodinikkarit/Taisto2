@@ -4,6 +4,20 @@
 
 ### Added
 - Added a documented Docker update script that pulls the selected image and safely recreates the production container with its persistent database mount.
+- Diagram display cards now show the matrix output port number before the display device name.
+- Added SQLite-backed user management with securely hashed passwords and `admin` and `user` roles.
+- Added an admin-only user management page, persistent signed sessions, sign-out controls, and user-aware navigation.
+- Added environment-credential bootstrap behavior when the database has no users while preserving the existing anonymous mode when no authentication is configured.
+- The final database admin can no longer be removed or demoted unless an environment admin credential is configured; that credential becomes the fallback whenever no database admin remains.
+- Added a versioned SQL schema snapshot for inspecting or initializing the complete SQLite database structure.
+- Added server-side authorization for Settings routes and configuration-changing GraphQL mutations.
+- User management cards now show local-time sign-in history, sign-in count, last IP address, creation time, update time, and clearer role indicators.
+- The main navigation now shows a sign-in link for anonymous visitors whenever authentication is configured and returns them to the current page after sign-in.
+- Audit logs can now be filtered server-side by free text, action, result, actor type, and local-time date range.
+- Anonymous-capable REST, GraphQL, and WebSocket actions are now attributed to the signed-in user when a valid UI session is present; explicit API-key requests remain attributed to the key.
+
+### Fixed
+- Creating the first database user now starts an admin session immediately instead of returning the sign-in page to the user-management JSON request.
 
 ## [0.1.21] - 2026-08-16
 ### Fixed

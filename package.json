@@ -18,6 +18,8 @@
 		"watch": "cross-env NODE_ENV=development nodemon --watch backend --watch js --watch app.js --exec \"babel-node app.js -- -d -p 1337\"",
 		"testmatrix": "babel-node ./tests/MatrixTest.js",
 		"test:con-group-status": "babel-node ./tests/ConGroupStatusTest.js",
+		"test:auth": "babel-node ./tests/AuthTest.js",
+		"test:audit-filters": "babel-node ./tests/AuditLogFilterTest.js",
 		"mock:reset": "node scripts/reset-mock-data.js",
 		"db:migrate": "babel-node scripts/migrate-json-to-sqlite.js",
 		"db:export-json": "babel-node scripts/export-sqlite-to-json.js",

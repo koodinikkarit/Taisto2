@@ -33,6 +33,11 @@ function restAction(req) {
 }
 
 function settingsAction(req) {
+  if (req.path.includes("/users")) {
+    if (req.method === "POST") return "user.create";
+    if (req.method === "PATCH") return "user.update";
+    if (req.method === "DELETE") return "user.delete";
+  }
   if (req.path.includes("/anonymous")) return req.method === "DELETE" ? "api_access.anonymous_disable" : "api_access.anonymous_enable";
   if (req.method === "POST") return "api_key.create";
   if (req.method === "PATCH") return "api_key.update";
@@ -40,7 +45,7 @@ function settingsAction(req) {
   return `settings.${req.method.toLowerCase()}`;
 }
 
-export function auditHttpMutations({ hasValidSession } = {}) {
+export function auditHttpMutations({ getSessionIdentity } = {}) {
   return (req, res, next) => {
     res.on("finish", () => {
       try {
@@ -49,15 +54,20 @@ export function auditHttpMutations({ hasValidSession } = {}) {
         let action = null;
         if (originalPath.startsWith("/rest")) action = restAction(req);
         else if (originalPath === "/api") action = graphqlAction(req);
-        else if (originalPath.startsWith("/settings/api-key")) action = settingsAction(req);
+        else if (originalPath.startsWith("/settings/api-key") || originalPath.startsWith("/settings/users")) action = settingsAction(req);
         else if (originalPath === "/login") action = "authentication.login";
         if (!action) return;
 
-        const actor = req.auditActor || {
-          type: hasValidSession && hasValidSession(req) ? "session" : "web",
+        const identity = getSessionIdentity ? getSessionIdentity(req) : null;
+        const actor = req.auditActor || (identity ? {
+          type: "user",
+          id: String(identity.id || ""),
+          name: identity.username
+        } : {
+          type: "web",
           id: "",
-          name: hasValidSession && hasValidSession(req) ? "Authenticated Taisto UI" : "Taisto web client"
-        };
+          name: "Taisto web client"
+        });
         const safeBody = sanitize(req.body || {});
         if (originalPath === "/api" && safeBody.query) safeBody.query = `[${action}]`;
         appendAuditLog({

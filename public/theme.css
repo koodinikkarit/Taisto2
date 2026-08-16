@@ -235,7 +235,43 @@ summary { cursor: pointer; color: var(--taisto-primary-dark); font-weight: 600; 
 }
 @keyframes taisto-spin { to { transform: rotate(360deg); } }
 
+.taisto-navigation-actions { display: flex; align-items: center; gap: 10px; }
+.taisto-navigation-actions form { margin: 0; }
+.taisto-current-user { color: #d8e2eb; font-size: 13px; white-space: nowrap; }
+.taisto-logout { padding: 7px 10px; border: 1px solid rgba(255,255,255,.28); border-radius: 6px; background: transparent; color: #fff; cursor: pointer; font: inherit; font-size: 13px; }
+.taisto-logout:hover { background: rgba(255,255,255,.1); }
+.taisto-login { display: inline-flex; align-items: center; min-height: 36px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.28); border-radius: 6px; color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.taisto-login:hover { color: #fff; background: rgba(255,255,255,.1); text-decoration: none; }
+.taisto-settings-page { max-width: 1040px; }
+.taisto-settings-intro { color: var(--taisto-muted); }
+.taisto-user-create { margin: 22px 0 28px; }
+.taisto-user-form, .taisto-user-edit { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; gap: 14px; }
+.taisto-user-form label, .taisto-user-edit label { margin: 0; font-weight: 600; }
+.taisto-user-form .form-control, .taisto-user-edit .form-control { margin-top: 6px; }
+.taisto-user-list-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 14px; }
+.taisto-user-list-heading h2 { margin: 0; }
+.taisto-user-list-heading p { margin: 4px 0 0; color: var(--taisto-muted); }
+.taisto-user-card { margin-bottom: 16px; }
+.taisto-user-card-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--taisto-border); background: linear-gradient(135deg, #f8fbfe, #eef6fd); }
+.taisto-user-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.taisto-user-identity strong { display: block; color: var(--taisto-ink); font-size: 18px; overflow-wrap: anywhere; }
+.taisto-user-identity small { display: block; margin-top: 2px; color: var(--taisto-muted); }
+.taisto-user-avatar { display: inline-flex; width: 42px; height: 42px; flex: 0 0 42px; align-items: center; justify-content: center; border-radius: 12px; color: #fff; background: var(--taisto-primary); font-size: 18px; font-weight: 800; }
+.taisto-role-badge { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .035em; }
+.taisto-role-badge.is-admin { color: #7c2d12; background: #ffedd5; }
+.taisto-role-badge.is-user { color: #155b96; background: #e7f2fc; }
+.taisto-user-metadata { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; border-bottom: 1px solid var(--taisto-border); background: var(--taisto-border); }
+.taisto-user-metadata > div { min-width: 0; padding: 13px 16px; background: #fff; }
+.taisto-user-metadata span { display: block; margin-bottom: 4px; color: var(--taisto-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .035em; }
+.taisto-user-metadata strong { display: block; color: #263d50; font-size: 13px; overflow-wrap: anywhere; }
+.taisto-user-buttons { display: flex; gap: 8px; }
+
 .taisto-audit-list { display: grid; }
+.taisto-audit-filters { margin: 0 0 18px; padding: 18px; border: 1px solid var(--taisto-border); border-radius: 11px; background: #fff; box-shadow: 0 2px 8px rgba(24,39,75,.05); }
+.taisto-audit-filter-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.taisto-audit-filter-grid label { margin: 0; color: #40566b; font-size: 13px; font-weight: 700; }
+.taisto-audit-filter-grid .form-control { margin-top: 6px; }
+.taisto-audit-filter-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; }
 .taisto-audit-entry { min-width: 0; padding: 18px; border-bottom: 1px solid var(--taisto-border); }
 .taisto-audit-entry:last-child { border-bottom: 0; }
 .taisto-audit-entry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
@@ -265,6 +301,16 @@ summary { cursor: pointer; color: var(--taisto-primary-dark); font-weight: 600; 
   .taisto-navigation-menu .nav-link { display: block; padding: 10px 8px; border-radius: 6px; }
   .taisto-navigation-menu .nav-link:hover { background: rgba(255,255,255,.1); }
   .taisto-language { width: 100%; margin: 4px 0 0; }
+  .taisto-navigation-actions { align-items: stretch; flex-direction: column; }
+  .taisto-current-user { padding: 6px 8px; }
+  .taisto-logout { width: 100%; text-align: left; }
+  .taisto-login { width: 100%; }
+  .taisto-user-form, .taisto-user-edit { grid-template-columns: 1fr; }
+  .taisto-user-card-header { align-items: flex-start; }
+  .taisto-user-metadata { grid-template-columns: 1fr 1fr; }
   .taisto-audit-entry { padding: 14px; }
   .taisto-audit-entry-header { align-items: flex-start; }
+  .taisto-audit-filter-grid { grid-template-columns: 1fr; }
+  .taisto-audit-filter-actions { justify-content: stretch; }
+  .taisto-audit-filter-actions .btn { flex: 1; }
 }

@@ -46,8 +46,8 @@ var tcpServer = net.createServer(function(socket) {
 var saveScheduled = false;
 
 const loadedDatabase = initializeDatabaseStorage({
-	sqlitePath: "./database/taisto.sqlite",
-	jsonPath: "./database/database.json"
+	sqlitePath: process.env.TAISTO_DATABASE_PATH || "./database/taisto.sqlite",
+	jsonPath: process.env.TAISTO_JSON_DATABASE_PATH || "./database/database.json"
 });
 
 if (loadedDatabase) {
