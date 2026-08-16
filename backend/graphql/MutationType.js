@@ -13,6 +13,7 @@ import diagramScreenMutations from "./DiagramScreenMutations";
 import weeklyTimerMutations from "./WeeklyTimerMutations";
 import cronTimerMutations from "./CronTimerMutations";
 import defaultStateMutations from "./DefaultStateMutations";
+import conGroupMutations from "./ConGroupMutations";
 
 export default new GraphQLObjectType({
 	name: "MutationType",
@@ -22,6 +23,7 @@ export default new GraphQLObjectType({
 		diagramScreenMutations,
 		weeklyTimerMutations,
 		cronTimerMutations,
-		defaultStateMutations
+		defaultStateMutations,
+		conGroupMutations
 	)
 });

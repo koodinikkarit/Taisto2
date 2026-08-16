@@ -131,9 +131,9 @@ npm run db:export-json -- --sqlite B:\database\taisto.sqlite --output B:\backup\
 
 Tee varmuuskopio mieluiten vientikomennolla palvelimen ollessa käynnissä. Jos kopioit SQLite-tiedoston suoraan, pysäytä palvelin ensin, jotta WAL-tiedoston keskeneräiset muutokset eivät jää kopiosta pois.
 
-### Output-ryhmät
+### Näyttöryhmät
 
-**Asetukset → Output-ryhmät** -sivulla voidaan luoda ryhmä saman matriisin output-porteista. Suoritus valitulla inputilla vaihtaa kaikki ryhmän outputit siihen. Taisto lähettää yhden TCP-komennon outputtia kohden 10 ms välein ja pyytää lopuksi matriisilta tilapäivityksen. Ryhmän REST-rajapinta on `/rest/con-groups`; tarkat pyynnöt ovat [REST_API.md](REST_API.md)-tiedostossa ja OpenAPI-kuvauksessa.
+**Asetukset → Näyttöryhmät** -sivulla voidaan luoda ryhmä saman matriisin output-porteista. Ryhmälle voidaan sallia kaikki matriisin inputit tai vain erikseen valitut inputit, kuten Kaavioissa. Suoritus valitulla inputilla vaihtaa kaikki ryhmän outputit siihen. Taisto lähettää yhden TCP-komennon outputtia kohden 10 ms välein ja pyytää lopuksi matriisilta tilapäivityksen. Ryhmän REST-rajapinta on `/rest/con-groups`; tarkat pyynnöt ovat [REST_API.md](REST_API.md)-tiedostossa ja OpenAPI-kuvauksessa.
 
 ## Deployment
 

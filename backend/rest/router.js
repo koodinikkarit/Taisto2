@@ -2,6 +2,7 @@ import express from "express";
 import { graphql } from "graphql";
 
 import schema from "../graphql/RootTypes";
+import { buildConGroupStatus } from "./conGroupStatus";
 import {
   db,
   getVideoConnectionForConPort,
@@ -174,7 +175,9 @@ const conGroupJson = group => ({
   id: String(group.id),
   slug: group.slug,
   matrix: group.matrix ? { id: String(group.matrix.id), slug: group.matrix.slug } : null,
-  conPorts: group.conPorts.map(port => ({ id: String(port.id), slug: port.slug, portNum: port.portNum }))
+  conPorts: group.conPorts.map(port => ({ id: String(port.id), slug: port.slug, portNum: port.portNum })),
+  useAllCpuPorts: group.useAllCpuPorts,
+  cpuPorts: group.cpuPorts.map(port => ({ id: String(port.id), slug: port.slug, portNum: port.portNum }))
 });
 
 const validateConGroupPorts = (matrixId, conPortIds) => {
@@ -182,6 +185,15 @@ const validateConGroupPorts = (matrixId, conPortIds) => {
   if (new Set(conPortIds.map(String)).size !== conPortIds.length) return "conPortIds must not contain duplicates";
   if (!db.matrixs.has(matrixId)) return "Matrix not found";
   if (conPortIds.some(id => !db.conPorts.has(Number(id)) || db.conPorts.get(Number(id)).matrixId !== matrixId)) return "Every output must belong to the selected matrix";
+  return null;
+};
+
+const validateConGroupCpuPorts = (matrixId, useAllCpuPorts, cpuPortIds) => {
+  if (typeof useAllCpuPorts !== "boolean") return "useAllCpuPorts must be a boolean";
+  if (useAllCpuPorts) return null;
+  if (!Array.isArray(cpuPortIds) || cpuPortIds.length === 0) return "cpuPortIds must contain at least one input when useAllCpuPorts is false";
+  if (new Set(cpuPortIds.map(String)).size !== cpuPortIds.length) return "cpuPortIds must not contain duplicates";
+  if (cpuPortIds.some(id => !db.cpuPorts.has(Number(id)) || db.cpuPorts.get(Number(id)).matrixId !== matrixId)) return "Every input must belong to the selected matrix";
   return null;
 };
 
@@ -195,22 +207,41 @@ router.get("/con-groups/:id", asyncHandler(async (req, res) => {
   res.json(conGroupJson(group));
 }));
 
+router.get("/con-groups/:id/status", asyncHandler(async (req, res) => {
+  const group = db.conGroups.get(Number(req.params.id));
+  if (!group) return res.status(404).json({ error: { message: "Output group not found" } });
+  const cpuPortId = Number(req.query.cpuPortId);
+  const cpuPort = db.cpuPorts.get(cpuPortId);
+  if (!Number.isInteger(cpuPortId) || !cpuPort || cpuPort.matrixId !== group.matrixId || !group.allowsCpuPort(cpuPortId)) {
+    return res.status(400).json({ error: { message: "cpuPortId must identify an input in the output group's matrix" } });
+  }
+  res.json(buildConGroupStatus(group, cpuPort, getVideoConnectionForConPort, cpuPortId => db.cpuPorts.get(Number(cpuPortId))));
+}));
+
 router.post("/con-groups", asyncHandler(async (req, res) => {
-  const { slug, matrixId, conPortIds } = req.body || {};
+  const { slug, matrixId, conPortIds, useAllCpuPorts = true, cpuPortIds = [] } = req.body || {};
   const matrixIdNumber = Number(matrixId);
-  const error = !slug ? "slug is required" : validateConGroupPorts(matrixIdNumber, conPortIds);
+  const error = !slug ? "slug is required" : validateConGroupPorts(matrixIdNumber, conPortIds) || validateConGroupCpuPorts(matrixIdNumber, useAllCpuPorts, cpuPortIds);
   if (error) return res.status(400).json({ error: { message: error } });
-  const group = createConGroup(slug, matrixIdNumber, conPortIds.map(Number));
+  const group = createConGroup(slug, matrixIdNumber, conPortIds.map(Number), useAllCpuPorts, useAllCpuPorts ? [] : cpuPortIds.map(Number));
   res.status(201).json(conGroupJson(group));
 }));
 
 router.patch("/con-groups/:id", asyncHandler(async (req, res) => {
   const group = db.conGroups.get(Number(req.params.id));
   if (!group) return res.status(404).json({ error: { message: "Output group not found" } });
-  const { slug, conPortIds } = req.body || {};
-  const error = conPortIds == null ? null : validateConGroupPorts(group.matrixId, conPortIds);
+  const { slug, conPortIds, useAllCpuPorts, cpuPortIds } = req.body || {};
+  const nextUseAllCpuPorts = useAllCpuPorts == null ? group.useAllCpuPorts : useAllCpuPorts;
+  const nextCpuPortIds = cpuPortIds == null ? group.cpuPortIds : cpuPortIds;
+  const error = (conPortIds == null ? null : validateConGroupPorts(group.matrixId, conPortIds)) || validateConGroupCpuPorts(group.matrixId, nextUseAllCpuPorts, nextCpuPortIds);
   if (error) return res.status(400).json({ error: { message: error } });
-  res.json(conGroupJson(updateConGroup(group.id, slug, conPortIds == null ? null : conPortIds.map(Number))));
+  res.json(conGroupJson(updateConGroup(
+    group.id,
+    slug,
+    conPortIds == null ? null : conPortIds.map(Number),
+    useAllCpuPorts == null ? null : useAllCpuPorts,
+    useAllCpuPorts === true ? [] : (cpuPortIds == null ? null : cpuPortIds.map(Number))
+  )));
 }));
 
 router.delete("/con-groups/:id", asyncHandler(async (req, res) => {

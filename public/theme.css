@@ -177,6 +177,42 @@ p { line-height: 1.55; }
 details { margin-top: 22px; padding: 12px 0; }
 summary { cursor: pointer; color: var(--taisto-primary-dark); font-weight: 600; }
 
+.taisto-runner-page { max-width: 1180px; margin: 0 auto; padding-bottom: 48px; }
+.taisto-runner-hero p { max-width: 760px; margin: 0; color: var(--taisto-muted); }
+.taisto-runner-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 18px; }
+.taisto-runner-card { display: flex; flex-direction: column; min-width: 0; padding: 22px; border: 1px solid var(--taisto-border); border-radius: 12px; background: var(--taisto-surface); box-shadow: 0 2px 8px rgba(24,39,75,.06); }
+.taisto-runner-card-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid #e6edf3; }
+.taisto-runner-card-header h2 { margin: 0; font-size: 22px; }
+.taisto-runner-status { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; max-width: 320px; padding: 7px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; line-height: 1.25; }
+.taisto-runner-status-dot { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px rgba(100,116,139,.12); }
+.taisto-runner-status.is-on { color: #166534; background: #dcfce7; }
+.taisto-runner-status.is-on .taisto-runner-status-dot { box-shadow: 0 0 0 3px rgba(22,101,52,.14); }
+.taisto-runner-status.is-off { color: #b42318; background: #fee4e2; }
+.taisto-runner-status.is-off .taisto-runner-status-dot { box-shadow: 0 0 0 3px rgba(180,35,24,.12); }
+.taisto-runner-status.is-idle { color: #64748b; background: #eef2f6; }
+.taisto-runner-output-section { margin: 16px 0; padding: 14px; border: 1px solid #e1e8ef; border-radius: 10px; background: #f8fafc; }
+.taisto-runner-section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; color: #40566b; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .035em; }
+.taisto-runner-count { display: inline-flex; min-width: 26px; height: 26px; align-items: center; justify-content: center; border-radius: 999px; color: #fff; background: #1f6fba; font-size: 13px; }
+.taisto-runner-output-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.taisto-runner-output-list li { display: flex; min-width: 0; align-items: center; gap: 9px; padding: 9px 10px; border: 1px solid #dce5ed; border-radius: 8px; background: #fff; color: #24384a; overflow-wrap: anywhere; }
+.taisto-runner-port-number { display: inline-flex; width: 26px; height: 26px; flex: 0 0 26px; align-items: center; justify-content: center; border-radius: 7px; color: #155b96; background: #e7f2fc; font-size: 12px; font-weight: 800; }
+.taisto-runner-selected-input, .taisto-runner-active-input { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 10px; padding: 12px 14px; border-left: 4px solid #1f6fba; border-radius: 7px; background: #eef6fd; }
+.taisto-runner-selected-input span, .taisto-runner-active-input span { color: #52697d; font-size: 13px; font-weight: 600; }
+.taisto-runner-selected-input strong, .taisto-runner-active-input strong { color: #163f63; text-align: right; }
+.taisto-runner-active-input { margin-bottom: 14px; }
+.taisto-runner-active-input.is-known { border-left-color: #238636; background: #edfaef; }
+.taisto-runner-active-input.is-known strong { color: #166534; }
+.taisto-runner-active-input.is-mixed { border-left-color: #d97706; background: #fff7e6; }
+.taisto-runner-active-input.is-mixed strong { color: #92400e; }
+.taisto-runner-active-input.is-pending { border-left-color: #94a3b8; background: #f1f5f9; }
+.taisto-runner-card .btn { margin-top: 14px; }
+.taisto-runner-empty { padding: 34px; border: 1px dashed var(--taisto-border); border-radius: 12px; background: white; color: var(--taisto-muted); text-align: center; }
+@media (max-width: 620px) {
+  .taisto-runner-card-header, .taisto-runner-selected-input, .taisto-runner-active-input { align-items: flex-start; flex-direction: column; }
+  .taisto-runner-status { max-width: 100%; }
+  .taisto-runner-selected-input strong, .taisto-runner-active-input strong { text-align: left; }
+}
+
 .taisto-auth-check {
   position: fixed;
   inset: 0;

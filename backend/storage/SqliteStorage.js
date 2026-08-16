@@ -88,6 +88,20 @@ function migrateSchema(db) {
       COMMIT;
     `);
   }
+  if (version < 4) {
+    db.exec(`
+      BEGIN;
+      ALTER TABLE con_groups ADD COLUMN use_all_cpu_ports INTEGER NOT NULL DEFAULT 1;
+      CREATE TABLE con_group_cpu_ports (
+        con_group_id INTEGER NOT NULL REFERENCES con_groups(id) ON DELETE CASCADE,
+        cpu_port_id INTEGER NOT NULL REFERENCES cpu_ports(id) ON DELETE CASCADE,
+        position INTEGER NOT NULL,
+        PRIMARY KEY (con_group_id, cpu_port_id)
+      );
+      INSERT INTO schema_migrations(version, applied_at) VALUES (4, datetime('now'));
+      COMMIT;
+    `);
+  }
 }
 
 function tableHasData(db) {
@@ -104,7 +118,7 @@ export function saveDatabase(state) {
   database.exec("BEGIN IMMEDIATE");
   try {
     [
-      "con_group_ports", "weekly_timer_default_states", "weekly_timer_kwm_connections",
+      "con_group_cpu_ports", "con_group_ports", "weekly_timer_default_states", "weekly_timer_kwm_connections",
       "weekly_timer_video_connections", "default_state_kwm_connections",
       "default_state_video_connections", "diagram_screen_cpu_ports", "diagram_screens",
       "con_groups", "weekly_timers", "default_states", "diagrams", "con_ports",
@@ -124,8 +138,9 @@ export function saveDatabase(state) {
     insertRows(database, "INSERT INTO weekly_timer_video_connections VALUES (?, ?, ?, ?)", values(state.weeklyTimerVideoConnections), row => [row.id, row.weeklyTimerId, row.conPortId, row.cpuPortId]);
     insertRows(database, "INSERT INTO weekly_timer_kwm_connections VALUES (?, ?, ?, ?)", values(state.weeklyTimerKwmConnections), row => [row.id, row.weeklyTimerId, row.conPortId, row.cpuPortId]);
     insertRows(database, "INSERT INTO weekly_timer_default_states VALUES (?, ?, ?)", values(state.weeklyTimerDefaultStates), row => [row.id, row.weeklyTimerId, row.defaultStateId]);
-    insertRows(database, "INSERT INTO con_groups VALUES (?, ?, ?)", values(state.conGroups), row => [row.id, row.slug || "", row.matrixId]);
+    insertRows(database, "INSERT INTO con_groups(id, slug, matrix_id, use_all_cpu_ports) VALUES (?, ?, ?, ?)", values(state.conGroups), row => [row.id, row.slug || "", row.matrixId, row.useAllCpuPorts === false ? 0 : 1]);
     values(state.conGroups).forEach(group => (group.conPortIds || []).forEach((conPortId, position) => database.prepare("INSERT INTO con_group_ports VALUES (?, ?, ?)").run(group.id, conPortId, position)));
+    values(state.conGroups).forEach(group => (group.cpuPortIds || []).forEach((cpuPortId, position) => database.prepare("INSERT INTO con_group_cpu_ports VALUES (?, ?, ?)").run(group.id, cpuPortId, position)));
     insertRows(database, "INSERT INTO rest_api_keys VALUES (?, ?, ?, ?, ?, ?, ?, ?)", state.restApiKeys || [], row => [row.id, row.name || "Nimetön avain", row.key, row.createdAt || new Date().toISOString(), row.expiresAt || "", row.enabled === false ? 0 : 1, Number(row.useCount || 0), row.lastUsedAt || ""]);
 
     const metadata = database.prepare("INSERT INTO metadata(key, value) VALUES (?, ?)");
@@ -161,7 +176,12 @@ export function loadDatabase() {
   state.weeklyTimerKwmConnections = mapById(database.prepare("SELECT id, weekly_timer_id AS weeklyTimerId, con_port_id AS conPortId, cpu_port_id AS cpuPortId FROM weekly_timer_kwm_connections").all());
   state.weeklyTimerDefaultStates = mapById(database.prepare("SELECT id, weekly_timer_id AS weeklyTimerId, default_state_id AS defaultStateId FROM weekly_timer_default_states").all());
   const groupPorts = database.prepare("SELECT con_group_id AS conGroupId, con_port_id AS conPortId FROM con_group_ports ORDER BY position").all();
-  state.conGroups = mapById(database.prepare("SELECT id, slug, matrix_id AS matrixId FROM con_groups").all().map(group => Object.assign(group, { conPortIds: groupPorts.filter(port => port.conGroupId === group.id).map(port => port.conPortId) })));
+  const groupCpuPorts = database.prepare("SELECT con_group_id AS conGroupId, cpu_port_id AS cpuPortId FROM con_group_cpu_ports ORDER BY position").all();
+  state.conGroups = mapById(database.prepare("SELECT id, slug, matrix_id AS matrixId, use_all_cpu_ports AS useAllCpuPorts FROM con_groups").all().map(group => Object.assign(group, {
+    useAllCpuPorts: Boolean(group.useAllCpuPorts),
+    conPortIds: groupPorts.filter(port => port.conGroupId === group.id).map(port => port.conPortId),
+    cpuPortIds: groupCpuPorts.filter(port => port.conGroupId === group.id).map(port => port.cpuPortId)
+  })));
   state.restApiKeys = database.prepare("SELECT id, name, api_key AS key, created_at AS createdAt, expires_at AS expiresAt, enabled, use_count AS useCount, last_used_at AS lastUsedAt FROM rest_api_keys").all().map(row => Object.assign(row, { enabled: Boolean(row.enabled) }));
   return state;
 }

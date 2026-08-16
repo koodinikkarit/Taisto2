@@ -41,6 +41,7 @@ Validate and build the module with `npm run check` and `npm run build`. Yarn is 
 11. Optional: add action `Tykki power` or `Tykki power on/off`.
 12. Configure projector host/port/path if they differ from defaults.
 13. To control an output group, add `Execute output group` and select the group and input. The lists refresh from Taisto automatically.
+14. Add `Output group active` feedback with the same group and input. The button turns green after every output has reached that input.
 
 ## Action
 - Set video connection
@@ -80,6 +81,7 @@ Options for "Tykki pikakomento":
 
 ## Feedback
 - Video connection active
+- Output group active
 - Tykki power on
 - Tykki input active
 - Tykki current input label
@@ -89,6 +91,8 @@ Options:
 - CPU port id
 
 The feedback becomes active when the REST endpoint reports `status: connected` and the returned `cpuPort.id` matches the configured CPU port.
+
+`Output group active` polls the group status endpoint and becomes active only when every output in the selected group reports the selected input. It becomes inactive if even one output differs, is disconnected, or has no known state.
 
 ## Projector notes
 - Power command is sent to `http://<projectorHost>:<projectorPort><projectorPath>`.

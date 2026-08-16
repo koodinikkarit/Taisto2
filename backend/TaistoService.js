@@ -645,22 +645,24 @@ export const authenticateRestApiKey = apiKey => {
 
 export const validateRestApiKey = apiKey => Boolean(authenticateRestApiKey(apiKey));
 
-export const createConGroup = (slug, matrixId, conPortIds) => {
+export const createConGroup = (slug, matrixId, conPortIds, useAllCpuPorts = true, cpuPortIds = []) => {
 	let conGroup;
 	setDb(db.withMutations(database => {
 		const id = database.nextConGroupId++;
-		conGroup = new ConGroup({ id, slug, matrixId, conPortIds });
+		conGroup = new ConGroup({ id, slug, matrixId, conPortIds, useAllCpuPorts, cpuPortIds });
 		database.conGroups = database.conGroups.set(id, conGroup);
 	}));
 	return conGroup;
 };
 
-export const updateConGroup = (id, slug, conPortIds) => {
+export const updateConGroup = (id, slug, conPortIds, useAllCpuPorts, cpuPortIds) => {
 	let conGroup = db.conGroups.get(id);
 	if (!conGroup) return null;
 	conGroup = conGroup.withMutations(group => {
 		if (slug != null) group.slug = slug;
 		if (conPortIds != null) group.conPortIds = conPortIds;
+		if (useAllCpuPorts != null) group.useAllCpuPorts = useAllCpuPorts;
+		if (cpuPortIds != null) group.cpuPortIds = cpuPortIds;
 	});
 	setDb(db.set("conGroups", db.conGroups.set(id, conGroup)));
 	return conGroup;
@@ -676,6 +678,7 @@ export const executeConGroup = (id, cpuPortId) => {
 	const group = db.conGroups.get(id);
 	const cpuPort = db.cpuPorts.get(cpuPortId);
 	if (!group || !cpuPort || cpuPort.matrixId !== group.matrixId) return false;
+	if (!group.allowsCpuPort(cpuPortId)) return false;
 	const conPorts = group.conPorts;
 	if (!conPorts.length || conPorts.some(conPort => conPort.matrixId !== group.matrixId)) return false;
 	conPorts.forEach((conPort, index) => {

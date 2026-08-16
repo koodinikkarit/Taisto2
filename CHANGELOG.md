@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.19] - 2026-08-16
+### Added
+- Added an output-group REST status endpoint and Companion feedback that becomes active only after every output in the group has switched to the selected input.
+- Added a read-only Output groups page to the main navigation for running configured groups without exposing editing controls.
+- Output groups can now allow every matrix input or restrict execution to inputs selected in Settings.
+- The Output groups settings page and its Settings navigation entries now follow the selected Finnish or English language.
+- Output group cards now list their outputs individually, show the selected input explicitly, and use clearer active, inactive, and pending status indicators.
+- Output group cards always show the currently active input without requiring a target input selection, including mixed and unknown output states.
+- The Output group Execute button now has a two-second per-group UI cooldown to prevent accidental repeated commands.
+- Default state Execute buttons now use the same two-second per-state UI cooldown.
+
 ## [0.1.18] - 2026-08-12
 ### Fixed
 - Protected Promode and Settings content now waits for browser-side session validation before rendering, including navigation without a full page reload.

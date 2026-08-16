@@ -19,6 +19,7 @@ import Help from "./components/Help";
 import ConGroupList from "./components/ConGroupList";
 import ApiKeySettings from "./components/ApiKeySettings";
 import AuditLogs from "./components/AuditLogs";
+import ConGroupRunner from "./components/ConGroupRunner";
 
 export default function Routes() {
   return (
@@ -28,6 +29,7 @@ export default function Routes() {
       <Route exact path="/promode/:slug" component={Promode} />
       <Route exact path="/promode" component={Promode} />
       <Route exact path="/oletustilat" component={DefaultStatesList} />
+      <Route exact path="/output-groups" component={ConGroupRunner} />
       <Route exact path="/settings/matriisi/:slug" component={MatrixSettings} />
       <Route exact path="/settings/matriisit" component={MatrixList} />
       <Route exact path="/settings/timers" component={TimerList} />

@@ -1,6 +1,6 @@
 {
 	"name": "taisto",
-	"version": "0.1.18",
+	"version": "0.1.19",
 	"description": "Taisto",
 	"main": "app.js",
 	"author": {
@@ -17,6 +17,7 @@
 		"dev": "cross-env NODE_ENV=development babel-node app.js -- -d -p 1337",
 		"watch": "cross-env NODE_ENV=development nodemon --watch backend --watch js --watch app.js --exec \"babel-node app.js -- -d -p 1337\"",
 		"testmatrix": "babel-node ./tests/MatrixTest.js",
+		"test:con-group-status": "babel-node ./tests/ConGroupStatusTest.js",
 		"mock:reset": "node scripts/reset-mock-data.js",
 		"db:migrate": "babel-node scripts/migrate-json-to-sqlite.js",
 		"db:export-json": "babel-node scripts/export-sqlite-to-json.js",

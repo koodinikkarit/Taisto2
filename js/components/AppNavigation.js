@@ -18,6 +18,7 @@ export default function AppNavigation() {
       <div className={`taisto-navigation-menu ${open ? "is-open" : ""}`}>
         <ul className="navbar-nav mr-auto">
           <li className="nav-item"><Link className="nav-link" to="/" onClick={closeMenu}>{t("diagrams")}</Link></li>
+          <li className="nav-item"><Link className="nav-link" to="/output-groups" onClick={closeMenu}>{t("outputGroups")}</Link></li>
           <li className="nav-item"><Link className="nav-link" to="/oletustilat" onClick={closeMenu}>{t("defaults")}</Link></li>
           <li className="nav-item"><Link className="nav-link" to="/promode" onClick={closeMenu}>Promode</Link></li>
           <li className="nav-item"><Link className="nav-link" to="/settings" onClick={closeMenu}>{t("settings")}</Link></li>

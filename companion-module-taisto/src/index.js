@@ -73,6 +73,8 @@ class TaistoModule extends InstanceBase {
     this.pollTimer = null;
     this.trackedConPorts = new Set();
     this.connectionState = new Map();
+    this.trackedOutputGroups = new Map();
+    this.outputGroupState = new Map();
     this.consecutivePollErrors = 0;
     this.projectorState = null;
     this.projectorCurrentInput = null;
@@ -275,7 +277,10 @@ class TaistoModule extends InstanceBase {
       this.matrices = Array.isArray(matrices) ? matrices : [];
       this.resourceSignature = signature;
       this.lastResourceRefreshAt = Date.now();
-      if (changed && rebuildActions) this.initActions();
+      if (changed && rebuildActions) {
+        this.initActions();
+        this.initFeedbacks();
+      }
     } catch (err) {
       this.lastResourceRefreshAt = Date.now();
       this.log("warn", `Taisto resource refresh failed: ${err?.message || err}`);
@@ -592,6 +597,42 @@ class TaistoModule extends InstanceBase {
           return state.status === "connected" && state.cpuPortId === cpuPort;
         }
       },
+      output_group_active: {
+        name: "Output group active",
+        type: "boolean",
+        description: "Turns the button on when every output in the group is connected to the selected input",
+        defaultStyle: {
+          bgcolor: combineRgb(0, 153, 51),
+          color: combineRgb(255, 255, 255)
+        },
+        options: [
+          {
+            type: "dropdown",
+            label: "Output group",
+            id: "conGroup",
+            default: this.getOutputGroupChoices()[0].id,
+            choices: this.getOutputGroupChoices(),
+            allowCustom: true
+          },
+          {
+            type: "dropdown",
+            label: "Input",
+            id: "cpuPort",
+            default: this.getCpuPortChoices()[0].id,
+            choices: this.getCpuPortChoices(),
+            allowCustom: true,
+            minChoicesForSearch: 10
+          }
+        ],
+        callback: (feedback) => {
+          const conGroup = String(feedback.options.conGroup || "").trim();
+          const cpuPort = String(feedback.options.cpuPort || "").trim();
+          if (!conGroup || !cpuPort) return false;
+          const key = `${conGroup}:${cpuPort}`;
+          this.trackedOutputGroups.set(key, { key, conGroup, cpuPort });
+          return this.outputGroupState.get(key) === true;
+        }
+      },
       projector_power_on: {
         name: "Tykki power on",
         type: "boolean",
@@ -665,10 +706,11 @@ class TaistoModule extends InstanceBase {
 
   async pollOnce() {
     const conPorts = Array.from(this.trackedConPorts);
+    const outputGroups = Array.from(this.trackedOutputGroups.values());
     const matrixPollInterval = this.getMatrixPollInterval();
     const projectorPollInterval = this.getProjectorPollInterval();
     const now = Date.now();
-    const matrixActive = conPorts.length > 0;
+    const matrixActive = conPorts.length > 0 || outputGroups.length > 0;
     const projectorActive = this.projectorUsed;
 
     if (now - this.lastResourceRefreshAt >= 30000) {
@@ -724,6 +766,25 @@ class TaistoModule extends InstanceBase {
           this.log(
             "warn",
             `Poll failed for conPort ${conPortId}: ${err?.message || err}`
+          );
+        }
+      }
+      for (const trackedGroup of outputGroups) {
+        try {
+          const res = await this.taistoFetch(
+            `/rest/con-groups/${encodeURIComponent(trackedGroup.conGroup)}/status?cpuPortId=${encodeURIComponent(trackedGroup.cpuPort)}`,
+            { method: "GET" }
+          );
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          this.outputGroupState.set(trackedGroup.key, data && data.active === true);
+        } catch (err) {
+          hadError = true;
+          lastError = err;
+          this.outputGroupState.set(trackedGroup.key, false);
+          this.log(
+            "warn",
+            `Output group poll failed for ${trackedGroup.conGroup}: ${err?.message || err}`
           );
         }
       }
@@ -789,7 +850,10 @@ class TaistoModule extends InstanceBase {
       this.updateStatus(InstanceStatus.Ok);
     }
 
-    if (shouldPollMatrix) this.checkFeedbacks("video_connection_active");
+    if (shouldPollMatrix) {
+      this.checkFeedbacks("video_connection_active");
+      this.checkFeedbacks("output_group_active");
+    }
     if (shouldPollProjector) {
       this.checkFeedbacks("projector_power_on");
       this.checkFeedbacks("projector_input_active");

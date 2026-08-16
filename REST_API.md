@@ -59,10 +59,11 @@ Output-ryhmä sisältää saman matriisin useita output-portteja. Ryhmän suorit
 | --- | --- | --- |
 | `GET` | `/con-groups` | Listaa output-ryhmät. |
 | `GET` | `/con-groups/{id}` | Hakee output-ryhmän. |
-| `POST` | `/con-groups` | Luo ryhmän. Body: `{ "slug": "Etuvalot", "matrixId": "1", "conPortIds": ["1", "2"] }`. |
-| `PATCH` | `/con-groups/{id}` | Päivittää ryhmän nimen ja/tai outputit. Body: `{ "slug": "...", "conPortIds": ["1", "2"] }`. |
+| `GET` | `/con-groups/{id}/status?cpuPortId={id}` | Palauttaa `active: true`, kun ryhmän kaikki outputit ovat valitussa inputissa. `currentInputStatus` kertoo, onko nykyinen tila `single`, `mixed` vai `unknown`, ja `currentCpuPort` sisältää yhteisen aktiivisen inputin. |
+| `POST` | `/con-groups` | Luo ryhmän. Kaikki inputit: `{ "slug": "Näytöt", "matrixId": "1", "conPortIds": ["1", "2"], "useAllCpuPorts": true }`. Rajatut inputit: lisää `"useAllCpuPorts": false, "cpuPortIds": ["3", "4"]`. |
+| `PATCH` | `/con-groups/{id}` | Päivittää ryhmän nimen, outputit tai sallitut inputit. `useAllCpuPorts: true` sallii kaikki matriisin nykyiset ja myöhemmin lisättävät inputit. |
 | `DELETE` | `/con-groups/{id}` | Poistaa ryhmän. |
-| `POST` | `/con-groups/{id}/execute` | Vaihtaa kaikki ryhmän outputit samaan inputtiin. Body: `{ "cpuPortId": "3" }`. Vastaa `202`, kun komennot on asetettu jonoon. |
+| `POST` | `/con-groups/{id}/execute` | Vaihtaa kaikki ryhmän outputit samaan sallittuun inputtiin. Body: `{ "cpuPortId": "3" }`. Vastaa `202`, kun komennot on asetettu jonoon. |
 
 ### Kaaviot
 | Metodi | Polku | Kuvaus |

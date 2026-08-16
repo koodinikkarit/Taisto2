@@ -37,6 +37,16 @@ paths:
     delete: { security: [ { ApiKeyAuth: [] } ], summary: Delete output group, responses: { '204': { description: Deleted } } }
   /con-groups/{id}/execute:
     post: { security: [ { ApiKeyAuth: [] } ], summary: Switch all group outputs to an input, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { required: true, content: { application/json: { schema: { type: object, required: [cpuPortId], properties: { cpuPortId: { type: string } } } } } }, responses: { '202': { description: Queued } } }
+  /con-groups/{id}/status:
+    get:
+      summary: Check whether every output in a group is connected to an input
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+        - { name: cpuPortId, in: query, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Output group status }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
   /cpu-ports/{id}:
     patch: { security: [ { ApiKeyAuth: [] } ], summary: Rename CPU port, parameters: [ { $ref: '#/components/parameters/Id' } ], requestBody: { $ref: '#/components/requestBodies/Slug' }, responses: { '200': { description: Updated } } }
   /cpu-ports/{id}/kwm-connection:
@@ -110,7 +120,7 @@ components:
   schemas:
     Matrix: { type: object, properties: { id: { type: string }, slug: { type: string }, ip: { type: string }, port: { type: integer } } }
     CreateMatrix: { type: object, required: [slug, ip, port, conPortAmount, cpuPortAmount], properties: { slug: { type: string }, ip: { type: string }, port: { type: integer }, conPortAmount: { type: integer }, cpuPortAmount: { type: integer } } }
-    ConGroupInput: { type: object, required: [slug, matrixId, conPortIds], properties: { slug: { type: string }, matrixId: { type: string }, conPortIds: { type: array, minItems: 1, items: { type: string } } } }
+    ConGroupInput: { type: object, required: [slug, matrixId, conPortIds], properties: { slug: { type: string }, matrixId: { type: string }, conPortIds: { type: array, minItems: 1, items: { type: string } }, useAllCpuPorts: { type: boolean, default: true }, cpuPortIds: { type: array, items: { type: string }, description: Required and non-empty when useAllCpuPorts is false } } }
     DiagramScreenInput: { type: object, properties: { diagram: { type: string }, slug: { type: string }, conPort: { type: string }, matrix: { type: string } } }
     WeeklyTimerUpdate: { type: object, properties: { slug: { type: string }, minutes: { type: integer }, hours: { type: integer }, active: { type: boolean }, monday: { type: boolean }, tuesday: { type: boolean }, wednesday: { type: boolean }, thursday: { type: boolean }, friday: { type: boolean }, saturday: { type: boolean }, sunday: { type: boolean } } }
     Error: { type: object, properties: { error: { type: object, properties: { message: { type: string } } } } }
