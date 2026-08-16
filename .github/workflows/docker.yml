@@ -30,12 +30,6 @@ jobs:
             package-lock.json
             companion-module-taisto/package-lock.json
 
-      - name: Verify dependency safety policy
-        shell: bash
-        run: |
-          npm install --package-lock-only
-          git diff --exit-code -- package-lock.json
-
       - name: Set application version from Git tag
         id: version
         shell: bash
@@ -43,6 +37,12 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           node -e "const fs=require('fs'); const version=process.argv[1]; for (const file of ['package.json','package-lock.json','companion-module-taisto/package.json','companion-module-taisto/package-lock.json']) { const data=JSON.parse(fs.readFileSync(file)); data.version=version; if (data.packages && data.packages['']) data.packages[''].version=version; fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\\n'); } const manifestFile='companion-module-taisto/companion/manifest.json'; const manifest=JSON.parse(fs.readFileSync(manifestFile)); manifest.version=version; fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\\n');" "$VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify dependency safety policy
+        shell: bash
+        run: |
+          npm install --package-lock-only
+          git diff --exit-code -- package-lock.json
 
       - name: Determine latest stable tag
         id: latest

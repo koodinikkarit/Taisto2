@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.1.20] - 2026-08-16
+### Fixed
+- Docker release builds now synchronize the application version before validating the dependency lockfile.
+
 ## [0.1.19] - 2026-08-16
 ### Added
 - Added an output-group REST status endpoint and Companion feedback that becomes active only after every output in the group has switched to the selected input.
