@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Added a documented Docker update script that pulls the selected image and safely recreates the production container with its persistent database mount.
+
 ## [0.1.21] - 2026-08-16
 ### Fixed
 - Dependency safety validation now uses the committed lockfile directly and no longer regenerates platform-specific lockfile entries on Linux runners.

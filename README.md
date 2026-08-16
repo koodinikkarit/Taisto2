@@ -72,6 +72,33 @@ docker run --name taisto -p 1337:80 -v B:\database:/usr/src/database ghcr.io/koo
 
 `latest` tarkoittaa viimeisintä onnistuneesti julkaistua tag-buildia. Käytä tuotannossa mieluummin tarkkaa versiota, esimerkiksi `ghcr.io/koodinikkarit/taisto2:0.1.9`.
 
+### Docker-kontin päivittäminen
+
+Palvelimen päivitysskripti on tiedostossa [`scripts/update-docker.sh`](scripts/update-docker.sh). Se lataa ensin uuden imagen, pysäyttää ja poistaa vanhan `taisto`-kontin, käynnistää uuden kontin samalla tietokantaliitoksella sekä näyttää lopuksi kontin tilan ja viimeisimmät lokirivit.
+
+Yksityiseen GHCR-imageen kirjaudutaan kerran käyttäen GitHub-tokenia, jolla on `read:packages`-oikeus:
+
+```bash
+echo "$GITHUB_TOKEN" | docker login ghcr.io -u GITHUB_KAYTTAJA --password-stdin
+```
+
+Ota skripti käyttöön ja suorita päivitys näin:
+
+```bash
+chmod +x scripts/update-docker.sh
+TAISTO_PASSWORD='vahva-salasana' ./scripts/update-docker.sh
+```
+
+Skripti vaatii `TAISTO_PASSWORD`-muuttujan, jotta palvelua ei käynnistetä vahingossa ilman salasanasuojausta. Oletuksena se käyttää imagea `ghcr.io/koodinikkarit/taisto2:latest`, tietokantahakemistoa `/home/taisto/database`, porttia `1337` ja audit-lokin rajoittamatonta säilytystä (`0`). Asetuksia voi muuttaa ympäristömuuttujilla `TAISTO_IMAGE`, `TAISTO_CONTAINER_NAME`, `TAISTO_DATABASE_DIR`, `TAISTO_HOST_PORT` ja `TAISTO_AUDIT_RETENTION_DAYS`.
+
+Esimerkiksi tarkkaan versioon lukittu päivitys:
+
+```bash
+TAISTO_PASSWORD='vahva-salasana' \
+TAISTO_IMAGE='ghcr.io/koodinikkarit/taisto2:0.1.21' \
+./scripts/update-docker.sh
+```
+
 ## Julkaisut ja GitHub Actions
 
 Docker-build käynnistyy vain Git-tagista, jonka nimi alkaa `v`:llä. Esimerkiksi tagi `v0.1.8`:
