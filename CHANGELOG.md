@@ -15,6 +15,8 @@
 - The main navigation now shows a sign-in link for anonymous visitors whenever authentication is configured and returns them to the current page after sign-in.
 - Audit logs can now be filtered server-side by free text, action, result, actor type, and local-time date range.
 - Anonymous-capable REST, GraphQL, and WebSocket actions are now attributed to the signed-in user when a valid UI session is present; explicit API-key requests remain attributed to the key.
+- Output-group displays can now be edited after a group has been created.
+- Companion's Set video connection action now shows matrix, port number, and configured names in its output and input choices.
 
 ### Fixed
 - Creating the first database user now starts an admin session immediately instead of returning the sign-in page to the user-management JSON request.

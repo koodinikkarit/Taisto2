@@ -249,13 +249,28 @@ class TaistoModule extends InstanceBase {
       (matrix.cpuPorts || []).forEach(port => {
         choices.push({
           id: String(port.id),
-          label: `${matrix.slug}: ${port.portNum}. ${port.slug}`
+          label: `${matrix.slug}: ${port.portNum}. ${port.slug || `Input ${port.portNum}`}`
         });
       });
     });
     return choices.length > 0
       ? choices
       : [{ id: "", label: "No inputs found" }];
+  }
+
+  getConPortChoices() {
+    const choices = [];
+    this.matrices.forEach(matrix => {
+      (matrix.conPorts || []).forEach(port => {
+        choices.push({
+          id: String(port.id),
+          label: `${matrix.slug}: ${port.portNum}. ${port.slug || `Output ${port.portNum}`}`
+        });
+      });
+    });
+    return choices.length > 0
+      ? choices
+      : [{ id: "", label: "No outputs found" }];
   }
 
   async refreshTaistoResources(rebuildActions = true) {
@@ -289,24 +304,29 @@ class TaistoModule extends InstanceBase {
 
   initActions() {
     const outputGroupChoices = this.getOutputGroupChoices();
+    const conPortChoices = this.getConPortChoices();
     const cpuPortChoices = this.getCpuPortChoices();
     this.setActionDefinitions({
       set_video_connection: {
         name: "Set video connection",
         options: [
           {
-            type: "textinput",
-            label: "Con port id",
+            type: "dropdown",
+            label: "Output",
             id: "conPort",
-            default: "35",
-            regex: Regex.NUMBER
+            default: conPortChoices[0].id,
+            choices: conPortChoices,
+            allowCustom: true,
+            minChoicesForSearch: 10
           },
           {
-            type: "textinput",
-            label: "CPU port id",
+            type: "dropdown",
+            label: "Input",
             id: "cpuPort",
-            default: "37",
-            regex: Regex.NUMBER
+            default: cpuPortChoices[0].id,
+            choices: cpuPortChoices,
+            allowCustom: true,
+            minChoicesForSearch: 10
           }
         ],
         callback: async (action) => {

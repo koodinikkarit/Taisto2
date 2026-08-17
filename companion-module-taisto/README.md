@@ -31,8 +31,8 @@ Validate and build the module with `npm run check` and `npm run build`. Yarn is 
 ## Usage
 1. Add the module instance and fill in Host/Port.
 2. Add a button action `Set video connection`.
-3. Set `Con port id` to `35`.
-4. Set `CPU port id` to `37`.
+3. Select the named output from Taisto.
+4. Select the named input from Taisto.
 5. Add a button feedback `Video connection active`.
 6. Set `Con port id` to `35`.
 7. Set `CPU port id` to `37`.
@@ -54,8 +54,10 @@ Validate and build the module with `npm run check` and `npm run build`. Yarn is 
 - Tykki power off
 
 Options for "Set video connection":
-- Con port id
-- CPU port id
+- Output (loaded from Taisto with matrix, port number and name)
+- Input (loaded from Taisto with matrix, port number and name)
+
+Both fields remain compatible with a manually entered port ID for existing button configurations.
 
 Options for "Turn off video connection":
 - Con port id

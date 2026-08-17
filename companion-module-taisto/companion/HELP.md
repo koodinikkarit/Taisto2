@@ -35,4 +35,6 @@ Current input label feedback uses `label` from the GET response.
 
 `Execute output group` loads output groups and matrix inputs from Taisto and switches every output in the selected group to the selected input. Taisto actions send the configured API key in the `X-API-Key` header.
 
+`Set video connection` loads its output and input choices from Taisto and shows the matrix name, port number and configured port name. Existing actions that contain a manually entered port ID remain supported.
+
 `Output group active` uses the same output-group and input selections. It turns the button green only after every output in the group reports that input, and turns off if any output no longer matches.

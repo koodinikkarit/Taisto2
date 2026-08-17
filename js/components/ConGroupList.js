@@ -13,20 +13,22 @@ const request = async (url, options) => {
 
 export default class ConGroupList extends React.Component {
   static contextType = I18nContext;
-  state = { groups: [], matrices: [], selectedMatrixId: "", slug: "", selectedPorts: [], useAllInputs: true, selectedInputPorts: [], groupUseAllInputs: {}, groupSelectedInputPorts: {}, executeInputs: {}, error: "", loading: true };
+  state = { groups: [], matrices: [], selectedMatrixId: "", slug: "", selectedPorts: [], useAllInputs: true, selectedInputPorts: [], groupSelectedPorts: {}, groupUseAllInputs: {}, groupSelectedInputPorts: {}, executeInputs: {}, error: "", loading: true };
 
   componentDidMount() { this.load(); }
 
   async load() {
     try {
       const [groups, matrices] = await Promise.all([request("/rest/con-groups"), request("/rest/matrices")]);
+      const groupSelectedPorts = {};
       const groupUseAllInputs = {};
       const groupSelectedInputPorts = {};
       groups.forEach(group => {
+        groupSelectedPorts[group.id] = group.conPorts.map(port => port.id);
         groupUseAllInputs[group.id] = group.useAllCpuPorts !== false;
         groupSelectedInputPorts[group.id] = group.useAllCpuPorts === false ? group.cpuPorts.map(port => port.id) : [];
       });
-      this.setState({ groups, matrices, groupUseAllInputs, groupSelectedInputPorts, selectedMatrixId: this.state.selectedMatrixId || (matrices[0] && matrices[0].id) || "", loading: false, error: "" });
+      this.setState({ groups, matrices, groupSelectedPorts, groupUseAllInputs, groupSelectedInputPorts, selectedMatrixId: this.state.selectedMatrixId || (matrices[0] && matrices[0].id) || "", loading: false, error: "" });
     } catch (error) { this.setState({ error: error.message || this.context.t("requestFailed"), loading: false }); }
   }
 
@@ -45,6 +47,23 @@ export default class ConGroupList extends React.Component {
       const selected = state.groupSelectedInputPorts[groupId] || [];
       return { groupSelectedInputPorts: { ...state.groupSelectedInputPorts, [groupId]: selected.includes(id) ? selected.filter(portId => portId !== id) : [...selected, id] } };
     });
+  }
+
+  toggleGroupPort(groupId, id) {
+    this.setState(state => {
+      const selected = state.groupSelectedPorts[groupId] || [];
+      return { groupSelectedPorts: { ...state.groupSelectedPorts, [groupId]: selected.includes(id) ? selected.filter(portId => portId !== id) : [...selected, id] } };
+    });
+  }
+
+  async saveGroupPorts(group) {
+    const conPortIds = this.state.groupSelectedPorts[group.id] || [];
+    if (!conPortIds.length) return this.setState({ error: this.context.t("selectAtLeastOneOutput") });
+    try {
+      await request(`/rest/con-groups/${group.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conPortIds }) });
+      this.setState({ error: "" });
+      this.load();
+    } catch (error) { this.setState({ error: error.message || this.context.t("requestFailed") }); }
   }
 
   async saveGroupInputs(group) {
@@ -142,12 +161,22 @@ export default class ConGroupList extends React.Component {
       <h2 style={{ fontSize: "24px", marginBottom: "14px" }}>{t("runOutputGroup")}</h2>
       {this.state.groups.map(group => {
         const groupMatrix = this.state.matrices.find(item => group.matrix && item.id === group.matrix.id);
+        const groupSelectedPorts = this.state.groupSelectedPorts[group.id] || [];
         const groupUsesAllInputs = this.state.groupUseAllInputs[group.id] !== false;
         const groupSelectedInputs = this.state.groupSelectedInputPorts[group.id] || [];
         return <div style={styles.group} key={group.id}>
           <div className="row align-items-center"><div className="col-md-5 mb-3 mb-md-0"><h3 style={styles.groupName}>{group.slug}</h3><span style={styles.badge}>{outputCountLabel(group.conPorts.length)} · {group.useAllCpuPorts ? t("allInputs") : inputCountLabel(group.cpuPorts.length)}</span><div style={{ ...styles.muted, marginTop: "8px" }}>{group.conPorts.map(port => port.slug || `Output ${port.portNum}`).join(", ")}</div></div>
           <div className="col-md-4 mb-3 mb-md-0"><label style={styles.fieldLabel}>{t("switchToInput")}</label><select className="form-control" value={this.state.executeInputs[group.id] || ""} onChange={event => this.setState(state => ({ executeInputs: { ...state.executeInputs, [group.id]: event.target.value } }))}><option value="">{t("selectInput")}</option>{group.cpuPorts.map(port => <option key={port.id} value={port.id}>{port.portNum}. {port.slug || `Input ${port.portNum}`}</option>)}</select></div>
           <div className="col-md-3"><button className="btn btn-primary mr-2" onClick={() => this.execute(group)}>{t("execute")}</button><button className="btn btn-outline-danger" onClick={() => this.remove(group)}>{t("remove")}</button></div></div>
+          <div style={{ borderTop: "1px solid #e8edf1", marginTop: "18px", paddingTop: "16px" }}>
+            <div style={styles.fieldLabel}>{t("outputListLabel")} <span style={styles.muted}>— {t("selected")} {groupSelectedPorts.length}</span></div>
+            <div style={{ ...styles.muted, marginBottom: "10px" }}>{t("editGroupOutputsHint")}</div>
+            <div style={styles.portGrid}>{groupMatrix && groupMatrix.conPorts.map(port => {
+              const selected = groupSelectedPorts.includes(port.id);
+              return <label key={port.id} style={{ ...styles.port, ...(selected ? styles.selectedPort : {}) }}><input type="checkbox" checked={selected} onChange={() => this.toggleGroupPort(group.id, port.id)} /><span><strong>{port.portNum}.</strong> {port.slug || `Output ${port.portNum}`}</span></label>;
+            })}</div>
+            <div style={{ marginTop: "12px", textAlign: "right" }}><button className="btn btn-secondary" disabled={!groupSelectedPorts.length} onClick={() => this.saveGroupPorts(group)}>{t("saveOutputs")}</button></div>
+          </div>
           <div style={{ borderTop: "1px solid #e8edf1", marginTop: "18px", paddingTop: "16px" }}>
             <div style={styles.fieldLabel}>{t("allowedInputs")}</div>
             <div style={{ display: "flex", gap: "18px", flexWrap: "wrap", marginBottom: "10px" }}>

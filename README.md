@@ -170,7 +170,7 @@ Tee varmuuskopio mieluiten vientikomennolla palvelimen ollessa käynnissä. Jos 
 
 ### Näyttöryhmät
 
-**Asetukset → Näyttöryhmät** -sivulla voidaan luoda ryhmä saman matriisin output-porteista. Ryhmälle voidaan sallia kaikki matriisin inputit tai vain erikseen valitut inputit, kuten Kaavioissa. Suoritus valitulla inputilla vaihtaa kaikki ryhmän outputit siihen. Taisto lähettää yhden TCP-komennon outputtia kohden 10 ms välein ja pyytää lopuksi matriisilta tilapäivityksen. Ryhmän REST-rajapinta on `/rest/con-groups`; tarkat pyynnöt ovat [REST_API.md](REST_API.md)-tiedostossa ja OpenAPI-kuvauksessa.
+**Asetukset → Näyttöryhmät** -sivulla voidaan luoda ryhmä saman matriisin output-porteista sekä muokata myöhemmin ryhmään kuuluvia näyttöjä. Ryhmälle voidaan sallia kaikki matriisin inputit tai vain erikseen valitut inputit, kuten Kaavioissa. Suoritus valitulla inputilla vaihtaa kaikki ryhmän outputit siihen. Taisto lähettää yhden TCP-komennon outputtia kohden 10 ms välein ja pyytää lopuksi matriisilta tilapäivityksen. Ryhmän REST-rajapinta on `/rest/con-groups`; tarkat pyynnöt ovat [REST_API.md](REST_API.md)-tiedostossa ja OpenAPI-kuvauksessa.
 
 ## Deployment
 
