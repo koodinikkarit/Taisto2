@@ -18,6 +18,9 @@
 
 ### Fixed
 - Creating the first database user now starts an admin session immediately instead of returning the sign-in page to the user-management JSON request.
+- Companion releases now declare their bundled host API version instead of requiring `@companion-module/base` from the installation directory.
+- Projector input feedbacks are registered as feedbacks instead of invalid actions, preventing the Companion instance from entering a restart loop.
+- Companion's bundled CommonJS entrypoint is now executed as CommonJS under Node 22 instead of crashing with `require is not defined`.
 
 ## [0.1.21] - 2026-08-16
 ### Fixed

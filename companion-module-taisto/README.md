@@ -20,6 +20,7 @@ Dependency releases must be at least seven days old, and dependency install scri
 ```bash
 cd companion-module-taisto
 npm install
+npm run build
 ```
 2. Open Companion.
 3. Go to `Settings` -> `Modules` -> `Install module from local folder`.

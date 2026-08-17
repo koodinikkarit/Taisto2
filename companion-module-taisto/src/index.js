@@ -493,42 +493,6 @@ class TaistoModule extends InstanceBase {
           }
         }
       },
-      projector_input_active: {
-        name: "Tykki input active",
-        type: "boolean",
-        description: "Turns the button on when projector current_input matches",
-        defaultStyle: {
-          bgcolor: combineRgb(0, 102, 204),
-          color: combineRgb(255, 255, 255)
-        },
-        options: [
-          {
-            type: "dropdown",
-            label: "Input",
-            id: "input",
-            default: "input3",
-            choices: this.getProjectorInputChoices()
-          }
-        ],
-        callback: (feedback) => {
-          this.projectorUsed = true;
-          const input = feedback.options.input;
-          if (!input) return false;
-          return this.projectorCurrentInput === String(input);
-        }
-      },
-      projector_current_input_label: {
-        name: "Tykki current input label",
-        type: "advanced",
-        description: "Sets button text to current input label",
-        options: [],
-        callback: () => {
-          this.projectorUsed = true;
-          const label = this.getProjectorInputLabel(this.projectorCurrentInput);
-          if (!label) return {};
-          return { text: label };
-        }
-      },
       projector_power_off: {
         name: "Tykki power off",
         options: [
@@ -645,6 +609,42 @@ class TaistoModule extends InstanceBase {
         callback: () => {
           this.projectorUsed = true;
           return this.projectorState === true;
+        }
+      },
+      projector_input_active: {
+        name: "Tykki input active",
+        type: "boolean",
+        description: "Turns the button on when projector current_input matches",
+        defaultStyle: {
+          bgcolor: combineRgb(0, 102, 204),
+          color: combineRgb(255, 255, 255)
+        },
+        options: [
+          {
+            type: "dropdown",
+            label: "Input",
+            id: "input",
+            default: "input3",
+            choices: this.getProjectorInputChoices()
+          }
+        ],
+        callback: (feedback) => {
+          this.projectorUsed = true;
+          const input = feedback.options.input;
+          if (!input) return false;
+          return this.projectorCurrentInput === String(input);
+        }
+      },
+      projector_current_input_label: {
+        name: "Tykki current input label",
+        type: "advanced",
+        description: "Sets button text to current input label",
+        options: [],
+        callback: () => {
+          this.projectorUsed = true;
+          const label = this.getProjectorInputLabel(this.projectorCurrentInput);
+          if (!label) return {};
+          return { text: label };
         }
       }
     });

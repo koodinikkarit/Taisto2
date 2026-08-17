@@ -77,6 +77,8 @@ jobs:
           cp -R companion-module-taisto/companion "$MODULE_DIR/"
           cp companion-module-taisto/README.md "$MODULE_DIR/"
           cp companion-module-taisto/package.json "$MODULE_DIR/"
+          node -e "const fs=require('fs'); const file=process.argv[1]; const pkg=JSON.parse(fs.readFileSync(file)); pkg.type='commonjs'; pkg.main='main.js'; fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\\n');" "$MODULE_DIR/package.json"
+          node companion-module-taisto/scripts/smoke-test-package.cjs "$MODULE_DIR"
           cd "$STAGE_DIR"
           zip -r "$GITHUB_WORKSPACE/public/taisto-companion.zip" taisto-companion
 
