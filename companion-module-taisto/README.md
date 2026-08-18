@@ -84,6 +84,7 @@ Options for "Tykki pikakomento":
 
 ## Feedback
 - Video connection active
+- Matrix current input label
 - Output group active
 - Tykki power on
 - Tykki input active
@@ -94,6 +95,8 @@ Options:
 - CPU port id
 
 The feedback becomes active when the REST endpoint reports `status: connected` and the returned `cpuPort.id` matches the configured CPU port.
+
+`Matrix current input label` lets you select a named matrix output and sets the button text to the number and configured name of its currently connected input, for example `3. Demo-camera`.
 
 `Output group active` polls the group status endpoint and becomes active only when every output in the selected group reports the selected input. It becomes inactive if even one output differs, is disconnected, or has no known state.
 

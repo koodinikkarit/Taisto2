@@ -17,6 +17,7 @@
 - Anonymous-capable REST, GraphQL, and WebSocket actions are now attributed to the signed-in user when a valid UI session is present; explicit API-key requests remain attributed to the key.
 - Output-group displays can now be edited after a group has been created.
 - Companion's Set video connection action now shows matrix, port number, and configured names in its output and input choices.
+- Companion can now display the currently connected matrix input number and name as button text for a selected output.
 
 ### Fixed
 - Creating the first database user now starts an admin session immediately instead of returning the sign-in page to the user-management JSON request.

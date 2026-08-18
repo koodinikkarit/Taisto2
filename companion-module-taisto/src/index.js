@@ -273,6 +273,17 @@ class TaistoModule extends InstanceBase {
       : [{ id: "", label: "No outputs found" }];
   }
 
+  getCpuPortLabel(cpuPortId, portNum, slug) {
+    if (portNum != null) {
+      return `${portNum}. ${slug || `Input ${portNum}`}`;
+    }
+    for (const matrix of this.matrices) {
+      const port = (matrix.cpuPorts || []).find(item => String(item.id) === String(cpuPortId));
+      if (port) return `${port.portNum}. ${port.slug || `Input ${port.portNum}`}`;
+    }
+    return null;
+  }
+
   async refreshTaistoResources(rebuildActions = true) {
     if (!this.config.host) return;
     try {
@@ -581,6 +592,31 @@ class TaistoModule extends InstanceBase {
           return state.status === "connected" && state.cpuPortId === cpuPort;
         }
       },
+      matrix_current_input_label: {
+        name: "Matrix current input label",
+        type: "advanced",
+        description: "Sets button text to the number and name of the input currently connected to the selected output",
+        options: [
+          {
+            type: "dropdown",
+            label: "Output",
+            id: "conPort",
+            default: this.getConPortChoices()[0].id,
+            choices: this.getConPortChoices(),
+            allowCustom: true,
+            minChoicesForSearch: 10
+          }
+        ],
+        callback: (feedback) => {
+          const conPort = String(feedback.options.conPort || "").trim();
+          if (!conPort) return {};
+          this.trackedConPorts.add(conPort);
+          const state = this.connectionState.get(conPort);
+          if (!state || state.status !== "connected") return {};
+          const label = this.getCpuPortLabel(state.cpuPortId, state.cpuPortNumber, state.cpuPortSlug);
+          return label ? { text: label } : {};
+        }
+      },
       output_group_active: {
         name: "Output group active",
         type: "boolean",
@@ -778,7 +814,9 @@ class TaistoModule extends InstanceBase {
 
           this.connectionState.set(String(conPortId), {
             status,
-            cpuPortId
+            cpuPortId,
+            cpuPortNumber: data && data.cpuPort ? data.cpuPort.portNum : null,
+            cpuPortSlug: data && data.cpuPort ? data.cpuPort.slug : null
           });
         } catch (err) {
           hadError = true;
@@ -872,6 +910,7 @@ class TaistoModule extends InstanceBase {
 
     if (shouldPollMatrix) {
       this.checkFeedbacks("video_connection_active");
+      this.checkFeedbacks("matrix_current_input_label");
       this.checkFeedbacks("output_group_active");
     }
     if (shouldPollProjector) {
