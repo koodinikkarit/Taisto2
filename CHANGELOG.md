@@ -18,6 +18,7 @@
 - Output-group displays can now be edited after a group has been created.
 - Companion's Set video connection action now shows matrix, port number, and configured names in its output and input choices.
 - Companion can now display the currently connected matrix input number and name as button text for a selected output.
+- Companion's Video connection active feedback now shows matrix, port number, and configured names in its output and input choices.
 
 ### Fixed
 - Creating the first database user now starts an admin session immediately instead of returning the sign-in page to the user-management JSON request.

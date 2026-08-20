@@ -34,8 +34,8 @@ Validate and build the module with `npm run check` and `npm run build`. Yarn is 
 3. Select the named output from Taisto.
 4. Select the named input from Taisto.
 5. Add a button feedback `Video connection active`.
-6. Set `Con port id` to `35`.
-7. Set `CPU port id` to `37`.
+6. Select the named output from Taisto.
+7. Select the named input from Taisto.
 8. Set the feedback style background to red.
 9. Optional: add action `Turn off video connection`.
 10. Set `Con port id` to `35`.
@@ -91,10 +91,10 @@ Options for "Tykki pikakomento":
 - Tykki current input label
 
 Options:
-- Con port id
-- CPU port id
+- Output (loaded from Taisto with matrix, port number and name)
+- Input (loaded from Taisto with matrix, port number and name)
 
-The feedback becomes active when the REST endpoint reports `status: connected` and the returned `cpuPort.id` matches the configured CPU port.
+The feedback becomes active when the REST endpoint reports `status: connected` and the returned input matches the configured input. Existing feedbacks that contain manually entered port IDs remain supported.
 
 `Matrix current input label` lets you select a named matrix output and sets the button text to the number and configured name of its currently connected input, for example `3. Demo-camera`.
 

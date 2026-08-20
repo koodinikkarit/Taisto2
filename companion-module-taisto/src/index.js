@@ -567,18 +567,22 @@ class TaistoModule extends InstanceBase {
         },
         options: [
           {
-            type: "textinput",
-            label: "Con port id",
+            type: "dropdown",
+            label: "Output",
             id: "conPort",
-            default: "35",
-            regex: Regex.NUMBER
+            default: this.getConPortChoices()[0].id,
+            choices: this.getConPortChoices(),
+            allowCustom: true,
+            minChoicesForSearch: 10
           },
           {
-            type: "textinput",
-            label: "CPU port id",
+            type: "dropdown",
+            label: "Input",
             id: "cpuPort",
-            default: "37",
-            regex: Regex.NUMBER
+            default: this.getCpuPortChoices()[0].id,
+            choices: this.getCpuPortChoices(),
+            allowCustom: true,
+            minChoicesForSearch: 10
           }
         ],
         callback: (feedback) => {

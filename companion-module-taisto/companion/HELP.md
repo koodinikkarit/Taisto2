@@ -28,7 +28,7 @@
 - Tykki current input label
 
 ## Notes
-The feedback turns the button red when the REST endpoint reports `status: connected` and the returned `cpuPort.id` matches the configured CPU port.
+`Video connection active` shows named output and input choices loaded from Taisto, including matrix, port number and configured name. It turns the button red when the REST endpoint reports `status: connected` and the returned input matches the configured input. Existing feedbacks with manually entered port IDs remain supported.
 `Matrix current input label` selects a named matrix output and replaces the button text with the number and name of its currently connected input.
 Projector power commands default to category `4054` and code `15`. If your projector supports discrete ON/OFF codes, set them in the action options.
 Projector status is read from `current_power_is_on` in the GET response.
