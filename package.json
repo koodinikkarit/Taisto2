@@ -26,6 +26,8 @@
 		"test:graphql-security": "babel-node ./tests/GraphqlSecurityTest.js",
 		"test:socket-handlers": "babel-node ./tests/SocketHandlersTest.js",
 		"test:backup-auth": "babel-node ./tests/BackupAuthTest.js",
+		"test:chrome-extension": "node ./chrome-extension/tests/popup.test.cjs",
+		"test:chrome-extension-api": "babel-node ./tests/ChromeExtensionApiTest.js",
 		"test:audit-filters": "babel-node ./tests/AuditLogFilterTest.js",
 		"mock:reset": "node scripts/reset-mock-data.js",
 		"db:migrate": "babel-node scripts/migrate-json-to-sqlite.js",

@@ -21,7 +21,7 @@ Sovellus avautuu osoitteessa `http://localhost:1337`. Tuotantotilassa käytä `n
 
 Projektin `.npmrc` hyväksyy vain vähintään seitsemän päivää vanhat pakettijulkaisut ja estää riippuvuuksien asennusskriptit. Projekti vaatii npm-version 11.10 tai uudemman. `npm run build`, `npm start` ja muut erikseen käynnistetyt projektikomennot toimivat edelleen, mutta pakettien `preinstall`-, `install`- ja `postinstall`-skriptejä ei ajeta.
 
-GitHub Actions tarkistaa ennen Docker-buildia, että `package-lock.json` vastaa tätä politiikkaa. Docker-image kopioi saman `.npmrc`-tiedoston ennen `npm ci` -asennusta. Tagijulkaisu luo lisäksi GitHub Releasen automaattisilla julkaisutiedoilla ja liittää siihen valmiin Companion-ZIPin. Vain semanttisesti uusin vakaa `vMAJOR.MINOR.PATCH`-tagi päivittää GHCR:n `latest`-tagin ja GitHubin Latest release -merkinnän.
+GitHub Actions tarkistaa ennen Docker-buildia, että `package-lock.json` vastaa tätä politiikkaa. Docker-image kopioi saman `.npmrc`-tiedoston ennen `npm ci` -asennusta. Tagijulkaisu luo lisäksi GitHub Releasen automaattisilla julkaisutiedoilla ja liittää siihen valmiit Companion- ja Chrome-lisäosan ZIP-paketit. Vain semanttisesti uusin vakaa `vMAJOR.MINOR.PATCH`-tagi päivittää GHCR:n `latest`-tagin ja GitHubin Latest release -merkinnän.
 
 ### Anonymisoitu mock-data
 
@@ -136,6 +136,14 @@ git push origin v0.1.8
 - Sovelluksen pysyvä data on tiedostossa `database/taisto.sqlite`. Docker-imagessa polku on `/usr/src/database/taisto.sqlite`, joten koko `/usr/src/database`-hakemisto tulee liittää pysyvään levyyn.
 - Paikallinen Bitfocus Companion -moduuli on hakemistossa `companion-module-taisto/`.
 - Ohjesivulta voi ladata valmiiksi rakennetun Companion-moduulin osoitteesta `/downloads/taisto-companion.zip`. Tagistä käynnistyvä GitHub Actions -julkaisutyö rakentaa ZIPin, julkaisee sen workflow-artifaktina ja sisällyttää saman paketin Docker-kuvaan.
+
+### Chrome-lisäosa
+
+Chrome-lisäosalla voi valita kaavion, tarkastella sen näyttöjen viimeksi tunnettua kytkentää ja vaihtaa näytön lähteen kaaviolle sallittujen inputtien joukosta. Lisäosalla ei muokata kaavioiden asetuksia.
+
+Tagijulkaisussa valmis `taisto-chrome-extension.zip` on saatavilla GitHub Releasessa sekä julkaistun Docker-imagen palvelimen ohjesivulta osoitteesta `/static/taisto-chrome-extension.zip`. Paikallisen lähdekoodikäynnistyksen ohjesivun latauslinkki toimii vain, jos ZIP on erikseen luotu `public`-kansioon. Pura ZIP ja avaa Chromessa `chrome://extensions`. Ota **Kehittäjätila** käyttöön, valitse **Lataa pakkaamaton** ja osoita purettua kansiota, jossa `manifest.json` sijaitsee. Kehityksessä voit valita suoraan projektin `chrome-extension`-kansion. Lisäosa asennetaan tällä tavalla paikallisesti; sitä ei julkaista Chrome Web Storessa tämän työnkulun kautta.
+
+Määritä lisäosassa Taiston osoite, esimerkiksi `http://localhost:1337`, ja **Asetukset → API-avaimet** -sivulla luotu REST API-avain. Selain pyytää verkkoyhteyden käyttöoikeuden. Avainta ei synkronoida: se pysyy selaimen istunnossa ja pitää syöttää uudelleen Chromen käynnistyttyä uudestaan. Ilman avainta kytkentöjä voi vaihtaa vain, jos anonyymit REST-kirjoitukset on erikseen sallittu määräajaksi. Nykyinen API-avain sallii laajasti REST-muutoksia eikä sitä ole rajattu kaavioihin. Sisäverkon HTTP-yhteys ei salaa API-avainta; käytä suojattua yhteyttä tai luotettua verkkoa. Onnistunut vaihtopyyntö kertoo komennon lähettämisestä. Lisäosa seuraa Taiston viimeksi tuntemaa tilaa, mutta rajapinta ei kerro tilan ikää, joten se ei takaa tuoretta laitevahvistusta.
 
 ### Audit-loki
 

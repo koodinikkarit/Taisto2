@@ -9,6 +9,16 @@ Tuki: [atk-tuki@turunhelluntaisrk.fi](mailto:atk-tuki@turunhelluntaisrk.fi)
 
 Rajapintadokumentaatio: [API-dokumentaatio](/api-docs)
 
+## Chrome-lisäosa
+
+[Lataa Taisto Chrome -lisäosa (ZIP)](/static/taisto-chrome-extension.zip)
+
+Pura ZIP, avaa Chrome-selaimessa `chrome://extensions`, kytke **Kehittäjätila** ja valitse **Lataa pakkaamaton**. Valitse purettu kansio, jonka juuressa on `manifest.json`. Määritä lisäosassa Taisto-palvelimen osoite ja tarvittaessa **Asetukset → API-avaimet** -sivulla luotu API-avain. Lisäosa näyttää kaaviot ja näyttöjen tunnetut tilat sekä vaihtaa näyttöjen lähteitä. API-avain säilyy vain selaimen istunnon ajan; se on syötettävä uudelleen Chromen uudelleenkäynnistyksen jälkeen. Ilman API-avainta vaihto onnistuu vain, jos anonyymit REST-kirjoitukset on sallittu väliaikaisesti. API-avaimella on laajat REST-kirjoitusoikeudet. Sisäverkon HTTP-yhteys ei salaa avainta. ZIP sisältyy tagijulkaisun Docker-imageen ja GitHub Releaseen.
+
+Paikallisessa lähdekoodikäynnistyksessä latauslinkki toimii vain, jos ZIP on erikseen luotu `public`-kansioon. Kehityksessä Chromelle voi osoittaa suoraan projektin `chrome-extension`-kansion.
+
+Vaihtokomennon lähetyksen jälkeen lisäosa seuraa Taiston viimeksi tuntemaa tilaa. Rajapinta ei kerro tilan ikää, joten vastaava tila ei takaa tuoretta laitevahvistusta.
+
 ## Bitfocus Companion
 
 [Lataa Taisto Companion -moduuli (ZIP)](/downloads/taisto-companion.zip)
@@ -51,6 +61,16 @@ Changes: [Changelog](https://github.com/koodinikkarit/Taisto2/blob/master/CHANGE
 Support: [atk-tuki@turunhelluntaisrk.fi](mailto:atk-tuki@turunhelluntaisrk.fi)
 
 API reference: [API documentation](/api-docs)
+
+## Chrome extension
+
+[Download the Taisto Chrome extension (ZIP)](/static/taisto-chrome-extension.zip)
+
+Extract the ZIP, open `chrome://extensions` in Chrome, enable **Developer mode**, and select **Load unpacked**. Choose the extracted folder containing `manifest.json`. In the extension, enter the Taisto server address and, if needed, a REST API key created under **Settings → API keys**. The extension lists diagrams and last-known display states and switches display inputs. The API key is stored only for the browser session and must be entered again after Chrome restarts. Switching without an API key requires temporarily enabled anonymous REST write access. API keys have broad REST write permissions. HTTP on a local network does not encrypt the key. The ZIP is included in tag-release Docker images and GitHub Releases.
+
+For a local source checkout, the download link works only if the ZIP has separately been created in `public`. During development, select the project's `chrome-extension` folder directly.
+
+After sending a switch command, the extension monitors the last state known to Taisto. The API does not provide its age, so a matching state does not guarantee a fresh device confirmation.
 
 ## Bitfocus Companion
 

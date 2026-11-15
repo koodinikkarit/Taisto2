@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Taisto</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="branding"><span class="brand"><img src="logo.png" alt="Taisto"></span><span class="brand-subtitle">Kaaviot</span></div>
+    <button id="settings-toggle" class="icon-button" type="button" aria-expanded="false" aria-controls="settings">Asetukset</button>
+  </header>
+  <main>
+    <form id="settings" class="panel settings" hidden>
+      <h1>Yhteys Taistoon</h1>
+      <p class="muted">Syötä palvelimen osoite ja tarvittaessa API-avain. Avain pysyy muistissa selaimen sulkemiseen asti.</p>
+      <label for="server-url">Taiston osoite</label>
+      <input id="server-url" type="url" placeholder="http://192.168.1.10:1337" required autocomplete="url">
+      <label for="api-key">API-avain <span class="muted">(tarvittaessa)</span></label>
+      <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Jätä tyhjäksi anonyymille käytölle">
+      <p class="muted small">Anna avain vain luotetulle palvelimelle. HTTP ei salaa yhteyttä.</p>
+      <div class="settings-actions"><button class="button secondary" id="cancel-settings" type="button">Peruuta</button><button class="button primary" type="submit">Tallenna ja yhdistä</button></div>
+    </form>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <section id="controls" hidden>
+      <div class="toolbar"><div id="connection-state" class="connection" role="status">Yhdistetään…</div><button id="refresh" class="text-button" type="button">Päivitä</button></div>
+      <label for="diagram">Kaavio</label>
+      <select id="diagram"></select>
+      <div id="screens" class="screens"></div>
+      <a id="open-taisto" class="open-link" target="_blank" rel="noopener noreferrer">Avaa Taisto ↗</a>
+    </section>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

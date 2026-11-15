@@ -89,6 +89,23 @@ jobs:
           path: public/taisto-companion.zip
           if-no-files-found: error
 
+      - name: Package Chrome extension
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          node -e "const fs=require('fs'); const file='chrome-extension/manifest.json'; const manifest=JSON.parse(fs.readFileSync(file)); const version=process.argv[1].split(/[-+]/)[0]; if (!/^(0|[1-9][0-9]*)(\\.(0|[1-9][0-9]*)){0,3}$/.test(version) || version.split('.').some(n=>Number(n)>65535) || version.split('.').every(n=>Number(n)===0)) throw new Error('Invalid Chrome extension version: '+version); manifest.version=version; fs.writeFileSync(file, JSON.stringify(manifest, null, 2) + '\\n');" "$VERSION"
+          mkdir -p public
+          cd chrome-extension
+          zip "$GITHUB_WORKSPACE/public/taisto-chrome-extension.zip" manifest.json popup.html popup.css popup.js logo.png
+
+      - name: Upload Chrome extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: taisto-chrome-extension-${{ github.ref_name }}
+          path: public/taisto-chrome-extension.zip
+          if-no-files-found: error
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -127,6 +144,7 @@ jobs:
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" \
               'public/taisto-companion.zip#Taisto Companion module' \
+              'public/taisto-chrome-extension.zip#Taisto Chrome extension' \
               --clobber
           else
             if [ "${{ steps.latest.outputs.is_latest }}" = "true" ]; then
@@ -136,6 +154,7 @@ jobs:
             fi
             gh release create "$GITHUB_REF_NAME" \
               'public/taisto-companion.zip#Taisto Companion module' \
+              'public/taisto-chrome-extension.zip#Taisto Chrome extension' \
               --verify-tag \
               --generate-notes \
               --title "Taisto ${{ steps.version.outputs.version }}" \
