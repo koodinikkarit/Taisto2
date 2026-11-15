@@ -1,6 +1,10 @@
 # Taisto
 
+![Taiston logo](public/taisto-logo-naytto-kytkenta.png)
+
 Taisto on selainpohjainen käyttöliittymä ja taustapalvelu kuvanohjausmatriisien hallintaan. Sovellus käyttää Node.js/Express-palvelinta, GraphQL-rajapintaa, React-käyttöliittymää ja socket.io:ta.
+
+Virallinen logo on [läpinäkyvä PNG](public/taisto-logo-naytto-kytkenta.png), ja siitä on myös [animoitu GIF-versio](public/taisto-logo-animoitu.gif). Aiemmat logovaihtoehdot ovat projektin `public`-kansiossa.
 
 ## Kehitys
 
@@ -145,7 +149,7 @@ Docker-esimerkki: `docker run -e TAISTO_AUDIT_RETENTION_DAYS=30 ...`
 
 Nykyisen SQLite-tietokannan täydellinen rakenne on tiedostossa [`backend/storage/schema.sql`](backend/storage/schema.sql). Se toimii luettavana skeemakuvauksena ja sillä voi alustaa uuden tyhjän SQLite-tietokannan. Sovelluksen käyttämät versioidut päivitysmigraatiot ovat edelleen `backend/storage/SqliteStorage.js`-tiedostossa ja ne suoritetaan automaattisesti käynnistyksen yhteydessä.
 
-Jos `database/taisto.sqlite` ei ole vielä alustettu mutta `database/database.json` löytyy, sovellus tuo vanhan JSON-tietokannan automaattisesti SQLiteen ennen palvelimen käynnistymistä. Tuonti tehdään yhdessä tietokantatransaktiossa ja alkuperäisestä JSON-tiedostosta luodaan aikaleimattu `database.pre-sqlite-backup.*.json`-varmuuskopio. Vanhaa JSON-tiedostoa ei poisteta.
+Jos `database/taisto.sqlite` ei ole vielä alustettu mutta `database/database.json` löytyy, sovellus tuo JSON-tietokannan automaattisesti SQLiteen ennen palvelimen käynnistymistä, kun alla kuvatut palautuksen suojausvaatimukset täyttyvät. Tuonti tehdään yhdessä tietokantatransaktiossa ja alkuperäisestä JSON-tiedostosta luodaan aikaleimattu `database.pre-sqlite-backup.*.json`-varmuuskopio. Vanhaa JSON-tiedostoa ei poisteta.
 
 Migraation voi tehdä myös erikseen:
 
@@ -159,12 +163,18 @@ Omien polkujen käyttö:
 npm run db:migrate -- --json B:\database.json --sqlite B:\database\taisto.sqlite
 ```
 
-SQLite-tietokannan voi viedä takaisin vanhan rakenteen JSON-varmuuskopioksi:
+SQLite-tietokannan voi viedä JSON-varmuuskopioksi:
 
 ```powershell
 npm run db:export-json
 npm run db:export-json -- --sqlite B:\database\taisto.sqlite --output B:\backup\database.json
 ```
+
+JSON-vienti sisältää sovelluksen asetusten ja API-avainten lisäksi käyttäjät ja niiden salasanatiivisteet. Suojaa varmuuskopiot huolellisesti: API-avaimet ovat selväkielisinä. Istunnot ja audit-loki eivät sisälly vientiin. Jos varmuuskopiossa ei ole admin-käyttäjää, `TAISTO_PASSWORD` on asetettava palautuksessa; salasanaa ei tallenneta varmuuskopioon. Näin toimitaan myös silloin, kun vientikomento suoritetaan erillisessä prosessissa ilman tuotannon ympäristösalasanaa. Jos haluat nimenomaisesti palauttaa käyttäjättömän varmuuskopion anonyymiksi, voit asettaa `TAISTO_ALLOW_UNPROTECTED_BACKUP_RESTORE=true` palautuksen ajaksi. Mock-komennot asettavat tämän automaattisesti. Varmuuskopion käyttäjät tuodaan vain alustettaessa tyhjää tietokantaa, ja aiemmat istunnot mitätöityvät.
+
+Kirjautumisyrityksiä ja Basic-tunnistautumista rajoitetaan sovellusprosessissa: enintään 20 yritystä minuutissa samasta osoitteesta ja 200 yhteensä sekä neljä yhtäaikaista tarkistusta. Rajoitus nollautuu uudelleenkäynnistyksessä eikä ole jaettu usean palvelininstanssin kesken. Salasanan vaihto mitätöi käyttäjän kaikki istunnot ja uloskirjautuminen kyseisen istunnon. Päivitys tähän versioon kirjaa aiemmat istunnot ulos.
+
+Vanhat JSON-tiedostot, jotka on luotu ennen käyttäjien varmistustukea, eivät sisällä käyttäjiä eikä niistä voi päätellä, oliko kirjautuminen käytössä. Vanhan JSONin tuonti pysähtyy oletuksena, ellei `TAISTO_PASSWORD` ole asetettu. Luo käyttäjät uudelleen ennen palvelun avaamista verkkoon. Jos haluat nimenomaan tuoda vanhan tiedoston ilman kirjautumissuojausta, voit erikseen asettaa `TAISTO_ALLOW_UNPROTECTED_LEGACY_IMPORT=true` tuonnin ajaksi. Tämä ei muuta uusien, ilman JSON-tuontia luotujen anonyymien asennusten toimintaa.
 
 Tee varmuuskopio mieluiten vientikomennolla palvelimen ollessa käynnissä. Jos kopioit SQLite-tiedoston suoraan, pysäytä palvelin ensin, jotta WAL-tiedoston keskeneräiset muutokset eivät jää kopiosta pois.
 

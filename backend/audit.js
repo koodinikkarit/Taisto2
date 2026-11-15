@@ -1,4 +1,5 @@
 import { appendAuditLog } from "./storage/SqliteStorage";
+import { getGraphqlOperation } from "./graphql/operation";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const REDACTED_FIELD = /password|secret|token|authorization|api.?key|(^|_)key$/i;
@@ -18,13 +19,13 @@ function sanitize(value, depth = 0) {
 
 function graphqlAction(req) {
   const query = req.body && typeof req.body.query === "string" ? req.body.query : "";
-  if (!/^\s*mutation\b/i.test(query)) return null;
-  const match = query.match(/^\s*mutation(?:\s+\w+)?(?:\s*\([^)]*\))?\s*\{\s*(\w+)/is);
-  return `graphql.${match ? match[1] : (req.body.operationName || "mutation")}`;
+  const operation = getGraphqlOperation(query, req.body && req.body.operationName);
+  if (!operation || operation.operation !== "mutation") return null;
+  return `graphql.${operation.fields[0] || "mutation"}`;
 }
 
 function restAction(req) {
-  const parts = req.path.split("/").filter(Boolean);
+  const parts = req.path.toLowerCase().split("/").filter(Boolean);
   if (parts[0] === "rest") parts.shift();
   const resource = parts[0] || "request";
   if (parts[parts.length - 1] === "execute") return `${resource}.execute`;
@@ -33,12 +34,13 @@ function restAction(req) {
 }
 
 function settingsAction(req) {
-  if (req.path.includes("/users")) {
+  const path = req.path.toLowerCase();
+  if (path.includes("/users")) {
     if (req.method === "POST") return "user.create";
     if (req.method === "PATCH") return "user.update";
     if (req.method === "DELETE") return "user.delete";
   }
-  if (req.path.includes("/anonymous")) return req.method === "DELETE" ? "api_access.anonymous_disable" : "api_access.anonymous_enable";
+  if (path.includes("/anonymous")) return req.method === "DELETE" ? "api_access.anonymous_disable" : "api_access.anonymous_enable";
   if (req.method === "POST") return "api_key.create";
   if (req.method === "PATCH") return "api_key.update";
   if (req.method === "DELETE") return "api_key.delete";
@@ -51,11 +53,12 @@ export function auditHttpMutations({ getSessionIdentity } = {}) {
       try {
         if (SAFE_METHODS.has(req.method)) return;
         const originalPath = (req.originalUrl || req.path || "").split("?")[0];
+        const isGraphqlPath = /^\/api\/?$/i.test(originalPath);
         let action = null;
-        if (originalPath.startsWith("/rest")) action = restAction(req);
-        else if (originalPath === "/api") action = graphqlAction(req);
-        else if (originalPath.startsWith("/settings/api-key") || originalPath.startsWith("/settings/users")) action = settingsAction(req);
-        else if (originalPath === "/login") action = "authentication.login";
+        if (/^\/rest(?:\/|$)/i.test(originalPath)) action = restAction(req);
+        else if (isGraphqlPath) action = graphqlAction(req);
+        else if (/^\/settings\/(?:api-key|users)(?:\/|$)/i.test(originalPath)) action = settingsAction(req);
+        else if (/^\/login\/?$/i.test(originalPath)) action = "authentication.login";
         if (!action) return;
 
         const identity = getSessionIdentity ? getSessionIdentity(req) : null;
@@ -69,7 +72,11 @@ export function auditHttpMutations({ getSessionIdentity } = {}) {
           name: "Taisto web client"
         });
         const safeBody = sanitize(req.body || {});
-        if (originalPath === "/api" && safeBody.query) safeBody.query = `[${action}]`;
+        if (isGraphqlPath && safeBody.query) {
+          const operation = getGraphqlOperation(req.body.query, req.body.operationName);
+          safeBody.query = `[${action}]`;
+          if (operation) safeBody.graphqlFields = operation.fields;
+        }
         appendAuditLog({
           actorType: actor.type,
           actorId: actor.id,

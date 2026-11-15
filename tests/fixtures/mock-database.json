@@ -49,5 +49,6 @@
   "weeklyTimerVideoConnections": {},
   "weeklyTimerKwmConnections": {},
   "weeklyTimerDefaultStates": { "1": { "id": 1, "weeklyTimerId": 1, "defaultStateId": 1 } },
-  "conGroups": {}
+  "conGroups": {},
+  "taistoBackup": { "version": 1, "users": [], "requiresEnvironmentPassword": true }
 }

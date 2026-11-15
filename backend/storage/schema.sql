@@ -1,5 +1,5 @@
 -- Taisto SQLite schema snapshot
--- Schema version: 6
+-- Schema version: 7
 --
 -- The application runs incremental migrations from SqliteStorage.js automatically.
 -- This file documents the current complete schema and can initialize a new database.
@@ -184,6 +184,14 @@ CREATE TABLE IF NOT EXISTS auth_settings (
   value TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS auth_sessions (
+  token_hash TEXT PRIMARY KEY,
+  source TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(source, user_id);
+
 CREATE INDEX IF NOT EXISTS idx_con_ports_matrix ON con_ports(matrix_id);
 CREATE INDEX IF NOT EXISTS idx_cpu_ports_matrix ON cpu_ports(matrix_id);
 CREATE INDEX IF NOT EXISTS idx_diagram_screens_diagram ON diagram_screens(diagram_id);
@@ -198,6 +206,7 @@ INSERT OR IGNORE INTO schema_migrations(version, applied_at) VALUES
   (3, datetime('now')),
   (4, datetime('now')),
   (5, datetime('now')),
-  (6, datetime('now'));
+  (6, datetime('now')),
+  (7, datetime('now'));
 
 COMMIT;

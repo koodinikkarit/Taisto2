@@ -15,7 +15,7 @@ import {
   getAuthSessionSecret,
   closeDatabaseStorage
 } from "../backend/storage/SqliteStorage";
-import { createSessionToken, getSessionIdentity, sessionCookieName } from "../backend/auth";
+import { createSessionToken, getSessionIdentity, revokeRequestSession, sessionCookieName } from "../backend/auth";
 
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "taisto-auth-test-"));
 
@@ -34,6 +34,12 @@ try {
   const token = createSessionToken(Object.assign({}, first, { source: "database" }));
   const socketIdentity = getSessionIdentity({ headers: { cookie: `${sessionCookieName}=${token}` } });
   assert.strictEqual(socketIdentity.username, "first-admin", "Socket.IO request cookies must resolve to the signed-in user");
+  const firstRequest = { headers: { cookie: `${sessionCookieName}=${token}` } };
+  revokeRequestSession(firstRequest);
+  assert.strictEqual(getSessionIdentity(firstRequest), null, "logout must revoke the copied token");
+  const previousToken = createSessionToken(Object.assign({}, first, { source: "database" }));
+  updateUser(first.id, { password: "new-test-password-1" });
+  assert.strictEqual(getSessionIdentity({ headers: { cookie: `${sessionCookieName}=${previousToken}` } }), null, "password changes must revoke existing sessions");
 
   const regular = createUser({ username: "operator", password: "test-password-2", role: "user" });
   assert.strictEqual(regular.role, "user");

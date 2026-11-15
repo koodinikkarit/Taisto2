@@ -41,6 +41,8 @@ body {
 .taisto-navigation-inner { width: 100%; max-width: 1320px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; min-height: 56px; }
 .taisto-navigation-top { display: flex; align-items: center; }
 .taisto-navigation .navbar-brand { margin-right: 24px; }
+.taisto-navigation .taisto-brand { display: flex; align-items: center; padding: 3px 8px; background: #fff; border-radius: 7px; }
+.taisto-brand img { display: block; width: 108px; height: auto; }
 .taisto-navigation-menu { display: flex; flex: 1; align-items: center; }
 .taisto-navigation-menu .navbar-nav { display: flex; flex-direction: row; }
 .taisto-navigation-menu .nav-link { padding: 17px 12px; font-weight: 500; }

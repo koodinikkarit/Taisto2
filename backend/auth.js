@@ -1,10 +1,14 @@
 import crypto from "crypto";
 import {
   authenticateUser,
+  authenticateUserAsync,
   countAdminUsers,
   countUsers,
   getAuthSessionSecret,
-  getUserById
+  getUserById,
+  registerAuthSession,
+  hasAuthSession,
+  revokeAuthSession
 } from "./storage/SqliteStorage";
 
 const ENVIRONMENT_USER = process.env.TAISTO_USER || "taisto";
@@ -34,16 +38,26 @@ function sessionSignature(payload) {
   return crypto.createHmac("sha256", getAuthSessionSecret()).update(payload).digest("base64url");
 }
 
+function environmentCredentialVersion() {
+  return crypto.createHmac("sha256", getAuthSessionSecret()).update(JSON.stringify([ENVIRONMENT_USER, ENVIRONMENT_PASSWORD])).digest("base64url");
+}
+
 export function createSessionToken(identity, expiresAt = Date.now() + SESSION_DURATION_MS) {
   const payload = Buffer.from(JSON.stringify({
     id: identity.id == null ? "" : String(identity.id),
     username: identity.username,
     role: identity.role,
     source: identity.source,
-    expiresAt
+    expiresAt,
+    nonce: crypto.randomBytes(24).toString("base64url"),
+    environmentVersion: identity.source === "environment" ? environmentCredentialVersion() : undefined
   })).toString("base64url");
-  return `${payload}.${sessionSignature(payload)}`;
+  const token = `${payload}.${sessionSignature(payload)}`;
+  registerAuthSession(sessionHash(token), identity.source, identity.id == null ? "" : identity.id, expiresAt);
+  return token;
 }
+
+const sessionHash = token => crypto.createHash("sha256").update(token).digest("hex");
 
 function sessionCookie(req) {
   const cookieHeader = typeof req.get === "function" ? req.get("cookie") : req.headers && req.headers.cookie;
@@ -63,6 +77,7 @@ export function getSessionIdentity(req) {
     const payload = token.slice(0, separator);
     const signature = token.slice(separator + 1);
     if (!credentialsMatch(signature, sessionSignature(payload))) return null;
+    if (!hasAuthSession(sessionHash(token))) return null;
     const session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
     if (!session.expiresAt || Number(session.expiresAt) <= Date.now()) return null;
     if (session.source === "database") {
@@ -70,13 +85,18 @@ export function getSessionIdentity(req) {
       if (!user) return null;
       return Object.assign({}, user, { source: "database", expiresAt: Number(session.expiresAt) });
     }
-    if (session.source === "environment" && session.username) {
+    if (session.source === "environment" && session.username && ENVIRONMENT_PASSWORD && credentialsMatch(session.environmentVersion, environmentCredentialVersion())) {
       return { id: "environment", username: session.username, role: "admin", source: "environment", expiresAt: Number(session.expiresAt) };
     }
     return null;
   } catch (error) {
     return null;
   }
+}
+
+export function revokeRequestSession(req) {
+  const cookie = sessionCookie(req);
+  if (cookie) revokeAuthSession(sessionHash(cookie.slice(sessionCookieName.length + 1)));
 }
 
 export function getRequestAuthorization(req) {
@@ -106,6 +126,18 @@ export function authenticateCredentials(username, password) {
   return { id: "environment", username: ENVIRONMENT_USER, role: "admin", source: "environment" };
 }
 
+export async function authenticateCredentialsAsync(username, password) {
+  if (usesDatabaseUsers()) {
+    const user = await authenticateUserAsync(username, password);
+    if (user) return Object.assign({}, user, { source: "database" });
+    if (countAdminUsers() > 0 || !ENVIRONMENT_PASSWORD) return null;
+  }
+  if (!ENVIRONMENT_PASSWORD) return { id: "", username: "", role: "anonymous", source: "anonymous" };
+  const candidateUsername = String(username || ENVIRONMENT_USER);
+  if (!credentialsMatch(candidateUsername, ENVIRONMENT_USER) || !credentialsMatch(password, ENVIRONMENT_PASSWORD)) return null;
+  return { id: "environment", username: ENVIRONMENT_USER, role: "admin", source: "environment" };
+}
+
 export function authenticateBasicHeader(header) {
   try {
     const encoded = String(header || "").startsWith("Basic ") ? String(header).slice(6) : "";
@@ -117,6 +149,15 @@ export function authenticateBasicHeader(header) {
   } catch (error) {
     return null;
   }
+}
+
+export async function authenticateBasicHeaderAsync(header) {
+  const encoded = String(header || "").startsWith("Basic ") ? String(header).slice(6) : "";
+  if (!encoded) return null;
+  const credentials = Buffer.from(encoded, "base64").toString("utf8");
+  const separator = credentials.indexOf(":");
+  if (separator < 0) return null;
+  return authenticateCredentialsAsync(credentials.slice(0, separator), credentials.slice(separator + 1));
 }
 
 export function sessionCookieHeader(identity, secure = false) {

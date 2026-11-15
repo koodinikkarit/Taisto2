@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Added the official Taisto logo, an animated GIF, and retained the logo design alternatives.
 - Added a documented Docker update script that pulls the selected image and safely recreates the production container with its persistent database mount.
 - Diagram display cards now show the matrix output port number before the display device name.
 - Added SQLite-backed user management with securely hashed passwords and `admin` and `user` roles.
@@ -21,6 +22,10 @@
 - Companion's Video connection active feedback now shows matrix, port number, and configured names in its output and input choices.
 
 ### Fixed
+- Fixed GraphQL authorization and audit handling for fragments, comments and named operations.
+- Reject malformed Socket.IO command arguments without crashing the server.
+- Preserve user authentication in new JSON backups and require the environment password where needed on restore.
+- Revoke sessions on logout or password changes, and throttle expensive login and Basic authentication requests.
 - Creating the first database user now starts an admin session immediately instead of returning the sign-in page to the user-management JSON request.
 - Companion releases now declare their bundled host API version instead of requiring `@companion-module/base` from the installation directory.
 - Projector input feedbacks are registered as feedbacks instead of invalid actions, preventing the Companion instance from entering a restart loop.

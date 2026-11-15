@@ -13,7 +13,7 @@ export default function AppNavigation() {
   return <nav className="navbar navbar-inverse fixed-top bg-inverse taisto-navigation">
     <div className="taisto-navigation-inner">
       <div className="taisto-navigation-top">
-        <Link className="navbar-brand" to="/" onClick={closeMenu}>Taisto</Link>
+        <Link className="navbar-brand taisto-brand" to="/" onClick={closeMenu}><img src="/static/taisto-logo-naytto-kytkenta.png" alt="Taisto" /></Link>
         <button type="button" className="taisto-navigation-toggle" aria-label="Avaa navigointi" aria-expanded={open} onClick={() => setOpen(!open)}>
           <span /> <span /> <span />
         </button>

@@ -19,12 +19,19 @@
 		"testmatrix": "babel-node ./tests/MatrixTest.js",
 		"test:con-group-status": "babel-node ./tests/ConGroupStatusTest.js",
 		"test:auth": "babel-node ./tests/AuthTest.js",
+		"test:auth-async": "babel-node ./tests/AsyncAuthTest.js",
+		"test:auth-environment": "babel-node ./tests/EnvironmentSessionTest.js",
+		"test:auth-throttle": "babel-node ./tests/AuthThrottleTest.js",
+		"test:security-integration": "babel-node ./tests/SecurityIntegrationTest.js",
+		"test:graphql-security": "babel-node ./tests/GraphqlSecurityTest.js",
+		"test:socket-handlers": "babel-node ./tests/SocketHandlersTest.js",
+		"test:backup-auth": "babel-node ./tests/BackupAuthTest.js",
 		"test:audit-filters": "babel-node ./tests/AuditLogFilterTest.js",
 		"mock:reset": "node scripts/reset-mock-data.js",
 		"db:migrate": "babel-node scripts/migrate-json-to-sqlite.js",
 		"db:export-json": "babel-node scripts/export-sqlite-to-json.js",
-		"dev:mock": "npm run mock:reset && npm run dev",
-		"start:mock": "npm run mock:reset && npm start"
+		"dev:mock": "npm run mock:reset && cross-env TAISTO_ALLOW_UNPROTECTED_BACKUP_RESTORE=true npm run dev",
+		"start:mock": "npm run mock:reset && cross-env TAISTO_ALLOW_UNPROTECTED_BACKUP_RESTORE=true npm start"
 	},
 	"dependencies": {
 		"@apollo/client": "^3.14.1",

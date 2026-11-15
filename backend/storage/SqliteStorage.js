@@ -14,6 +14,7 @@ const COUNTERS = [
 
 let database = null;
 let sqliteFile = "";
+let activePasswordChecks = 0;
 
 const values = collection => Object.keys(collection || {}).map(id => collection[id]);
 const mapById = rows => rows.reduce((result, row) => {
@@ -133,6 +134,15 @@ function migrateSchema(db) {
       COMMIT;
     `);
   }
+  if (version < 7) {
+    db.exec(`
+      BEGIN;
+      CREATE TABLE auth_sessions (token_hash TEXT PRIMARY KEY, source TEXT NOT NULL, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL);
+      CREATE INDEX idx_auth_sessions_user ON auth_sessions(source, user_id);
+      INSERT INTO schema_migrations(version, applied_at) VALUES (7, datetime('now'));
+      COMMIT;
+    `);
+  }
 }
 
 function tableHasData(db) {
@@ -144,7 +154,7 @@ function insertRows(db, sql, rows, mapper) {
   rows.forEach(row => statement.run(...mapper(row)));
 }
 
-export function saveDatabase(state) {
+export function saveDatabase(state, { backupUsers = null } = {}) {
   if (!database) throw new Error("SQLite storage has not been initialized");
   database.exec("BEGIN IMMEDIATE");
   try {
@@ -173,6 +183,16 @@ export function saveDatabase(state) {
     values(state.conGroups).forEach(group => (group.conPortIds || []).forEach((conPortId, position) => database.prepare("INSERT INTO con_group_ports VALUES (?, ?, ?)").run(group.id, conPortId, position)));
     values(state.conGroups).forEach(group => (group.cpuPortIds || []).forEach((cpuPortId, position) => database.prepare("INSERT INTO con_group_cpu_ports VALUES (?, ?, ?)").run(group.id, cpuPortId, position)));
     insertRows(database, "INSERT INTO rest_api_keys VALUES (?, ?, ?, ?, ?, ?, ?, ?)", state.restApiKeys || [], row => [row.id, row.name || "Nimetön avain", row.key, row.createdAt || new Date().toISOString(), row.expiresAt || "", row.enabled === false ? 0 : 1, Number(row.useCount || 0), row.lastUsedAt || ""]);
+
+    // Authentication is imported only from an explicit backup during initial migration.
+    // Ordinary application-state saves must never replace the users table.
+    if (backupUsers !== null) {
+      if (Number(database.prepare("SELECT COUNT(*) AS total FROM users").get().total) !== 0) {
+        throw new Error("Cannot import backup users into a database that already has users");
+      }
+      insertRows(database, `INSERT INTO users(id, username, password_hash, password_salt, role, created_at, updated_at, last_login_at, login_count, last_login_ip)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, backupUsers, row => [row.id, row.username, row.password_hash, row.password_salt, row.role, row.created_at, row.updated_at, row.last_login_at || "", Number(row.login_count || 0), row.last_login_ip || ""]);
+    }
 
     const metadata = database.prepare("INSERT INTO metadata(key, value) VALUES (?, ?)");
     COUNTERS.forEach(counter => metadata.run(counter, String(Number(state[counter] || 1))));
@@ -226,7 +246,22 @@ export function initializeDatabaseStorage({ sqlitePath, jsonPath }) {
   if (!tableHasData(database) && jsonPath && fs.existsSync(jsonPath)) {
     const sourcePath = path.resolve(jsonPath);
     const source = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
-    saveDatabase(source);
+    let backupUsers = null;
+    if (Object.prototype.hasOwnProperty.call(source, "taistoBackup")) {
+      const backup = source.taistoBackup;
+      if (!backup || backup.version !== 1 || !Array.isArray(backup.users) || typeof backup.requiresEnvironmentPassword !== "boolean") {
+        throw new Error("Invalid Taisto backup authentication data");
+      }
+      const hasAdmin = backup.users.some(user => user.role === "admin");
+      const allowAnonymousRestore = backup.users.length === 0 && process.env.TAISTO_ALLOW_UNPROTECTED_BACKUP_RESTORE === "true";
+      if (!process.env.TAISTO_PASSWORD && (backup.requiresEnvironmentPassword || !hasAdmin) && !allowAnonymousRestore) {
+        throw new Error("TAISTO_PASSWORD is required to restore this backup without an admin account. Set TAISTO_ALLOW_UNPROTECTED_BACKUP_RESTORE=true only to explicitly allow an anonymous restore.");
+      }
+      backupUsers = backup.users;
+    } else if (!process.env.TAISTO_PASSWORD && process.env.TAISTO_ALLOW_UNPROTECTED_LEGACY_IMPORT !== "true") {
+      throw new Error("Legacy JSON may not contain user accounts. Set TAISTO_PASSWORD or explicitly set TAISTO_ALLOW_UNPROTECTED_LEGACY_IMPORT=true to allow an unprotected import.");
+    }
+    saveDatabase(source, { backupUsers });
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backup = path.join(path.dirname(sourcePath), `database.pre-sqlite-backup.${timestamp}.json`);
     fs.copyFileSync(sourcePath, backup);
@@ -238,9 +273,31 @@ export function initializeDatabaseStorage({ sqlitePath, jsonPath }) {
 export function exportDatabaseToJson(outputPath) {
   const state = loadDatabase();
   if (!state) throw new Error("SQLite database is empty");
+  const users = database.prepare("SELECT id, username, password_hash, password_salt, role, created_at, updated_at, last_login_at, login_count, last_login_ip FROM users ORDER BY id").all();
+  state.taistoBackup = {
+    version: 1,
+    users,
+    // Environment credentials are not copied into backups. Require them again on restore.
+    requiresEnvironmentPassword: !users.some(user => user.role === "admin")
+  };
   const resolvedOutputPath = path.resolve(outputPath);
   fs.mkdirSync(path.dirname(resolvedOutputPath), { recursive: true });
-  fs.writeFileSync(resolvedOutputPath, JSON.stringify(state, null, 2));
+  // Secure an existing file before replacing its contents; open-mode alone only
+  // applies permissions when the file is newly created.
+  let fd;
+  try {
+    fd = fs.openSync(resolvedOutputPath, "r+");
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    fd = fs.openSync(resolvedOutputPath, "wx+", 0o600);
+  }
+  try {
+    fs.fchmodSync(fd, 0o600);
+    fs.ftruncateSync(fd, 0);
+    fs.writeFileSync(fd, JSON.stringify(state, null, 2));
+  } finally {
+    fs.closeSync(fd);
+  }
   return resolvedOutputPath;
 }
 
@@ -310,6 +367,28 @@ export function authenticateUser(username, password) {
   return actual.length === expected.length && crypto.timingSafeEqual(actual, expected) ? publicUser(row) : null;
 }
 
+export async function authenticateUserAsync(username, password) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const row = database.prepare("SELECT * FROM users WHERE username = ? COLLATE NOCASE").get(normalizeUsername(username));
+  if (!row) return null;
+  if (activePasswordChecks >= 4) {
+    const error = new Error("Too many authentication attempts");
+    error.status = 429;
+    throw error;
+  }
+  activePasswordChecks++;
+  let actual;
+  try {
+    actual = await new Promise((resolve, reject) => crypto.scrypt(String(password || ""), row.password_salt, 64, (error, result) => error ? reject(error) : resolve(result)));
+  } finally {
+    activePasswordChecks--;
+  }
+  const expected = Buffer.from(row.password_hash, "base64url");
+  // Recheck the stored hash after the asynchronous operation so password changes cannot race a login.
+  const current = database.prepare("SELECT password_hash FROM users WHERE id = ?").get(row.id);
+  return current && current.password_hash === row.password_hash && actual.length === expected.length && crypto.timingSafeEqual(actual, expected) ? getUserById(row.id) : null;
+}
+
 export function recordUserLogin(id, ipAddress = "") {
   if (!database) throw new Error("SQLite storage has not been initialized");
   database.prepare(`
@@ -351,9 +430,17 @@ export function updateUser(id, changes, { allowNoAdmin = false } = {}) {
     passwordSalt = crypto.randomBytes(16).toString("base64url");
     passwordHash = passwordDigest(changes.password, passwordSalt);
   }
-  database.prepare(`
-    UPDATE users SET username = ?, password_hash = ?, password_salt = ?, role = ?, updated_at = ? WHERE id = ?
-  `).run(username, passwordHash, passwordSalt, role, new Date().toISOString(), numericId);
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    database.prepare(`
+      UPDATE users SET username = ?, password_hash = ?, password_salt = ?, role = ?, updated_at = ? WHERE id = ?
+    `).run(username, passwordHash, passwordSalt, role, new Date().toISOString(), numericId);
+    if (passwordHash !== current.password_hash) revokeUserSessions("database", String(numericId));
+    database.exec("COMMIT");
+  } catch (error) {
+    database.exec("ROLLBACK");
+    throw error;
+  }
   return getUserById(numericId);
 }
 
@@ -366,6 +453,7 @@ export function deleteUser(id, { allowNoAdmin = false } = {}) {
     const admins = Number(database.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin'").get().total);
     if (admins <= 1 && !allowNoAdmin) throw new Error("The last admin cannot be removed without an environment admin credential");
   }
+  revokeUserSessions("database", String(numericId));
   database.prepare("DELETE FROM users WHERE id = ?").run(numericId);
   return true;
 }
@@ -377,6 +465,27 @@ export function getAuthSessionSecret() {
   const secret = crypto.randomBytes(32).toString("base64url");
   database.prepare("INSERT INTO auth_settings(key, value) VALUES ('session_secret', ?)").run(secret);
   return secret;
+}
+
+export function registerAuthSession(tokenHash, source, userId, expiresAt) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  database.prepare("DELETE FROM auth_sessions WHERE expires_at <= ?").run(Date.now());
+  database.prepare("INSERT INTO auth_sessions(token_hash, source, user_id, expires_at) VALUES (?, ?, ?, ?)").run(tokenHash, source, String(userId), expiresAt);
+}
+
+export function hasAuthSession(tokenHash) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  return Boolean(database.prepare("SELECT 1 FROM auth_sessions WHERE token_hash = ? AND expires_at > ?").get(tokenHash, Date.now()));
+}
+
+export function revokeAuthSession(tokenHash) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  database.prepare("DELETE FROM auth_sessions WHERE token_hash = ?").run(tokenHash);
+}
+
+export function revokeUserSessions(source, userId) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  database.prepare("DELETE FROM auth_sessions WHERE source = ? AND user_id = ?").run(source, String(userId));
 }
 
 export function appendAuditLog(entry) {

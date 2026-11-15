@@ -3,13 +3,7 @@ import {
 	NEW_KWM_CONNECTION,
 	NEW_VIDEO_CONNECTION,
 	NEW_VIDEO_CONNECTIONS,
-	NEW_KWM_CONNECTIONS,
-	SET_VIDEO_CONNECTION,
-	SET_KWM_CONNECTION,
-	VIDEO_CONNECTION_TURN_OFF,
-	KWM_CONNECTION_TURN_OFF,
-	TURN_OFF_VIDEO_CONNECTION,
-	TURN_OFF_KWM_CONNECTION
+	NEW_KWM_CONNECTIONS
 } from "../js/constants/actionconstants";
 
 import {
@@ -20,6 +14,7 @@ import {
 import { Server as SocketIOServer } from "socket.io";
 import { appendAuditLog } from "./storage/SqliteStorage";
 import { getSessionIdentity } from "./auth";
+import { registerSocketHandlers } from "./socketHandlers";
 
 const auditSocketMutation = (socket, action, target, details, success) => {
 	try {
@@ -61,40 +56,6 @@ export const createService = (server) => {
 		db.matrixs.forEach(matrix => {
 			matrix.requestAllStates();
 		});
-		socket.on(SET_VIDEO_CONNECTION, (connection) => {
-			var conPort = db.conPorts.get(parseInt(connection.con));
-			if (conPort) {
-				conPort.setValue(parseInt(connection.cpu));
-			}
-			auditSocketMutation(socket, "matrix.video.set", `con-port/${connection.con}`, { cpuPortId: connection.cpu }, Boolean(conPort));
-		});
-		socket.on(SET_KWM_CONNECTION, connection => {
-			var cpuPort = db.cpuPorts.get(parseInt(connection.cpu));
-			if (cpuPort) {
-				cpuPort.setValue(parseInt(connection.con));
-			}
-			auditSocketMutation(socket, "matrix.kvm.set", `cpu-port/${connection.cpu}`, { conPortId: connection.con }, Boolean(cpuPort));
-		});
-		socket.on(TURN_OFF_VIDEO_CONNECTION, con => {
-			var conPort = db.conPorts.get(parseInt(con));
-			if (conPort) {
-				conPort.turnOffPort();
-			}
-			auditSocketMutation(socket, "matrix.video.turn_off", `con-port/${con}`, {}, Boolean(conPort));
-
-		});
-		socket.on(TURN_OFF_KWM_CONNECTION, cpu => {
-			var cpuPort = db.cpuPorts.get(parseInt(cpu));
-			if (cpuPort) {
-				cpuPort.turnOffPort();
-			}
-			auditSocketMutation(socket, "matrix.kvm.turn_off", `cpu-port/${cpu}`, {}, Boolean(cpuPort));
-		});
-		socket.on("REQUEST_ALL_STATES", matrixId => {
-			var matrix = db.matrixs.get(parseInt(matrixId));
-			if (matrix) {
-				matrix.requestAllStates();
-			}
-		});
+		registerSocketHandlers(socket, () => db, auditSocketMutation);
 	});
 }

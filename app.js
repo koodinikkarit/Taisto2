@@ -3,7 +3,7 @@ import express from "express";
 import webpack from "webpack";
 import WebpackMiddleware from "webpack-dev-middleware";
 import { createHandler } from "graphql-http/lib/use/express";
-import { parse } from "graphql";
+import { getGraphqlOperation, requiresGraphqlAdmin } from "./backend/graphql/operation";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 
@@ -37,16 +37,18 @@ import {
 	recordUserLogin
 } from "./backend/storage/SqliteStorage";
 import {
-	authenticateBasicHeader,
-	authenticateCredentials,
+	authenticateBasicHeaderAsync,
+	authenticateCredentialsAsync,
 	defaultLoginUsername,
 	expiredSessionCookieHeader,
 	getRequestAuthorization,
 	getSessionIdentity,
 	isAuthenticationRequired,
 	sessionCookieHeader,
+	revokeRequestSession,
 	usesDatabaseUsers
 } from "./backend/auth";
+import { createAuthThrottle } from "./backend/authThrottle";
 
 const app = express();
 
@@ -77,23 +79,31 @@ function loginPage(next, error = false) {
 	return `<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Taisto – Kirjaudu</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f2f4f6;font:16px system-ui,sans-serif;color:#243447}.card{width:min(380px,calc(100% - 48px));padding:32px;border-radius:14px;background:white;box-shadow:0 12px 35px #0002}h1{margin:0 0 8px}p{color:#5f6b76}label,input,button{display:block;width:100%;box-sizing:border-box}label{font-weight:600;margin-top:16px}input{margin:7px 0 0;padding:12px;border:1px solid #c8d0d8;border-radius:7px;font:inherit}button{margin-top:24px;padding:12px;border:0;border-radius:7px;background:#1677c8;color:white;font-weight:700;cursor:pointer}.error{color:#b42318;background:#fef3f2;padding:10px;border-radius:6px}</style></head><body><main class="card"><h1>Taisto</h1><p>Kirjaudu suojatulle alueelle.</p>${error ? '<p class="error">Virheellinen käyttäjätunnus tai salasana.</p>' : ''}<form method="post" action="/login"><input type="hidden" name="next" value="${escapeHtml(next)}"><label for="username">Käyttäjätunnus</label><input id="username" name="username" autocomplete="username" value="${username}" required autofocus><label for="password">Salasana</label><input id="password" name="password" type="password" autocomplete="current-password" required><button type="submit">Kirjaudu</button></form></main></body></html>`;
 }
 
-function requestIdentity(req) {
-	return getSessionIdentity(req) || authenticateBasicHeader(req.get("authorization"));
+async function requestIdentity(req) {
+	return getSessionIdentity(req) || await authenticateBasicHeaderAsync(req.get("authorization"));
 }
 
-function requireAuthenticated(req, res, next) {
+function credentialError(error, res, next) {
+	if (error.status === 429) return res.set("Retry-After", "60").status(429).send("Too many authentication attempts. Please try again later.");
+	return next(error);
+}
+
+async function requireAuthenticated(req, res, next) {
+	try {
 	if (!isAuthenticationRequired()) return next();
-	const identity = requestIdentity(req);
+	const identity = await requestIdentity(req);
 	if (identity) {
 		req.auditActor = { type: "user", id: String(identity.id || ""), name: identity.username };
 		return next();
 	}
 	return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
+	} catch (error) { return credentialError(error, res, next); }
 }
 
-function requireAdmin(req, res, next) {
+async function requireAdmin(req, res, next) {
+	try {
 	if (!isAuthenticationRequired()) return next();
-	const identity = requestIdentity(req);
+	const identity = await requestIdentity(req);
 	if (identity && identity.role === "admin") {
 		req.auditActor = { type: "user", id: String(identity.id || ""), name: identity.username };
 		return next();
@@ -101,12 +111,14 @@ function requireAdmin(req, res, next) {
 	if (!identity) return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
 	if (req.get("accept") && req.get("accept").includes("application/json")) return res.status(403).json({ error: { message: "Admin access is required" } });
 	return res.status(403).send("<!doctype html><html lang=\"fi\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Ei käyttöoikeutta</title><body style=\"font:16px system-ui;padding:40px\"><h1>Ei käyttöoikeutta</h1><p>Asetusten hallinta vaatii admin-oikeuden.</p><a href=\"/\">Palaa etusivulle</a></body></html>");
+	} catch (error) { return credentialError(error, res, next); }
 }
 
 app.use("/static", express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 app.use("/api", express.json());
 app.use(auditHttpMutations({ getSessionIdentity }));
+app.use(createAuthThrottle());
 
 app.get("/downloads/taisto-companion.zip", (req, res) => {
 	res.download(
@@ -127,10 +139,11 @@ app.get("/auth/status", (req, res) => {
 	res.set("Cache-Control", "no-store");
 	res.json(authorization);
 });
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res, nextError) => {
+	try {
 	const next = safeNext(req.body.next);
 	if (!isAuthenticationRequired()) return res.redirect(next);
-	const identity = authenticateCredentials(req.body.username, req.body.password);
+	const identity = await authenticateCredentialsAsync(req.body.username, req.body.password);
 	if (identity) {
 		if (identity.source === "database") recordUserLogin(identity.id, req.ip || (req.socket && req.socket.remoteAddress) || "");
 		req.auditActor = { type: "user", id: String(identity.id || ""), name: identity.username };
@@ -139,8 +152,12 @@ app.post("/login", (req, res) => {
 		return res.redirect(next);
 	}
 	return res.status(401).send(loginPage(next, true));
+	} catch (error) {
+		return credentialError(error, res, nextError);
+	}
 });
 app.post("/logout", (req, res) => {
+	revokeRequestSession(req);
 	res.set("Set-Cookie", expiredSessionCookieHeader(req.secure));
 	return res.redirect("/");
 });
@@ -233,23 +250,17 @@ app.get("/settings/audit-logs/data", (req, res) => {
 
 app.use("/rest", restRouter);
 
-const USER_GRAPHQL_MUTATIONS = new Set(["executeConGroup", "executeDefaultState"]);
-app.use("/api", (req, res, next) => {
-	if (!isAuthenticationRequired() || req.method === "GET" || !req.body || typeof req.body.query !== "string") return next();
+app.use("/api", async (req, res, next) => {
 	try {
-		const document = parse(req.body.query);
-		const operations = document.definitions.filter(definition => definition.kind === "OperationDefinition" && definition.operation === "mutation");
-		if (!operations.length) return next();
-		const fields = operations.reduce((result, operation) => result.concat(operation.selectionSet.selections.filter(selection => selection.kind === "Field").map(selection => selection.name.value)), []);
-		if (fields.every(field => USER_GRAPHQL_MUTATIONS.has(field))) return next();
-		const identity = requestIdentity(req);
-		if (!identity) return res.status(401).json({ errors: [{ message: "Authentication is required" }] });
-		if (identity.role !== "admin") return res.status(403).json({ errors: [{ message: "Admin access is required" }] });
-		req.auditActor = { type: "user", id: String(identity.id || ""), name: identity.username };
-		return next();
-	} catch (error) {
-		return next();
-	}
+	if (!isAuthenticationRequired() || req.method === "GET" || !req.body || typeof req.body.query !== "string") return next();
+	const operation = getGraphqlOperation(req.body.query, req.body.operationName);
+	if (!requiresGraphqlAdmin(operation)) return next();
+	const identity = await requestIdentity(req);
+	if (!identity) return res.status(401).json({ errors: [{ message: "Authentication is required" }] });
+	if (identity.role !== "admin") return res.status(403).json({ errors: [{ message: "Admin access is required" }] });
+	req.auditActor = { type: "user", id: String(identity.id || ""), name: identity.username };
+	return next();
+	} catch (error) { return credentialError(error, res, next); }
 });
 
 const webpackEntry = {
