@@ -9,23 +9,27 @@ export default function AppNavigation() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const closeMenu = () => setOpen(false);
+  const active = path => path === "/"
+    ? location.pathname === "/" || location.pathname.startsWith("/diagram/")
+    : location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const navLink = (path, label) => <li className="nav-item"><Link className={`nav-link${active(path) ? " is-current" : ""}`} aria-current={active(path) ? "page" : undefined} to={path} onClick={closeMenu}>{label}</Link></li>;
 
   return <nav className="navbar navbar-inverse fixed-top bg-inverse taisto-navigation">
     <div className="taisto-navigation-inner">
       <div className="taisto-navigation-top">
         <Link className="navbar-brand taisto-brand" to="/" onClick={closeMenu}><img src="/static/taisto-logo-naytto-kytkenta.png" alt="Taisto" /></Link>
-        <button type="button" className="taisto-navigation-toggle" aria-label="Avaa navigointi" aria-expanded={open} onClick={() => setOpen(!open)}>
-          <span /> <span /> <span />
+        <button type="button" className="taisto-navigation-toggle" aria-label={language === "en" ? (open ? "Close navigation" : "Open navigation") : (open ? "Sulje navigointi" : "Avaa navigointi")} aria-expanded={open} aria-controls="taisto-navigation-menu" onClick={() => setOpen(!open)}>
+          <span aria-hidden="true" /> <span aria-hidden="true" /> <span aria-hidden="true" />
         </button>
       </div>
-      <div className={`taisto-navigation-menu ${open ? "is-open" : ""}`}>
+      <div id="taisto-navigation-menu" className={`taisto-navigation-menu ${open ? "is-open" : ""}`}>
         <ul className="navbar-nav mr-auto">
-          <li className="nav-item"><Link className="nav-link" to="/" onClick={closeMenu}>{t("diagrams")}</Link></li>
-          <li className="nav-item"><Link className="nav-link" to="/output-groups" onClick={closeMenu}>{t("outputGroups")}</Link></li>
-          <li className="nav-item"><Link className="nav-link" to="/oletustilat" onClick={closeMenu}>{t("defaults")}</Link></li>
-          <li className="nav-item"><Link className="nav-link" to="/promode" onClick={closeMenu}>Promode</Link></li>
-          {(!auth.required || auth.role === "admin") && <li className="nav-item"><Link className="nav-link" to="/settings" onClick={closeMenu}>{t("settings")}</Link></li>}
-          <li className="nav-item"><Link className="nav-link" to="/apua" onClick={closeMenu}>{t("help")}</Link></li>
+          {navLink("/", t("diagrams"))}
+          {navLink("/output-groups", t("outputGroups"))}
+          {navLink("/oletustilat", t("defaults"))}
+          {navLink("/promode", "Promode")}
+          {(!auth.required || auth.role === "admin") && navLink("/settings", t("settings"))}
+          {navLink("/apua", t("help"))}
         </ul>
         <div className="taisto-navigation-actions">
           {auth.required && auth.authenticated && <span className="taisto-current-user">{auth.username} · {auth.role}</span>}

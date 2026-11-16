@@ -76,7 +76,82 @@ function escapeHtml(value) {
 
 function loginPage(next, error = false) {
 	const username = escapeHtml(defaultLoginUsername());
-	return `<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Taisto – Kirjaudu</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f2f4f6;font:16px system-ui,sans-serif;color:#243447}.card{width:min(380px,calc(100% - 48px));padding:32px;border-radius:14px;background:white;box-shadow:0 12px 35px #0002}h1{margin:0 0 8px}p{color:#5f6b76}label,input,button{display:block;width:100%;box-sizing:border-box}label{font-weight:600;margin-top:16px}input{margin:7px 0 0;padding:12px;border:1px solid #c8d0d8;border-radius:7px;font:inherit}button{margin-top:24px;padding:12px;border:0;border-radius:7px;background:#1677c8;color:white;font-weight:700;cursor:pointer}.error{color:#b42318;background:#fef3f2;padding:10px;border-radius:6px}</style></head><body><main class="card"><h1>Taisto</h1><p>Kirjaudu suojatulle alueelle.</p>${error ? '<p class="error">Virheellinen käyttäjätunnus tai salasana.</p>' : ''}<form method="post" action="/login"><input type="hidden" name="next" value="${escapeHtml(next)}"><label for="username">Käyttäjätunnus</label><input id="username" name="username" autocomplete="username" value="${username}" required autofocus><label for="password">Salasana</label><input id="password" name="password" type="password" autocomplete="current-password" required><button type="submit">Kirjaudu</button></form></main></body></html>`;
+	return `<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kirjaudu sisään – Taisto</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 32px 20px; background: #edf3f7; color: #142e42; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .shell { width: min(100%, 960px); display: grid; grid-template-columns: 0.95fr 1.05fr; overflow: hidden; background: #fff; border: 1px solid #d8e4eb; border-radius: 22px; box-shadow: 0 24px 70px rgba(23, 48, 66, .12), 0 4px 12px rgba(23, 48, 66, .04); }
+    .intro { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; min-height: 540px; padding: 42px; color: #fff; background: #132c3e; }
+    .intro::after { content: ""; position: absolute; right: -90px; bottom: -150px; width: 350px; height: 350px; border: 1px solid rgba(87, 203, 190, .22); border-radius: 50%; box-shadow: 0 0 0 48px rgba(87, 203, 190, .035), 0 0 0 96px rgba(87, 203, 190, .025); pointer-events: none; }
+    .intro-content, .intro-footer, .logo { position: relative; z-index: 1; }
+    .logo { display: inline-flex; align-self: flex-start; padding: 7px 10px; background: #fff; border-radius: 9px; }
+    .logo img { display: block; width: 148px; height: auto; }
+    .eyebrow { display: inline-block; margin: 0 0 15px; color: #75d8ca; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .intro-title { max-width: 290px; margin: 0 0 16px; font-size: clamp(30px, 4vw, 40px); line-height: 1.12; letter-spacing: -.035em; }
+    .intro-copy { max-width: 310px; margin: 0; color: #c2d6e2; line-height: 1.65; }
+    .intro-footer { margin: 0; color: #a5bfce; font-size: 13px; }
+    .login { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 48px clamp(28px, 6vw, 72px); }
+    .login-content { width: 100%; max-width: 360px; margin: 0 auto; }
+    .login-eyebrow { margin: 0 0 10px; color: #087e78; font-size: 12px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+    h1 { margin: 0 0 8px; color: #112d43; font-size: 30px; line-height: 1.2; letter-spacing: -.03em; }
+    .description { margin: 0 0 28px; color: #617689; }
+    label { display: block; margin: 18px 0 7px; color: #314d62; font-size: 14px; font-weight: 650; }
+    input, button { display: block; width: 100%; font: inherit; }
+    input:not([type="hidden"]) { height: 50px; padding: 11px 14px; color: #142e42; background: #fbfdfe; border: 1px solid #cbdbe5; border-radius: 9px; }
+    input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #68b8e9; outline-offset: 2px; }
+    input:focus-visible { border-color: #1983c0; }
+    button { min-height: 50px; margin-top: 26px; padding: 12px 18px; border: 0; border-radius: 9px; color: #fff; background: #1267a8; font-weight: 700; cursor: pointer; }
+    button:hover { background: #0c548c; }
+    .error { margin: 0 0 18px; padding: 12px 14px; border: 1px solid #f2c3be; border-radius: 9px; color: #a72b22; background: #fff3f1; font-size: 14px; }
+    .back { display: inline-block; margin-top: 24px; color: #416479; font-size: 14px; text-decoration: none; }
+    .back:hover { color: #1267a8; text-decoration: underline; }
+    @media (max-width: 700px) {
+      body { display: block; padding: 18px 14px; }
+      .shell { margin: 0 auto; grid-template-columns: 1fr; border-radius: 17px; }
+      .intro { min-height: 0; padding: 24px; gap: 20px; }
+      .intro::after, .intro-footer { display: none; }
+      .logo img { width: 122px; }
+      .eyebrow { margin-bottom: 7px; }
+      .intro-title { margin-bottom: 7px; font-size: 26px; }
+      .intro-copy { font-size: 14px; }
+      .login { padding: 30px 24px 32px; }
+      h1 { font-size: 26px; }
+      .description { margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="intro" aria-label="Taisto">
+      <div class="logo"><img src="/static/taisto-logo-naytto-kytkenta.png" alt="Taisto"></div>
+      <div class="intro-content"><p class="eyebrow">Matriisinhallinta</p><h2 class="intro-title">Kaikki näytöt, yhdessä paikassa.</h2><p class="intro-copy">Hallitse näyttöjen lähteitä ja kytkentöjä selkeästi Taistossa.</p></div>
+      <p class="intro-footer">Taisto · Matriisinhallinta</p>
+    </section>
+    <section class="login" aria-labelledby="login-title">
+      <div class="login-content">
+        <p class="login-eyebrow">Tervetuloa</p>
+        <h1 id="login-title">Kirjaudu sisään</h1>
+        <p class="description">Jatka kirjautumalla Taisto-tunnuksellasi.</p>
+        ${error ? '<p class="error" role="alert">Virheellinen käyttäjätunnus tai salasana.</p>' : ''}
+        <form method="post" action="/login">
+          <input type="hidden" name="next" value="${escapeHtml(next)}">
+          <label for="username">Käyttäjätunnus</label>
+          <input id="username" name="username" autocomplete="username" value="${username}" required autofocus>
+          <label for="password">Salasana</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button type="submit">Kirjaudu sisään</button>
+        </form>
+        <a class="back" href="/">← Takaisin etusivulle</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>`;
 }
 
 async function requestIdentity(req) {

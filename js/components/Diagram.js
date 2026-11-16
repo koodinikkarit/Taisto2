@@ -32,12 +32,12 @@ class Diagram extends React.Component {
     render() {
         const diagram = this.props.diagram;
         return (
-            <main style={{ maxWidth: "1080px", margin: "0 auto", padding: "18px 0 48px" }}>
-                <div style={{ marginBottom: "24px" }}>
-                    <h1 style={{ marginBottom: "6px" }}>{diagram ? diagram.slug : "Kaavio"}</h1>
-                    <p style={{ margin: 0, color: "#64748b" }}>Valitse jokaiselle näytölle haluamasi lähde.</p>
+            <main className="taisto-diagram-page">
+                <div className="taisto-diagram-intro">
+                    <h1>{diagram ? diagram.slug : "Kaavio"}</h1>
+                    <p>Valitse jokaiselle näytölle haluamasi lähde.</p>
                 </div>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "16px" }}>
+                <ul className="taisto-diagram-grid">
                     {diagram && diagram.diagramScreens ? diagram.diagramScreens.map(diagramScreen => (
                         <li key={diagramScreen.id}>
                             <ActionShortcut diagramScreenId={diagramScreen.id} />

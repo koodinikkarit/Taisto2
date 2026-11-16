@@ -32,6 +32,10 @@
 - Projector input feedbacks are registered as feedbacks instead of invalid actions, preventing the Companion instance from entering a restart loop.
 - Companion's bundled CommonJS entrypoint is now executed as CommonJS under Node 22 instead of crashing with `require is not defined`.
 
+## [0.1.30] - 2026-11-16
+### Changed
+- Refreshed the shared application theme, navigation, sign-in page, diagram display cards, and default-state list with responsive layouts.
+
 ## [0.1.21] - 2026-08-16
 ### Fixed
 - Dependency safety validation now uses the committed lockfile directly and no longer regenerates platform-specific lockfile entries on Linux runners.

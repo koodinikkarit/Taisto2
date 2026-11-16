@@ -42,18 +42,12 @@ class DefaultStatesList extends React.Component {
 					<ul className="list-group">
 					{this.props.defaultStates ? 
 					 this.props.defaultStates.map(defaultState => (
-						 <li className="list-group-item" key={defaultState.id}>
-						 	<div className="row" style={{ width: "100%" }}>
-							 	<div className="col" style={{ fontSize: "25px" }}>
-								 	{defaultState.slug}
-								</div>
-								<div className="col">
-									<button className="btn btn-info" disabled={Boolean(this.state.cooldowns[defaultState.id])}
-									 onClick={() => this.execute(defaultState)}>
-										{this.state.cooldowns[defaultState.id] ? t("wait") : t("execute")}
-									</button>
-								</div>
-							</div>
+						 <li className="list-group-item taisto-default-state-item" key={defaultState.id}>
+							<div className="taisto-default-state-name">{defaultState.slug}</div>
+							<button className="btn btn-primary" disabled={Boolean(this.state.cooldowns[defaultState.id])}
+							 onClick={() => this.execute(defaultState)}>
+								{this.state.cooldowns[defaultState.id] ? t("wait") : t("execute")}
+							</button>
 						 </li>
 					 )) : ""}
 					</ul>

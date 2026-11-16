@@ -23,26 +23,19 @@ class ActionShortcut extends React.Component {
             const displayDeviceLabel = displayDevice.portNum !== null && displayDevice.portNum !== undefined
                 ? `${displayDevice.portNum}. ${displayDeviceName}`
                 : displayDeviceName;
-            const styles = {
-                card: { border: "1px solid #dfe5eb", borderRadius: "12px", background: "#fff", boxShadow: "0 3px 12px rgba(24,39,75,.06)", overflow: "hidden" },
-                header: { padding: "16px 18px", background: "linear-gradient(135deg,#edf6ff,#f8fbfe)", borderBottom: "1px solid #dfe5eb" },
-                body: { padding: "18px" },
-                caption: { color: "#64748b", fontSize: "13px", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".04em", marginBottom: "4px" },
-                value: { color: "#172b3a", fontSize: "19px", fontWeight: 650 },
-                select: { marginTop: "8px", width: "100%" }
-            };
+            const inputId = `diagram-device-${this.props.diagramScreen.id}`;
             return (
-                <article style={styles.card}>
-                    <header style={styles.header}>
-                        <div style={styles.caption}>Näyttölaite</div>
-                        <div style={styles.value}>{displayDeviceLabel}</div>
+                <article className="taisto-diagram-card">
+                    <header className="taisto-diagram-card-header">
+                        <div className="taisto-diagram-card-eyebrow">Näyttölaite</div>
+                        <h2 className="taisto-diagram-card-title">{displayDeviceLabel}</h2>
                     </header>
-                    <div style={styles.body}>
-                        <div style={styles.caption}>Aktiivinen laite</div>
-                        <div style={{ ...styles.value, minHeight: "28px" }}>{activeDevice ? `${activeDevice.portNum}. ${activeDevice.slug}` : "Ei valittua lähdettä"}</div>
-                        <label style={{ ...styles.caption, display: "block", marginTop: "20px" }}>Vaihda laite</label>
-                        <select className="form-control"
-                            style={styles.select}
+                    <div className="taisto-diagram-card-body">
+                        <div className="taisto-diagram-card-eyebrow">Aktiivinen laite</div>
+                        <div className="taisto-diagram-card-current">{activeDevice ? `${activeDevice.portNum}. ${activeDevice.slug}` : "Ei valittua lähdettä"}</div>
+                        <div className="taisto-diagram-card-field">
+                        <label htmlFor={inputId}>Vaihda laite</label>
+                        <select id={inputId} className="form-control"
                             value={activeDevice ? activeDevice.id : ""}
                             onChange={e => this.props.setVideoConnection(this.props.diagramScreen.conPort.id, e.target.value)}>
                             <option></option>
@@ -50,6 +43,7 @@ class ActionShortcut extends React.Component {
                                 <option key={cpuPort.id} value={cpuPort.id}>{`${cpuPort.portNum}. ${cpuPort.slug}`}</option>
                             ))}
                         </select>
+                        </div>
                     </div>
                 </article>
             );

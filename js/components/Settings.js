@@ -31,7 +31,7 @@ export default class extends React.Component {
 
 		if (!this.state.width || this.state.width > 545) {
 			styles.sideBar.position = "fixed";
-			styles.sideBar.top = "51px";
+			styles.sideBar.top = "56px";
 		}
 		return (
 			<Measure onMeasure={({ width }) => this.setState({ width })} >
