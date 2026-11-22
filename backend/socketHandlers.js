@@ -4,6 +4,15 @@ import {
 	TURN_OFF_VIDEO_CONNECTION,
 	TURN_OFF_KWM_CONNECTION
 } from "../js/constants/actionconstants";
+import { MATRIX_CONNECTION_STATES } from "../js/constants/matrix";
+
+// A (re)joining browser may have missed every previous TCP state change.
+export function syncMatrixClient(socket, matrices) {
+	const states = {};
+	matrices.forEach(matrix => { states[String(matrix.id)] = matrix.connectionState; });
+	socket.emit(MATRIX_CONNECTION_STATES, states);
+	matrices.forEach(matrix => matrix.requestAllStates());
+}
 
 // IDs originate from the database and may arrive as either numbers or strings.
 const portId = value => {

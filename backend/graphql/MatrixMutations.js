@@ -80,22 +80,18 @@ export default {
 				type: GraphQLInt
 			}
 		},
-		resolve: (_, args) => new Promise((resolve, reject) => {
-			var matrix = db.matrixs.get(parseInt(args.id));
-			if (matrix) {
-				setDb(db.withMutations(db => {
-					db.matrixs = db.matrixs.withMutations(matrixs => {
-						matrixs.set(matrix.id, matrix.withMutations(matrix => {
-							if (args.slug) matrix.slug = args.slug;
-							if (args.ip) matrix.ip = args.ip;
-							if (args.port) matrix.port = args.port;
-						}));
-					});
-				}));
-			}
-
-			resolve(matrix);
-		})
+		resolve: (_, args) => {
+			const matrix = db.matrixs.get(parseInt(args.id));
+			if (!matrix) return null;
+			const updated = matrix.withMutations(record => {
+				if (args.slug) record.slug = args.slug;
+				if (args.ip) record.ip = args.ip;
+				if (args.port) record.port = args.port;
+			});
+			setDb(db.setIn(["matrixs", matrix.id], updated));
+			if (matrix.ip !== updated.ip || matrix.port !== updated.port) updated.reconnect();
+			return updated;
+		}
 	},
 	removeMatrix: {
 		name: "RemoveMatrix",

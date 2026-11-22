@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 const messages = {
   fi: {
+    matrixConnectionUnknown: "Tila ei tiedossa", matrixConnectionConnecting: "Yhdistetään…",
     driveBackups: "Drive-varmuuskopiot", driveSettings: "Kohde ja ajastus", driveStatus: "Varmistuksen tila",
     driveIntro: "Tallenna salattu kopio Taiston koko tietokannasta omaan Google Drive -kansioon.",
     driveAdminRequired: "Kirjaudu ylläpitäjänä nähdäksesi ja hallitaksesi Drive-varmistuksia.",
@@ -34,6 +35,7 @@ const messages = {
     outputGroups: "Näyttöryhmät", outputGroupsIntro: "Suorita valmiiksi määritetty näyttöryhmä. Ryhmien muokkaus tehdään Asetuksissa.", selectInput: "Valitse input", execute: "Suorita", executing: "Suoritetaan…", on: "Päällä", off: "Ei päällä", output: "output", outputs: "outputia", input: "input", inputs: "inputia", noOutputGroups: "Näyttöryhmiä ei ole vielä määritetty.", executionFailed: "Näyttöryhmän suoritus epäonnistui.", apiKeys: "API-avaimet", outputGroupSettingsIntro: "Kokoa usein yhdessä vaihtuvat näytöt ryhmäksi. Ryhmän suoritus vaihtaa kaikki sen outputit samaan inputiin.", newOutputGroup: "Uusi näyttöryhmä", selectMatrixAndOutputs: "Valitse matriisi ja siihen kuuluvat outputit.", groupName: "Ryhmän nimi", groupNamePlaceholder: "Esim. Sali ja aula", matrix: "Matriisi", selected: "valittu", inputsInUse: "Käytettävät inputit", allInputs: "Kaikki inputit", allInputsHint: "Myös myöhemmin lisättävät inputit ovat käytettävissä.", selectedInputs: "Valitut inputit", selectedInputsHint: "Näytä käyttäjälle vain valitut inputit.", selectAtLeastOneOutput: "Valitse vähintään yksi output.", selectAtLeastOneInput: "Valitse vähintään yksi input.", createOutputGroup: "Luo näyttöryhmä", runOutputGroup: "Suorita näyttöryhmä", switchToInput: "Vaihda inputiin", allowedInputs: "Sallitut inputit", editGroupOutputsHint: "Valitse ryhmään kuuluvat näytöt. Ryhmässä on oltava vähintään yksi näyttö.", saveOutputs: "Tallenna näytöt", saveInputs: "Tallenna inputit", requestFailed: "Pyyntö epäonnistui.", selectInputForGroup: "Valitse ensin input ryhmälle.", removeOutputGroupConfirm: "Poistetaanko ryhmä", noOutputGroupsSettings: "Ei näyttöryhmiä vielä. Luo ensimmäinen ryhmä yllä.", auditSearch: "Haku", auditSearchPlaceholder: "Toiminto, käyttäjä, kohde tai IP", auditActionFilter: "Toiminto", auditResultFilter: "Lopputulos", auditActorTypeFilter: "Tekijän tyyppi", auditFrom: "Alkaen", auditTo: "Päättyen", all: "Kaikki", failed: "Epäonnistui", applyFilters: "Suodata", clearFilters: "Tyhjennä", auditActorUser: "Käyttäjä", auditActorApiKey: "API-avain", auditActorAnonymous: "Anonyymi", auditActorInvalidKey: "Virheellinen API-avain", auditActorUnauthenticated: "Tunnistamaton"
   },
   en: {
+    matrixConnectionUnknown: "Status unknown", matrixConnectionConnecting: "Connecting…",
     driveBackups: "Drive backups", driveSettings: "Destination and schedule", driveStatus: "Backup status",
     driveIntro: "Save an encrypted copy of the entire Taisto database to your own Google Drive folder.",
     driveAdminRequired: "Sign in as an administrator to view and manage Drive backups.",

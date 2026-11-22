@@ -17,6 +17,8 @@ npm run dev
 
 Sovellus avautuu osoitteessa `http://localhost:1337`. Tuotantotilassa käytä `npm start`. Selainpaketin rakentaa `npm run build` ja matriisitestin ajaa `npm run testmatrix`.
 
+Matriisien yhteystilan ja katkoksista palautumisen voi testata ilman fyysistä laitetta komennolla `npm run test:matrix-status`.
+
 ### Riippuvuuksien turvallisuuspolitiikka
 
 Projektin `.npmrc` hyväksyy vain vähintään seitsemän päivää vanhat pakettijulkaisut ja estää riippuvuuksien asennusskriptit. Projekti vaatii npm-version 11.10 tai uudemman. `npm run build`, `npm start` ja muut erikseen käynnistetyt projektikomennot toimivat edelleen, mutta pakettien `preinstall`-, `install`- ja `postinstall`-skriptejä ei ajeta.
@@ -37,6 +39,7 @@ Komento kopioi mock-datan väliaikaiseen `database/database.json`-tiedostoon, po
 
 ## Käyttöliittymä
 
+- **Asetukset → Matriisit** näyttää palvelimen yhteyden kuhunkin matriisiin. **Katkaistu** tarkoittaa, ettei laitteeseen ole yhteyttä; Taisto yrittää yhdistää uudelleen. Jos vain selain menettää yhteyden Taistoon, sivulla lukee **Tila ei tiedossa**, kunnes selain saa palvelimelta ajantasaisen tilan.
 - Kieli voidaan vaihtaa suomen ja englannin välillä valikosta.
 - Ohjesivu on reitissä `/apua`. Sen lähdetiedosto on [apua.md](apua.md), jossa on suomen- ja englanninkielinen sisältö.
 - Sovellus näyttää alanurkassa versionumeron ja build-tunnisteen. Paikallisessa ajossa tunniste on `local`.

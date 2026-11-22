@@ -14,12 +14,19 @@ import {
 
 import {
 	UPDATE_MATRIX_CONNECTION_STATE,
-	MATRIX_CONNECTION
+	MATRIX_CONNECTION_STATES
 } from "./constants/matrix";
 
-export default () => {
-	const socket = io(`http://${location.hostname}:${location.port}`, {reconnection: true});
+export default (connectSocket = io) => {
+	const socket = connectSocket(); // Same origin and protocol; Socket.IO reconnects by default.
 	return store => {
+		socket.on(MATRIX_CONNECTION_STATES, connectionStates => {
+			store.dispatch({ type: MATRIX_CONNECTION_STATES, connectionStates });
+		});
+		socket.on("disconnect", () => {
+			// Losing the browser connection tells us nothing about the hardware.
+			store.dispatch({ type: MATRIX_CONNECTION_STATES, connectionStates: {} });
+		});
 		socket.on(NEW_VIDEO_CONNECTION, (videoConnection) => {
 			store.dispatch({
 				type: NEW_VIDEO_CONNECTION,

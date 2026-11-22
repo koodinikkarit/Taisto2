@@ -27,6 +27,7 @@
 - Companion's Video connection active feedback now shows matrix, port number, and configured names in its output and input choices.
 
 ### Fixed
+- The Matrices page keeps the current connection status while open and resynchronizes after the browser reconnects. A real device disconnect is retried without reloading the page.
 - Fixed GraphQL authorization and audit handling for fragments, comments and named operations.
 - Reject malformed Socket.IO command arguments without crashing the server.
 - Preserve user authentication in new JSON backups and require the environment password where needed on restore.

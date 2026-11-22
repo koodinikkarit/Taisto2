@@ -25,6 +25,7 @@
 		"test:security-integration": "babel-node ./tests/SecurityIntegrationTest.js",
 		"test:graphql-security": "babel-node ./tests/GraphqlSecurityTest.js",
 		"test:socket-handlers": "babel-node ./tests/SocketHandlersTest.js",
+		"test:matrix-status": "babel-node ./tests/MatrixConnectionTest.js && babel-node ./tests/SocketHandlersTest.js && babel-node ./tests/MatrixStatusUiTest.js && babel-node ./tests/MatrixStatusIntegrationTest.js",
 		"test:backup-auth": "babel-node ./tests/BackupAuthTest.js",
 		"test:drive": "node ./tests/DriveSnapshotTest.cjs && node ./tests/DriveUploadTest.cjs && babel-node ./tests/DriveScheduleTest.js && babel-node ./tests/DriveIntegrationTest.js",
 		"test:chrome-extension": "node ./chrome-extension/tests/popup.test.cjs",

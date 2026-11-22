@@ -9,7 +9,8 @@ import {
 } from "../constants/actionconstants";
 
 import {
-	UPDATE_MATRIX_CONNECTION_STATE
+	UPDATE_MATRIX_CONNECTION_STATE,
+	MATRIX_CONNECTION_STATES
 } from "../constants/matrix";
 
 import {
@@ -50,8 +51,10 @@ export default function (state = initialState, action) {
 			});
 		case UPDATE_MATRIX_CONNECTION_STATE:
 			return Object.assign({}, state, {
-				connectionStates: state.connectionStates.set(action.matrixId, action.connectionState)
+				connectionStates: state.connectionStates.set(String(action.matrixId), action.connectionState)
 			});
+		case MATRIX_CONNECTION_STATES:
+			return Object.assign({}, state, { connectionStates: Map(action.connectionStates) });
 		default:
 			return state;
 	}

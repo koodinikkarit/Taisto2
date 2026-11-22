@@ -1,6 +1,7 @@
 import assert from "assert";
 import { EventEmitter } from "events";
-import { registerSocketHandlers } from "../backend/socketHandlers";
+import { registerSocketHandlers, syncMatrixClient } from "../backend/socketHandlers";
+import { MATRIX_CONNECTION_STATES } from "../js/constants/matrix";
 import { SET_VIDEO_CONNECTION, SET_KWM_CONNECTION, TURN_OFF_VIDEO_CONNECTION, TURN_OFF_KWM_CONNECTION } from "../js/constants/actionconstants";
 
 const socket = new EventEmitter();
@@ -32,4 +33,21 @@ socket.emit(TURN_OFF_KWM_CONNECTION, 2);
 socket.emit("REQUEST_ALL_STATES", "3");
 assert.deepStrictEqual(calls, [["video", 2], ["kvm", 1], ["video-off"], ["kvm-off"], ["refresh"]]);
 assert.ok(audits.slice(-4).every(args => args[4] === true));
+
+const emitted = [];
+const joiningClient = { emit: (...args) => emitted.push(args) };
+const devices = new Map([
+  [3, { id: 3, connectionState: "CONNECTED", requestAllStates: () => emitted.push(["refresh", 3]) }],
+  [4, { id: 4, connectionState: "DISCONNECTED", requestAllStates: () => emitted.push(["refresh", 4]) }]
+]);
+syncMatrixClient(joiningClient, devices);
+assert.deepStrictEqual(emitted.splice(0), [
+  [MATRIX_CONNECTION_STATES, { "3": "CONNECTED", "4": "DISCONNECTED" }], ["refresh", 3], ["refresh", 4]
+]);
+devices.delete(3);
+devices.get(4).connectionState = "CONNECTED";
+syncMatrixClient(joiningClient, devices);
+assert.deepStrictEqual(emitted.splice(0), [[MATRIX_CONNECTION_STATES, { "4": "CONNECTED" }], ["refresh", 4]]);
+syncMatrixClient(joiningClient, new Map());
+assert.deepStrictEqual(emitted, [[MATRIX_CONNECTION_STATES, {}]]);
 console.log("Socket.IO handler validation tests passed");

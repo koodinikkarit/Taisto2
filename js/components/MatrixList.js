@@ -1,5 +1,4 @@
 import React from 'react';
-import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { graphql } from '@apollo/client/react/hoc';
 import { compose } from 'redux';
@@ -7,20 +6,8 @@ import gql from 'graphql-tag';
 
 import Settings from "../containers/Settings";
 import ConnectingMatrix from "./ConnectingMatrix";
+import MatrixConnectionStatus from "./MatrixConnectionStatus";
 import { I18nContext } from "../i18n";
-
-function getConnectionStateMessage(code) {
-	switch(code) {
-		case "ADDRESS_NOT_FOUND":
-			return <span style={{color: "red" }}>Osoite on virheellinen</span>;
-		case "CONNECTED":
-			return <span style={{color: "green" }}>Yhdistetty</span>;
-		case "DISCONNECTED":
-			return <span style={{color: "red" }}>Katkaistu</span>; 
-		default:
-			return "";
-	}
-}
 
 class MatrixList extends React.Component {
 	static contextType = I18nContext;
@@ -61,16 +48,14 @@ class MatrixList extends React.Component {
 						<div className="list-group">
 							{this.props.matrixs ?
 								this.props.matrixs.map(matrix => (
-									<a className="list-group-item list-group-item-action"
+									<a key={matrix.id} className="list-group-item list-group-item-action"
 									 onClick={() => this.props.history.push(`/settings/matriisi/${matrix.slug}`)}>		
 									<div className="row" style={{ width: "100%" }}>
 										<div className="col">
 										{matrix.slug + "  "}
 										</div>
 										<div className="col">
-											{this.props.connectionStates ? 
-											getConnectionStateMessage(this.props.connectionStates.get(matrix.id))
-										 	: ""}
+											<MatrixConnectionStatus t={t} code={this.props.connectionStates && this.props.connectionStates.get(String(matrix.id))} />
 										</div>
 										<div className="col">
 											<button className="btn btn-danger"

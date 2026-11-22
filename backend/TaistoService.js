@@ -362,9 +362,9 @@ export const connectMarix = (
 					);
 				}
 			});
-			registerMatrixEvents(matrix);
 		})
 	);
+	registerMatrixEvents(matrix);
 	return matrix;
 };
 

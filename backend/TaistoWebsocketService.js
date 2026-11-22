@@ -14,7 +14,7 @@ import {
 import { Server as SocketIOServer } from "socket.io";
 import { appendAuditLog } from "./storage/SqliteStorage";
 import { getSessionIdentity } from "./auth";
-import { registerSocketHandlers } from "./socketHandlers";
+import { registerSocketHandlers, syncMatrixClient } from "./socketHandlers";
 
 const auditSocketMutation = (socket, action, target, details, success) => {
 	try {
@@ -53,9 +53,7 @@ export const createService = (server) => {
 	on("TURN_OFF_CPU_PORT", cpu => io.emit("CPU_PORT_TURN_OFF", cpu));
 	on("MATRIX_CONNECTION_STATE_CHANGED", (reason, id, ip, port) => io.emit("MATRIX_CONNECTION_STATE_CHANGED", reason, id, ip, port));
 	io.on("connection", function (socket) {
-		db.matrixs.forEach(matrix => {
-			matrix.requestAllStates();
-		});
 		registerSocketHandlers(socket, () => db, auditSocketMutation);
+		syncMatrixClient(socket, db.matrixs);
 	});
 }
