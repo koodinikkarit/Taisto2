@@ -42,6 +42,7 @@ import {
 } from "./backend/storage/SqliteStorage";
 import { createTelegramBot } from "./backend/telegram/bot";
 import { createTelegramService } from "./backend/telegram/service";
+import { createDriveBackupService, BackupRequestError } from "./backend/drive/service";
 import {
 	authenticateBasicHeaderAsync,
 	authenticateCredentialsAsync,
@@ -183,7 +184,11 @@ async function requireAuthenticated(req, res, next) {
 
 async function requireAdmin(req, res, next) {
 	try {
-	if (!isAuthenticationRequired()) return next();
+	const driveApi = /^\/drive-backup\/(config|run)\/?$/i.test(req.path);
+	if (!isAuthenticationRequired()) {
+		if (driveApi) return res.set("Cache-Control", "no-store").status(403).json({ error: { message: "Configure administrator authentication before using Drive backups" } });
+		return next();
+	}
 	const identity = await requestIdentity(req);
 	if (identity && identity.role === "admin") {
 		req.auditActor = { type: "user", id: String(identity.id || ""), name: identity.username };
@@ -191,7 +196,7 @@ async function requireAdmin(req, res, next) {
 	}
 	// These endpoints are JSON-only, even when a browser sends Accept: */*.
 	// An expired session must not look like a successful write in the audit log.
-	if (/^\/telegram\/(config|status)\/?$/i.test(req.path)) {
+	if (driveApi || /^\/telegram\/(config|status)\/?$/i.test(req.path)) {
 		req.auditActor = identity
 			? { type: "user", id: String(identity.id || ""), name: identity.username }
 			: { type: "unauthenticated", id: "", name: "" };
@@ -255,11 +260,36 @@ app.post("/logout", (req, res) => {
 app.use("/promode", requireAuthenticated);
 app.use("/settings", requireAdmin);
 
+const driveBackups = createDriveBackupService();
+app.use("/settings/drive-backup", (req, res, next) => {
+	res.set("Cache-Control", "no-store");
+	if (["PUT", "POST"].includes(req.method) && !req.is("application/json")) {
+		return res.status(415).json({ error: { message: "Expected application/json" } });
+	}
+	return next();
+});
+function driveEndpoint(handler) {
+	return (req, res) => {
+		try { handler(req, res); }
+		catch (err) {
+			if (err instanceof BackupRequestError) return res.status(err.status).json({ error: { message: err.message } });
+			return res.status(500).json({ error: { message: "Drive backup settings unavailable" } });
+		}
+	};
+}
+app.get("/settings/drive-backup/config", driveEndpoint((req, res) => res.json(driveBackups.status())));
+app.put("/settings/drive-backup/config", express.json({ limit: "4kb" }), driveEndpoint((req, res) => res.json(driveBackups.configure(req.body))));
+app.post("/settings/drive-backup/run", express.json({ limit: "1kb" }), driveEndpoint((req, res) => {
+	driveBackups.run({ id: req.auditActor.id, name: req.auditActor.name, ip: req.ip });
+	res.status(202).json({ accepted: true });
+}));
+
 function telegramPublicConfig(config) {
 	return {
 		enabled: config.enabled,
 		tokenConfigured: Boolean(config.botToken),
 		allowedUserIds: config.allowedUserIds.join(", "),
+		allowedUserNames: config.allowedUserNames,
 		auditEnabled: config.auditEnabled,
 		auditChatId: config.auditChatId
 	};
@@ -271,14 +301,15 @@ app.get("/settings/telegram/config", (req, res) => {
 app.get("/settings/telegram/status", (req, res) => {
 	res.set("Cache-Control", "no-store").json(telegramBot.getStatus());
 });
-app.put("/settings/telegram/config", express.json({ limit: "8kb" }), (req, res) => {
+// Allow an optional 80-character display name for each ID in the bounded allowlist.
+app.put("/settings/telegram/config", express.json({ limit: "384kb" }), (req, res) => {
 	try {
 		const config = saveTelegramConfig(req.body);
 		return res.set("Cache-Control", "no-store").json(telegramPublicConfig(config));
 	} catch (error) {
 		const safeErrors = new Set([
 			"Invalid Telegram settings", "Telegram settings exceed the maximum length", "Invalid Telegram bot token",
-			"Allowed Telegram user IDs must be positive numeric IDs", "Invalid Telegram audit chat ID",
+			"Allowed Telegram user IDs must be positive numeric IDs", "Invalid Telegram user names", "Invalid Telegram audit chat ID",
 			"Bot token is required", "Audit chat ID is required"
 		]);
 		if (safeErrors.has(error.message)) return res.status(400).json({ error: { message: error.message } });
@@ -484,4 +515,6 @@ const telegramBot = createTelegramBot({
 });
 subscribeAuditLog(entry => telegramBot.sendAudit(entry));
 telegramBot.start();
+driveBackups.start();
+server.on("close", () => { void driveBackups.stop(); });
 server.on("close", () => { void telegramBot.stop(); });

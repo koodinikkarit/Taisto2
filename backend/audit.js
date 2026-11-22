@@ -35,6 +35,7 @@ function restAction(req) {
 
 function settingsAction(req) {
   const path = req.path.toLowerCase();
+  if (path.includes("/drive-backup")) return path.endsWith("/run") || path.endsWith("/run/") ? "drive_backup.request" : "drive_backup.configure";
   if (path.includes("/telegram")) return "telegram.settings_update";
   if (path.includes("/users")) {
     if (req.method === "POST") return "user.create";
@@ -58,7 +59,7 @@ export function auditHttpMutations({ getSessionIdentity } = {}) {
         let action = null;
         if (/^\/rest(?:\/|$)/i.test(originalPath)) action = restAction(req);
         else if (isGraphqlPath) action = graphqlAction(req);
-        else if (/^\/settings\/(?:api-key|users|telegram)(?:\/|$)/i.test(originalPath)) action = settingsAction(req);
+        else if (/^\/settings\/(?:api-key|users|telegram|drive-backup)(?:\/|$)/i.test(originalPath)) action = settingsAction(req);
         else if (/^\/login\/?$/i.test(originalPath)) action = "authentication.login";
         if (!action) return;
 
@@ -72,7 +73,7 @@ export function auditHttpMutations({ getSessionIdentity } = {}) {
           id: "",
           name: "Taisto web client"
         });
-        const safeBody = action === "telegram.settings_update"
+        const safeBody = action.startsWith("drive_backup.") ? {} : action === "telegram.settings_update"
           ? { enabled: Boolean(req.body && req.body.enabled), auditEnabled: Boolean(req.body && req.body.auditEnabled), tokenProvided: Boolean(req.body && req.body.token) }
           : sanitize(req.body || {});
         if (isGraphqlPath && safeBody.query) {

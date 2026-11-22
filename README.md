@@ -151,8 +151,10 @@ Telegram-botilla voi tarkastella matriiseja ja suorittaa oletustiloja sekä näy
 
 1. Luo botti Telegramin [BotFatherilla](https://t.me/BotFather) ja kopioi sen token. Älä jaa tokenia.
 2. Avaa Taistossa **Asetukset → Telegram**, anna token ja ota botti käyttöön. Tallennettua tokenia ei näytetä uudelleen; tyhjä token-kenttä säilyttää aiemman tokenin.
-3. Odota, kunnes botin yhteystila on **Yhdistetty**. Lähetä botille Telegramissa yksityisviesti `/id` ja lisää sen palauttama numeerinen käyttäjätunniste sallittuihin tunnisteisiin asetussivulla. Useat tunnisteet erotetaan pilkuilla. Tyhjä lista estää muut komennot; `/id`-komennolla voi selvittää oman tunnisteen.
-4. Halutessasi ota audit-ilmoitukset käyttöön ja anna vastaanottavan keskustelun numeerinen chat ID. Varmista, että botti voi lähettää kyseiseen keskusteluun.
+3. Odota, kunnes botin yhteystila on **Yhdistetty**. Lähetä botille Telegramissa yksityisviesti `/id` ja lisää sen palauttama numeerinen käyttäjätunniste sallittuihin tunnisteisiin asetussivulla. Useat tunnisteet erotetaan pilkuilla. Voit nimetä tunnisteen (esim. *Salioperaattori*). Nimi näkyy uusissa audit-merkinnöissä ja ilmoituksissa; vain numeerinen tunniste antaa käyttöoikeuden. Tyhjä lista estää muut komennot; `/id`-komennolla voi selvittää oman tunnisteen.
+4. Halutessasi ota audit-ilmoitukset käyttöön ja anna vastaanottavan keskustelun numeerinen chat ID. Varmista, että botti voi lähettää sinne. Keskustelun jäsenet näkevät tapahtuman tekijän ja Taiston havaitseman lähde-IP:n, kun ne ovat tiedossa. Samat tiedot näkyvät kohdassa **Asetukset → Audit-loki**. Telegram-komennoista näytetään lähettäjän Telegram-tunniste, mutta ei IP-osoitetta, sillä Telegram ei välitä sitä botille.
+
+Jos toinen palvelu jo vastaanottaa saman botin komennot, jätä **Ota Telegram-botti käyttöön** pois päältä Taistossa. Voit silti lähettää audit-ilmoituksia samalla tokenilla. Jos molempien palveluiden pitää vastaanottaa komentoja itsenäisesti, käytä niille omia botteja: [Telegramilla on yksi päivitysjono bottia kohti](https://core.telegram.org/bots/api#getupdates).
 
 Ohjaukset hyväksytään vain sallittujen käyttäjien yksityisviesteistä, ei ryhmäkeskusteluista. Komennot:
 
@@ -166,6 +168,44 @@ Ohjaukset hyväksytään vain sallittujen käyttäjien yksityisviesteistä, ei r
 Kytkentäkomennon hyväksyntä tarkoittaa, että komennot on asetettu jonoon; se ei takaa, että matriisi on vahvistanut tai toteuttanut kytkennän. Botti ohittaa käynnistyessä jonossa olevat viestit. Jos kytkentäkomento viivästyy yli kaksi minuuttia esimerkiksi verkkokatkon takia, sitä ei suoriteta. Lähetä komento uudelleen, jos haluat yhä tehdä vaihdon.
 
 Bottitoken tallennetaan selväkielisenä SQLite-tietokantaan eikä sitä näytetä asetussivulla. Telegram-asetuksia tai tokenia ei sisällytetä normaaliin JSON-vientiin, joten ne on asetettava uudelleen JSON-palautuksen jälkeen. Suojaa tietokantatiedosto ja sen varmuuskopiot sekä Taiston asetukset kirjautumisella. Audit-ilmoitukset lähetetään valittuun Telegram-keskusteluun, joten valitse vastaanottaja huolella.
+
+### Drive-varmuuskopiot
+
+Taisto voi lähettää **koko SQLite-tietokannan** salattuna omaan Google Drive -kansioosi. Varmistus on oletuksena pois päältä. Toisin kuin JSON-vienti, tietokantakopio sisältää myös käyttäjät, istunnot, audit-lokin, API-avaimet ja Telegram-asetukset. Dockerin asetukset, ympäristömuuttujat, OAuth-tiedosto ja salausavain eivät sisälly kopioon.
+
+**Käyttöönotto palvelimella:**
+
+1. Luo Taistolle yksityinen Drive-kansio ja varmista, että varmistuksia tekevällä Google-käyttäjällä on kirjoitusoikeus siihen. Älä salli jakoa kaikille linkin saaneille. Taisto ei muuta kansion jakoasetuksia eikä poista vanhoja Drive-kopioita.
+2. Ota projektissasi Google Drive API käyttöön ja luo OAuth-asiakas. Valtuuta varmistuskäyttäjä käyttämään kohdekansiota Drive API:n kautta. [Googlen OAuth-ohje](https://developers.google.com/identity/protocols/oauth2/web-server#offline) kuvaa suostumuksen antamisen ja `refresh_token`-tunnuksen hakemisen (`access_type=offline`). [Drive-oikeudet](https://developers.google.com/workspace/drive/api/guides/api-specific-auth) määräävät, mihin kansioihin sovellus pääsee: suppea `drive.file` toimii vain sovellukselle erikseen avatussa tai sen luomassa kansiossa; itse annetun olemassa olevan kansion käyttö voi edellyttää `https://www.googleapis.com/auth/drive`-oikeutta. Käytä tähän tarkoitukseen omaa Google-käyttäjää. Tallenna palvelimelle yksityinen JSON-objekti, jonka kentät ovat `client_id`, `client_secret` ja `refresh_token`. Pelkkä Googlesta ladattu OAuth-asiakkaan JSON ei sisällä käyttäjän refresh tokenia.
+3. Luo **32 satunnaisen tavun binääriavain** erilliseen, yksityiseen tiedostoon. Esimerkiksi seuraava Node-komento luo uuden tiedoston eikä korvaa olemassa olevaa avainta:
+
+   ```sh
+   node -e "require('node:fs').writeFileSync(process.argv[1], require('node:crypto').randomBytes(32), {mode: 0o600, flag: 'wx'})" -- /suojattu/taisto-backup.key
+   ```
+
+   Säilytä avaimesta palautuskopio **toisella laitteella tai salaisuusholvissa, erillään Drivestä**. Kadonneella avaimella salattua tietokantaa ei voi palauttaa. Säilytä myös tarvittavat ulkoiset asetukset (esim. `TAISTO_PASSWORD`), OAuth-tunnukset ja aiemmat salausavaimet, jos vaihdat avainta.
+4. Aseta `BACKUP_OAUTH_FILE` ja `BACKUP_KEY_FILE` osoittamaan näihin tiedostoihin. `scripts/update-docker.sh`-skriptille annetaan **molempien tiedostojen absoluuttiset polut isäntäkoneessa**; skripti liittää ne konttiin vain luku -tilassa. Jos ajat `docker run` itse, lisää esimerkiksi nämä argumentit muiden nykyisten asetusten rinnalle:
+
+   ```sh
+   --mount type=bind,src=/suojattu/taisto-oauth.json,dst=/run/secrets/taisto-oauth.json,readonly \
+   --mount type=bind,src=/suojattu/taisto-backup.key,dst=/run/secrets/taisto-backup.key,readonly \
+   -e BACKUP_OAUTH_FILE=/run/secrets/taisto-oauth.json \
+   -e BACKUP_KEY_FILE=/run/secrets/taisto-backup.key
+   ```
+
+   Älä sijoita avaimia Git-repoon tai jaettuun tietokantahakemistoon. Käyttöliittymässä ei syötetä eikä näytetä avainten sisältöä.
+
+**Varmistuksen tekeminen:** Kirjaudu ylläpitäjänä ja avaa **Asetukset → Drive-varmuuskopiot**. Anna kansion tunniste (Drive-osoitteessa `/folders/`-osan jälkeen), tallenna ja valitse **Varmista nyt**. Odota, että *Viimeisin onnistunut varmistus* päivittyy: pyynnön hyväksyminen ei vielä tarkoita valmista kopiota. Taisto ottaa käynnissä olevasta tietokannasta yhtenäisen kopion, tarkistaa sen eheyden, salaa sen AES-256-GCM:llä ja varmistaa Driveen lähetetyn tiedoston kansion, koon ja tarkistussumman.
+
+Manuaalinen varmistus toimii myös ilman ajastusta. Kun ajastus on käytössä, Taisto tekee varmistuksen päivittäin klo **03.00 Suomen aikaa**. Käyttökatkon tai kesäaikasiirtymän vuoksi väliin jäänyttä ajoa yritetään saman päivän aikana klo 03:n jälkeen; epäonnistumista yritetään uudelleen aikaisintaan 15 minuutin kuluttua. Varmistuksia ei tehdä yhtä aikaa. **Docker-päivitys ei itsessään käynnistä varmistusta:** jos haluat kopion ennen päivitystä, tee se ylläpitonäkymässä ja tarkista onnistuminen ennen kontin vaihtoa.
+
+**Palautusharjoitus:** Lataa salattu tiedosto Drivestä ja hanki siihen kuuluva avain erikseen. Aja Node 24 -ympäristössä yksityiseen hakemistoon; kohdetiedoston tulee olla uusi:
+
+```sh
+node scripts/restore-drive-backup.cjs --archive /suojattu/kopio.sqlite.enc --key /suojattu/taisto-backup.key --output /suojattu/palautusharjoitus.sqlite
+```
+
+Työkalu tarkistaa salauksen ja SQLite-tietokannan eheyden. Se ei palauta tiedostoa käytössä olevan tietokannan päälle. Testaa palautus eristyksissä ilman matriisi-, Telegram- tai Drive-yhteyksiä: kopio sisältää alkuperäiset asetukset. Varsinaisessa käyttöönotossa pysäytä kirjoittavat palvelut, säilytä nykyinen tietokantahakemisto (myös WAL/SHM) ja aloita uudessa hakemistossa varmennetulla kopiolla. Älä yhdistä palautettua tietokantaa vanhoihin WAL-tiedostoihin.
 
 ### Audit-loki
 

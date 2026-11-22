@@ -1,3 +1,5 @@
+import { telegramAuditActor, telegramAuditLine } from "./audit";
+
 // Telegram is optional. The bot token is never included in logs or audit data.
 // A single worker owns the update offset; commands are deliberately not retried.
 const POLL_SECONDS = 25;
@@ -15,7 +17,7 @@ const allowedIds = value => Array.isArray(value) ? value.map(String) : [];
  * service: listMatrices/listDefaultStates/listGroups return arrays with {id,name};
  * groups additionally contain inputs [{id,name}]. executeDefaultState(id) and
  * executeGroup(groupId,inputId) return true only when a command was accepted.
- * getConfig() returns {enabled,botToken,allowedUserIds,auditEnabled,auditChatId}.
+ * getConfig() returns {enabled,botToken,allowedUserIds,allowedUserNames,auditEnabled,auditChatId}.
  */
 export function createTelegramBot({ getConfig, service, appendAuditLog, fetchImpl = fetch, timers = globalThis }) {
   let running = false;
@@ -86,11 +88,11 @@ export function createTelegramBot({ getConfig, service, appendAuditLog, fetchImp
     if (!running || tokenOf(config()) !== token) return;
     await api(token, "sendMessage", { chat_id: String(chatId), text: String(message).slice(0, MAX_MESSAGE), disable_web_page_preview: true }, signal);
   }
-  function authorized(update) {
+  function authorized(update, current) {
     const msg = update && update.message;
     if (!msg || !msg.from || msg.from.is_bot || !msg.chat || msg.chat.type !== "private") return false;
     const userId = String(msg.from.id || "");
-    return /^[1-9]\d{0,19}$/.test(userId) && String(msg.chat.id) === userId && allowedIds(config().allowedUserIds).includes(userId);
+    return /^[1-9]\d{0,19}$/.test(userId) && String(msg.chat.id) === userId && allowedIds(current.allowedUserIds).includes(userId);
   }
   function listing(title, entries, requestedPage, command) {
     const pageSize = 15;
@@ -114,17 +116,18 @@ export function createTelegramBot({ getConfig, service, appendAuditLog, fetchImp
     idCount++;
     return true;
   }
-  function logAction(message, action, target, success) {
+  function logAction(actor, action, target, success) {
     try {
       if (typeof appendAuditLog === "function") appendAuditLog({
-        actorType: "telegram", actorId: String(message.from.id), actorName: "Telegram-käyttäjä",
+        ...actor,
         action, target, method: "TELEGRAM", path: "", statusCode: success ? 200 : 400,
         success, ipAddress: "", details: {}
       });
     } catch { /* Audit failure must not retry an already executed command. */ }
   }
   async function handleUpdate(update, token, signal) {
-    if (tokenOf(config()) !== token) return;
+    const current = config();
+    if (tokenOf(current) !== token) return;
     const incoming = update && update.message;
     if (incoming && incoming.chat && incoming.chat.type === "private" && incoming.from && !incoming.from.is_bot &&
         /^[1-9]\d{0,19}$/.test(String(incoming.from.id || "")) && String(incoming.from.id) === String(incoming.chat.id) &&
@@ -136,7 +139,7 @@ export function createTelegramBot({ getConfig, service, appendAuditLog, fetchImp
       await reply(token, String(incoming.chat.id), `Telegram-käyttäjätunnuksesi: ${incoming.from.id}`, signal);
       return;
     }
-    if (!authorized(update)) return;
+    if (!authorized(update, current)) return;
     const message = update.message;
     const parts = String(message.text || "").trim().split(/\s+/);
     const command = parts[0].toLowerCase();
@@ -166,20 +169,22 @@ export function createTelegramBot({ getConfig, service, appendAuditLog, fetchImp
         return;
       }
       // Revalidate live permission immediately before the state-changing action.
-      if (!running || tokenOf(config()) !== token || !authorized(update)) return;
+      const commandConfig = config();
+      if (!running || tokenOf(commandConfig) !== token || !authorized(update, commandConfig)) return;
+      const actor = telegramAuditActor(message.from, commandConfig.allowedUserNames);
       const action = command === "/suorita" ? "telegram.default_state.execute" : "telegram.con_group.execute";
       const target = command === "/suorita" ? String(firstId) : `${firstId}:${secondId}`;
       // Telegram may deliver queued messages after an outage. Never perform a
       // delayed switch or assume a missing/invalid timestamp means "just now".
       const now = Math.floor(Date.now() / 1000);
       if (!Number.isSafeInteger(message.date) || message.date <= 0 || message.date > now || now - message.date > MAX_CONTROL_AGE_SECONDS) {
-        logAction(message, action, target, false);
+        logAction(actor, action, target, false);
         await reply(token, chatId, "Komennon aika ei kelpaa tai komento on vanhentunut. Lähetä komento uudelleen.", signal);
         return;
       }
       let success = false;
       try { success = (command === "/suorita" ? await service.executeDefaultState(firstId) : await service.executeGroup(firstId, secondId)) === true; } catch { /* Generic response; never include errors or URLs. */ }
-      logAction(message, action, target, success);
+      logAction(actor, action, target, success);
       await reply(token, chatId, success ? "Komento lähetetty." : "Komentoa ei voitu suorittaa.", signal);
     }
   }
@@ -277,10 +282,8 @@ export function createTelegramBot({ getConfig, service, appendAuditLog, fetchImp
       const current = config(), token = auditTokenOf(current);
       const chatId = String(current.auditChatId || "").trim();
       if (!running || !token || !current.auditEnabled || !/^-?[1-9]\d{0,19}$/.test(chatId)) return false;
-      const action = /^[a-z0-9_.-]{1,80}$/i.test(String(entry && entry.action || "")) ? entry.action : "toiminto";
-      const actor = entry && /^[1-9]\d{0,19}$/.test(String(entry.actorId || "")) && entry.actorType === "telegram" ? ` · Telegram ${entry.actorId}` : "";
       if (auditQueue.length >= 100) auditQueue.shift();
-      auditQueue.push({ token, chatId, line: `${action}${actor} · ${entry && entry.success === false ? "epäonnistui" : "onnistui"}` });
+      auditQueue.push({ token, chatId, line: telegramAuditLine(entry) });
       scheduleAudit();
       return true;
     }

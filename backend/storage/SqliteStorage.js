@@ -159,6 +159,28 @@ function migrateSchema(db) {
       COMMIT;
     `);
   }
+  if (version < 9) {
+    db.exec(`
+      BEGIN;
+      ALTER TABLE telegram_settings ADD COLUMN allowed_user_names TEXT NOT NULL DEFAULT '{}';
+      INSERT INTO schema_migrations(version, applied_at) VALUES (9, datetime('now'));
+      COMMIT;
+    `);
+  }
+  if (version < 10) {
+    db.exec(`
+      BEGIN;
+      CREATE TABLE drive_backup (
+        id INTEGER PRIMARY KEY CHECK (id = 1), enabled INTEGER NOT NULL DEFAULT 0,
+        folder_id TEXT NOT NULL DEFAULT '', last_attempt_at TEXT NOT NULL DEFAULT '',
+        last_success_at TEXT NOT NULL DEFAULT '', last_success_day TEXT NOT NULL DEFAULT '',
+        last_filename TEXT NOT NULL DEFAULT '', last_error TEXT NOT NULL DEFAULT ''
+      );
+      INSERT INTO drive_backup(id) VALUES (1);
+      INSERT INTO schema_migrations(version, applied_at) VALUES (10, datetime('now'));
+      COMMIT;
+    `);
+  }
 }
 
 function tableHasData(db) {
@@ -321,14 +343,63 @@ export function getSqlitePath() {
   return sqliteFile;
 }
 
+export function getDriveBackupConfig() {
+  const row = database.prepare(`SELECT enabled, folder_id AS folderId, last_attempt_at AS lastAttemptAt,
+    last_success_at AS lastSuccessAt, last_success_day AS lastSuccessDay, last_filename AS lastFilename,
+    last_error AS lastError FROM drive_backup WHERE id = 1`).get();
+  return { ...row, enabled: Boolean(row.enabled) };
+}
+
+export function setDriveBackupConfig(enabled, folderId) {
+  const update = database.prepare("UPDATE drive_backup SET enabled = ?, folder_id = ? WHERE id = 1");
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    if (getDriveBackupConfig().folderId !== folderId) {
+      database.exec("UPDATE drive_backup SET last_attempt_at = '', last_success_at = '', last_success_day = '', last_filename = '', last_error = '' WHERE id = 1");
+    }
+    update.run(enabled ? 1 : 0, folderId);
+    database.exec("COMMIT");
+  } catch (error) { database.exec("ROLLBACK"); throw error; }
+}
+
+export function recordDriveBackupStart(timestamp) {
+  // Hidden during a live run; on an unclean shutdown it explains the unfinished attempt.
+  database.prepare("UPDATE drive_backup SET last_attempt_at = ?, last_error = 'Backup interrupted' WHERE id = 1").run(timestamp);
+}
+
+export function recordDriveBackupResult({ error, timestamp, day, filename }) {
+  if (error) database.prepare("UPDATE drive_backup SET last_error = ? WHERE id = 1").run(error);
+  else database.prepare("UPDATE drive_backup SET last_error = '', last_success_at = ?, last_success_day = ?, last_filename = ? WHERE id = 1").run(timestamp, day, filename);
+}
+
 // This internal getter contains the bot token. Never return it directly over HTTP.
 export function getTelegramConfig() {
   if (!database) throw new Error("SQLite storage has not been initialized");
-  const row = database.prepare("SELECT enabled, bot_token, allowed_user_ids, audit_enabled, audit_chat_id FROM telegram_settings WHERE id = 1").get();
+  const row = database.prepare("SELECT enabled, bot_token, allowed_user_ids, allowed_user_names, audit_enabled, audit_chat_id FROM telegram_settings WHERE id = 1").get();
   return row ? {
     enabled: Boolean(row.enabled), botToken: row.bot_token, allowedUserIds: row.allowed_user_ids ? row.allowed_user_ids.split(", ") : [],
-    auditEnabled: Boolean(row.audit_enabled), auditChatId: row.audit_chat_id
-  } : { enabled: false, botToken: "", allowedUserIds: [], auditEnabled: false, auditChatId: "" };
+    allowedUserNames: JSON.parse(row.allowed_user_names), auditEnabled: Boolean(row.audit_enabled), auditChatId: row.audit_chat_id
+  } : { enabled: false, botToken: "", allowedUserIds: [], allowedUserNames: {}, auditEnabled: false, auditChatId: "" };
+}
+
+function telegramUserNames(input, ids, previous) {
+  // Clients predating aliases only send the ID list. Keep aliases for IDs
+  // still allowed, but never resurrect a removed user's name on re-add.
+  if (input === undefined) return Object.fromEntries(Object.entries(previous).filter(([id]) => ids.has(id)));
+  if (!input || typeof input !== "object" || Array.isArray(input) ||
+      (Object.getPrototypeOf(input) !== Object.prototype && Object.getPrototypeOf(input) !== null)) {
+    throw new Error("Invalid Telegram user names");
+  }
+  const names = {};
+  for (const [id, value] of Object.entries(input)) {
+    if (!ids.has(id) || typeof value !== "string" || value.length > 80 ||
+        !value.isWellFormed() || /[\p{Cc}\p{Bidi_Control}\p{Zl}\p{Zp}]/u.test(value)) {
+      throw new Error("Invalid Telegram user names");
+    }
+    const name = value.trim().normalize("NFC").replace(/\s+/gu, " ");
+    if (name) names[id] = name;
+  }
+  return names;
 }
 
 export function saveTelegramConfig(input) {
@@ -342,7 +413,8 @@ export function saveTelegramConfig(input) {
   if ((input.token || "").length > 256 || input.allowedUserIds.length > 4096 || input.auditChatId.length > 20) {
     throw new Error("Telegram settings exceed the maximum length");
   }
-  const token = (input.token || "").trim() || getTelegramConfig().botToken;
+  const previous = getTelegramConfig();
+  const token = (input.token || "").trim() || previous.botToken;
   if (token && !/^[0-9]{5,15}:[A-Za-z0-9_-]{20,128}$/.test(token)) {
     throw new Error("Invalid Telegram bot token");
   }
@@ -350,7 +422,9 @@ export function saveTelegramConfig(input) {
   if (ids.some(id => !/^[1-9][0-9]{0,15}$/.test(id))) {
     throw new Error("Allowed Telegram user IDs must be positive numeric IDs");
   }
-  const allowedUserIds = [...new Set(ids)].join(", ");
+  const uniqueIds = new Set(ids);
+  const allowedUserIds = [...uniqueIds].join(", ");
+  const allowedUserNames = telegramUserNames(input.allowedUserNames, uniqueIds, previous.allowedUserNames);
   const auditChatId = input.auditChatId.trim();
   if (auditChatId && !/^-?[1-9][0-9]{0,15}$/.test(auditChatId)) {
     throw new Error("Invalid Telegram audit chat ID");
@@ -359,11 +433,11 @@ export function saveTelegramConfig(input) {
     throw new Error("Bot token is required");
   }
   if (input.auditEnabled && !auditChatId) throw new Error("Audit chat ID is required");
-  database.prepare(`INSERT INTO telegram_settings (id, enabled, bot_token, allowed_user_ids, audit_enabled, audit_chat_id)
-    VALUES (1, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET enabled = excluded.enabled,
-    bot_token = excluded.bot_token, allowed_user_ids = excluded.allowed_user_ids,
+  database.prepare(`INSERT INTO telegram_settings (id, enabled, bot_token, allowed_user_ids, allowed_user_names, audit_enabled, audit_chat_id)
+    VALUES (1, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET enabled = excluded.enabled,
+    bot_token = excluded.bot_token, allowed_user_ids = excluded.allowed_user_ids, allowed_user_names = excluded.allowed_user_names,
     audit_enabled = excluded.audit_enabled, audit_chat_id = excluded.audit_chat_id`).run(
-      input.enabled ? 1 : 0, token, allowedUserIds, input.auditEnabled ? 1 : 0, auditChatId
+      input.enabled ? 1 : 0, token, allowedUserIds, JSON.stringify(allowedUserNames), input.auditEnabled ? 1 : 0, auditChatId
     );
   return getTelegramConfig();
 }

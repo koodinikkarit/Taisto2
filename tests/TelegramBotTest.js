@@ -1,5 +1,6 @@
 import assert from "assert";
 import { createTelegramBot } from "../backend/telegram/bot";
+import { telegramAuditActor, telegramAuditLine } from "../backend/telegram/audit";
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, timeout = 5000) {
@@ -10,6 +11,16 @@ const update = (updateId, user, chatType, command, chatId = user) => ({
   update_id: updateId, message: { from: { id: user }, chat: { id: chatId, type: chatType }, text: command, date: Math.floor(Date.now() / 1000) }
 });
 async function main() {
+  const sender = { id: 9, first_name: "Etu", last_name: "Suku" };
+  assert.strictEqual(telegramAuditActor(sender).actorName, "Etu Suku");
+  assert.strictEqual(telegramAuditActor({ id: 9 }).actorName, "Telegram-käyttäjä");
+  assert.strictEqual(telegramAuditActor({ ...sender, username: "demo" }, { 9: "Ohjaamo" }).actorName, "Ohjaamo");
+  const keyNotice = telegramAuditLine({ action: "matrix.update", success: false, actorType: "api_key",
+    actorName: "Companion\nA", actorId: "SECRET_KEY_ID", ipAddress: "192.0.2.7", details: { token: "SECRET_TOKEN" } });
+  assert.ok(keyNotice.includes("epäonnistui") && keyNotice.includes("API-avain: Companion A") && keyNotice.includes("IP: 192.0.2.7"));
+  assert.ok(!/[\n\r]|SECRET/.test(keyNotice));
+  const anonNotice = telegramAuditLine({ actorType: "anonymous", ipAddress: "not an IP" });
+  assert.ok(anonNotice.includes("Käyttäjä: Anonyymi") && anonNotice.includes("IP: ei saatavilla") && !anonNotice.includes("not an IP"));
   let settings = { enabled: true, botToken: "test-token", allowedUserIds: ["123"], auditEnabled: true, auditChatId: "-100123" };
   const requests = [], sent = [], changes = [], audits = [];
   let polls = 0, bootstraps = 0;

@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Added
+- Added encrypted Google Drive backups of the full SQLite database with manual and daily runs, admin status, and an offline restore tool.
+- Telegram audit notifications show the actor and source IP when known. For Telegram commands, the audit log identifies the sender and indicates that Telegram does not provide their IP.
+- Admins can give each allowed Telegram ID an optional display name for future audit entries and notifications.
 - Added an optional Telegram bot for allowlisted private-message control of default states and display groups, plus configurable audit notifications.
 - Added a Chrome extension for browsing diagrams, viewing display inputs, and switching sources. Tagged releases include an installable unpacked ZIP.
 - Added the official Taisto logo, an animated GIF, and retained the logo design alternatives.

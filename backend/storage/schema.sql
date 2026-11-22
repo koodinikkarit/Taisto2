@@ -1,5 +1,5 @@
 -- Taisto SQLite schema snapshot
--- Schema version: 8
+-- Schema version: 10
 --
 -- The application runs incremental migrations from SqliteStorage.js automatically.
 -- This file documents the current complete schema and can initialize a new database.
@@ -196,9 +196,17 @@ CREATE TABLE IF NOT EXISTS telegram_settings (
   bot_token TEXT NOT NULL DEFAULT '',
   allowed_user_ids TEXT NOT NULL DEFAULT '',
   audit_enabled INTEGER NOT NULL DEFAULT 0,
-  audit_chat_id TEXT NOT NULL DEFAULT ''
+  audit_chat_id TEXT NOT NULL DEFAULT '',
+  allowed_user_names TEXT NOT NULL DEFAULT '{}'
 );
 CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(source, user_id);
+CREATE TABLE IF NOT EXISTS drive_backup (
+  id INTEGER PRIMARY KEY CHECK (id = 1), enabled INTEGER NOT NULL DEFAULT 0,
+  folder_id TEXT NOT NULL DEFAULT '', last_attempt_at TEXT NOT NULL DEFAULT '',
+  last_success_at TEXT NOT NULL DEFAULT '', last_success_day TEXT NOT NULL DEFAULT '',
+  last_filename TEXT NOT NULL DEFAULT '', last_error TEXT NOT NULL DEFAULT ''
+);
+INSERT OR IGNORE INTO drive_backup(id) VALUES (1);
 
 CREATE INDEX IF NOT EXISTS idx_con_ports_matrix ON con_ports(matrix_id);
 CREATE INDEX IF NOT EXISTS idx_cpu_ports_matrix ON cpu_ports(matrix_id);
@@ -216,6 +224,8 @@ INSERT OR IGNORE INTO schema_migrations(version, applied_at) VALUES
   (5, datetime('now')),
   (6, datetime('now')),
   (7, datetime('now')),
-  (8, datetime('now'));
+  (8, datetime('now')),
+  (9, datetime('now')),
+  (10, datetime('now'));
 
 COMMIT;

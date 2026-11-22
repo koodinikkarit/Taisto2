@@ -14,11 +14,13 @@ async function run() {
   await new Promise(resolve => listener.listen(0, "127.0.0.1", resolve));
   const port = listener.address().port;
   await new Promise(resolve => listener.close(resolve));
-  const server = spawn(process.execPath, ["-r", "@babel/register", "app.js", "-p", String(port)], {
+  const server = spawn(process.execPath, ["-r", "./tests/fixtures/capture-telegram.cjs", "-r", "@babel/register", "app.js", "-p", String(port)], {
     cwd: path.resolve(__dirname, ".."),
     env: { ...process.env, NODE_ENV: "production", TAISTO_PASSWORD: "integration-password", TAISTO_USER: "testadmin", TAISTO_DATABASE_PATH: sqlitePath, TAISTO_JSON_DATABASE_PATH: jsonPath },
-    stdio: ["ignore", "pipe", "pipe"]
+    stdio: ["ignore", "pipe", "pipe", "ipc"]
   });
+  const notices = [];
+  server.on("message", message => notices.push(message));
   let output = "";
   server.stdout.on("data", data => { output += data; });
   server.stderr.on("data", data => { output += data; });
@@ -56,28 +58,61 @@ async function run() {
       assert.strictEqual(response.status, 403, "ordinary users cannot manage Telegram settings");
       assert.ok((await response.json()).error.message);
     }
-    const adminHeaders = { ...headers, cookie: adminCookie };
+    const adminHeaders = { ...headers, cookie: adminCookie, "x-forwarded-for": "192.0.2.99" };
     const put = changes => fetch(`${base}/settings/telegram/config`, { method: "PUT", headers: adminHeaders, body: JSON.stringify({ ...settings, ...changes }) });
-    const saved = await put({});
+    const names = { "123": "Ohjaamo", "456": "Aula" };
+    const saved = await put({ allowedUserNames: names });
     assert.strictEqual(saved.status, 200);
-    assert.ok(!JSON.stringify(await saved.json()).includes(token), "PUT response must not expose token");
+    const savedConfig = await saved.json();
+    assert.ok(!JSON.stringify(savedConfig).includes(token), "PUT response must not expose token");
+    assert.deepStrictEqual(savedConfig.allowedUserNames, names);
     const publicConfig = await (await fetch(`${base}/settings/telegram/config`, { headers: adminHeaders })).text();
     assert.ok(!publicConfig.includes(token), "GET response must not expose token");
     assert.strictEqual(JSON.parse(publicConfig).tokenConfigured, true);
+    assert.deepStrictEqual(JSON.parse(publicConfig).allowedUserNames, names, "the admin settings page can display the saved names");
     const status = await (await fetch(`${base}/settings/telegram/status`, { headers: adminHeaders })).text();
     assert.strictEqual(JSON.parse(status).state, "disabled");
     assert.ok(!status.includes(token), "status must not expose token");
-    assert.strictEqual((await put({ token: "" })).status, 200);
-    assert.strictEqual((await (await fetch(`${base}/settings/telegram/config`, { headers: adminHeaders })).json()).tokenConfigured, true);
+    const renamed = await put({ token: "", allowedUserNames: { ...names, "123": "Uusi nimi" } });
+    assert.strictEqual(renamed.status, 200);
+    const renamedConfig = await renamed.json();
+    assert.deepStrictEqual(renamedConfig.allowedUserNames, { ...names, "123": "Uusi nimi" });
+    assert.strictEqual(renamedConfig.allowedUserIds, savedConfig.allowedUserIds);
+    assert.strictEqual(renamedConfig.tokenConfigured, true);
     for (const invalid of [{ token: "bad" }, { allowedUserIds: "abc" }, { auditEnabled: true, auditChatId: "" }]) {
       assert.strictEqual((await put(invalid)).status, 400, "invalid input must be rejected");
     }
     const audit = await (await fetch(`${base}/settings/audit-logs/data`, { headers: adminHeaders })).text();
-    const changes = JSON.parse(audit).rows.filter(row => row.action === "telegram.settings_update");
-    assert.ok(changes.some(row => row.success && row.actorName === "dbadmin"), "the administrator's accepted change is audited");
+    const rows = JSON.parse(audit).rows;
+    const changes = rows.filter(row => row.action === "telegram.settings_update");
+    const adminChange = changes.find(row => row.success && row.actorType === "user" && row.actorName === "dbadmin");
+    assert.ok(adminChange && adminChange.actorId, "the audit page receives the signed-in administrator's identity");
+    const isClientIp = row => /^(?:::ffff:)?127\.0\.0\.1$/.test(row.ipAddress);
+    assert.ok(changes.every(isClientIp), "the UI receives the TCP peer IP, even when a caller supplies a forwarded IP");
+    assert.ok(rows.some(row => row.action === "authentication.login" && row.actorName === "operator" && isClientIp(row)),
+      "the login row also contains the verified user and source IP");
     assert.ok(changes.some(row => !row.success && row.statusCode === 401 && row.actorType === "unauthenticated"), "rejected anonymous write must not be logged as successful");
     assert.ok(changes.some(row => !row.success && row.statusCode === 403 && row.actorName === "operator"), "the rejected operator write records the correct actor");
     assert.ok(!audit.includes(token), "audit log must not contain token");
+
+    // Send an actual HTTP change using the administrator's session. Only the
+    // outbound Telegram transport is mocked; the server, auth and SQLite are real.
+    const chatId = "-9001";
+    assert.strictEqual((await put({ auditEnabled: true, auditChatId: chatId })).status, 200);
+    const operator = await operatorCreate.json();
+    const patch = await fetch(`${base}/settings/users/data/${operator.id}`, {
+      method: "PATCH", headers: adminHeaders, body: JSON.stringify({ username: "renamed-operator" })
+    });
+    assert.strictEqual(patch.status, 200);
+    const auditRows = await (await fetch(`${base}/settings/audit-logs/data?action=user.update`, { headers: adminHeaders })).json();
+    const row = auditRows.rows.find(entry => entry.action === "user.update" && entry.success);
+    assert.ok(row && row.actorName === "dbadmin" && isClientIp(row), "record the caller, not the edited user");
+    const expected = `user.update · onnistui · Käyttäjä: ${row.actorName} · IP: ${row.ipAddress}`;
+    const delivered = () => notices.some(note => note.chat_id === chatId && note.text.split("\n").includes(expected));
+    const sendDeadline = Date.now() + 10000;
+    while (!delivered() && Date.now() < sendDeadline) await new Promise(resolve => setTimeout(resolve, 50));
+    assert.ok(delivered(), "Telegram should receive the same signed-in user and source IP as the audit page");
+
     const backupPath = path.join(directory, "export.json");
     execFileSync(process.execPath, ["-r", "@babel/register", "scripts/export-sqlite-to-json.js", "--sqlite", sqlitePath, "--output", backupPath], { cwd: path.resolve(__dirname, ".."), stdio: "pipe" });
     assert.ok(!fs.readFileSync(backupPath, "utf8").includes(token), "JSON export must omit Telegram token");

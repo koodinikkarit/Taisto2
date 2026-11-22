@@ -95,7 +95,7 @@ export default class AuditLogs extends React.Component {
               <div><span className="taisto-audit-label">{t("time")}</span>{formatLocalTime(entry.createdAt, language)}</div>
               <div><span className="taisto-audit-label">{t("actor")}</span>{actorLabel(entry)}{entry.actorId && <div className="taisto-audit-secondary taisto-audit-break">{entry.actorId}</div>}</div>
               <div><span className="taisto-audit-label">{t("target")}</span><code className="taisto-audit-break">{entry.path || entry.target || "—"}</code></div>
-              <div><span className="taisto-audit-label">{t("ipAddress")}</span>{entry.ipAddress || "—"}</div>
+              <div><span className="taisto-audit-label">{t("ipAddress")}</span>{entry.ipAddress || (entry.actorType === "telegram" ? t("telegramSenderIpUnavailable") : "—")}</div>
             </div>
             {entry.details && Object.keys(entry.details).length > 0 && <details className="taisto-audit-details"><summary>{t("details")}</summary><pre style={styles.code}>{JSON.stringify(entry.details, null, 2)}</pre></details>}
           </article>)}</div>

@@ -33,6 +33,16 @@ Luo botti [BotFatherilla](https://t.me/BotFather), lisää sen token sivulla **A
 
 Audit-ilmoitukset voi ottaa erikseen käyttöön ja ohjata haluttuun keskusteluun chat ID:n avulla. Bottitoken säilytetään selväkielisenä SQLite-tietokannassa, mutta sitä ei näytetä asetuksissa. Telegram-asetukset eivät sisälly normaaliin JSON-vientiin, ja ne on määritettävä uudelleen JSON-palautuksen jälkeen. Suojaa tietokanta ja sen varmuuskopiot sekä asetussivu kirjautumisella; älä jaa tokenia.
 
+Valitse ilmoituksille luotettu keskustelu. Sekä ilmoituksesta että kohdasta **Asetukset → Audit-loki** näet tekijän ja Taiston havaitseman lähde-IP:n, kun ne ovat tiedossa. Telegram-komennosta näet lähettäjän Telegram-tunnisteen, mutta et IP-osoitetta: Telegram ei välitä sitä botille.
+
+Sivulla **Asetukset → Telegram** voit antaa sallitulle tunnisteelle oman nimen, kuten *Salioperaattori*. Nimen muuttaminen tai tyhjentäminen vaikuttaa vain tuleviin lokimerkintöihin ja ilmoituksiin. Nimi ei anna käyttöoikeutta: sen ratkaisee aina numeerinen Telegram-tunniste.
+
+## Drive-varmuuskopiot
+
+Kirjaudu ylläpitäjänä ja avaa **Asetukset → Drive-varmuuskopiot**. Varmista, että sekä Google OAuth -tunnukset että salausavain on määritetty palvelimelle. Anna yksityisen Drive-kansion tunniste, tallenna ja valitse **Varmista nyt**. Tarkista onnistumisaika ja tiedostonimi; hyväksytty pyyntö ei vielä ole valmis varmistus. Päivittäinen ajo klo 03.00 Suomen aikaa valitaan erikseen.
+
+Salattu kopio sisältää koko tietokannan, myös käyttäjät, avaimet ja audit-lokin. Säilytä salausavain erillään Drivestä. Palvelimen ympäristöasetukset ja avaintiedostot on varmistettava erikseen. Asennus ja palautus uuteen tiedostoon on kuvattu projektin README-tiedoston kohdassa **Drive-varmuuskopiot**.
+
 ## Audit-loki
 
 **Asetukset → Audit-loki** näyttää REST- ja käyttöliittymämuutokset, matriisin video- ja KVM-ohjaukset, API-avaimen nimen, lähdeosoitteen sekä pyynnön onnistumisen. Säilytysaika asetetaan palvelimen ympäristömuuttujalla `TAISTO_AUDIT_RETENTION_DAYS`; oletus on 90 päivää ja arvo `0` estää automaattisen poistamisen. Ajat näytetään selaimen paikallisessa ajassa. Salasanoja tai API-avainten sisältöä ei tallenneta lokiin.
@@ -93,6 +103,16 @@ Create a bot with [BotFather](https://t.me/BotFather), enter its token under **S
 `/status [page]` lists matrices (not their connection status), `/oletustilat [page]` lists default states, and `/suorita ID` executes one. `/nayttoryhmat [page]` lists groups, `/inputit GROUP_ID [page]` lists their allowed input IDs, and `/ryhma GROUP_ID INPUT_ID` switches the group to an input. Use the input ID from the listing, not the port number. A successful command means switching requests were queued, not that the matrix confirmed them. The bot skips messages queued at startup and does not execute switching commands delayed by more than two minutes.
 
 Audit notifications can optionally be sent to a specified chat ID. The bot token is stored in plaintext in SQLite, but is not displayed in settings. Telegram settings are excluded from normal JSON exports and must be configured again after a JSON restore. Protect the database and its backups and secure settings with sign-in; never share the token.
+
+Choose a trusted chat. Both the notifications and **Settings → Audit log** show who performed the action and the source IP seen by Taisto, when known. For Telegram commands, the sender’s Telegram ID is available, but Telegram does not provide the sender’s IP address to the bot.
+
+Under **Settings → Telegram**, you can give an allowed ID a name such as *Room operator*. Changing or clearing the name affects only future audit entries and notifications. A name does not grant access: only the numeric Telegram ID does.
+
+## Drive backups
+
+Sign in as an administrator and open **Settings → Drive backups**. Check that both the Google OAuth credentials and the encryption key are configured on the server. Enter a private Drive folder ID, save, and select **Back up now**. Check the time and filename of the last successful backup; an accepted request does not mean the upload has finished. Enable the daily 03:00 Helsinki-time schedule separately.
+
+The encrypted file contains the entire database, including users, keys, and the audit log. Keep a copy of the encryption key separate from Drive. Back up external configuration and credential files separately. See **Drive-varmuuskopiot** in the project README for setup and how to restore to a new file.
 
 ## Audit log
 

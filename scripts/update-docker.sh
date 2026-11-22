@@ -9,6 +9,21 @@ DATABASE_DIR="${TAISTO_DATABASE_DIR:-/home/taisto/database}"
 HOST_PORT="${TAISTO_HOST_PORT:-1337}"
 AUDIT_RETENTION_DAYS="${TAISTO_AUDIT_RETENTION_DAYS:-0}"
 
+backup_args=()
+if [[ -n "${BACKUP_OAUTH_FILE:-}" || -n "${BACKUP_KEY_FILE:-}" ]]; then
+  for file in "${BACKUP_OAUTH_FILE:-}" "${BACKUP_KEY_FILE:-}"; do
+    if [[ "$file" != /* || "$file" == *,* || ! -f "$file" || ! -r "$file" ]]; then
+      echo "Aseta sekä BACKUP_OAUTH_FILE että BACKUP_KEY_FILE luettavien tiedostojen absoluuttisiksi poluiksi (ei pilkkua)." >&2
+      exit 1
+    fi
+  done
+  backup_args+=(--mount "type=bind,source=$BACKUP_OAUTH_FILE,target=/run/secrets/drive-oauth.json,readonly" -e BACKUP_OAUTH_FILE=/run/secrets/drive-oauth.json)
+  backup_args+=(--mount "type=bind,source=$BACKUP_KEY_FILE,target=/run/secrets/drive-backup.key,readonly" -e BACKUP_KEY_FILE=/run/secrets/drive-backup.key)
+elif docker inspect --type=container --format '{{range .Config.Env}}{{println (index (split . "=") 0)}}{{end}}' "$CONTAINER_NAME" 2>/dev/null | grep -Ex 'BACKUP_(OAUTH|KEY)_FILE' >/dev/null; then
+  echo "Nykyisellä kontilla on Drive-varmistus käytössä. Aseta BACKUP_OAUTH_FILE ja BACKUP_KEY_FILE ennen päivitystä. Konttia ei pysäytetty." >&2
+  exit 1
+fi
+
 mkdir -p "$DATABASE_DIR"
 
 echo "Ladataan image $IMAGE..."
@@ -26,6 +41,7 @@ docker run -d \
   -e TAISTO_AUDIT_RETENTION_DAYS="$AUDIT_RETENTION_DAYS" \
   --mount type=bind,source="$DATABASE_DIR",target=/usr/src/database \
   --restart unless-stopped \
+  "${backup_args[@]}" \
   "$IMAGE"
 
 echo "Kontin tila:"

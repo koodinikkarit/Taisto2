@@ -2,11 +2,29 @@ import React from "react";
 import Settings from "./Settings";
 import { useI18n } from "../i18n";
 
-const initialConfig = { enabled: false, tokenConfigured: false, allowedUserIds: "", auditEnabled: false, auditChatId: "" };
+const allowedIds = value => [...new Set(value.split(/[\s,]+/).filter(id => /^[1-9]\d{0,15}$/.test(id)))];
+
+function namesForIds(ids, names) {
+  const result = {};
+  for (const id of ids) {
+    const name = names && typeof names[id] === "string" ? names[id].trim() : "";
+    if (name) result[id] = name;
+  }
+  return result;
+}
+
+function configFromResponse(data) {
+  const allowedUserIds = data.allowedUserIds || "";
+  return {
+    enabled: Boolean(data.enabled), tokenConfigured: Boolean(data.tokenConfigured), allowedUserIds,
+    allowedUserNames: namesForIds(allowedIds(allowedUserIds), data.allowedUserNames),
+    auditEnabled: Boolean(data.auditEnabled), auditChatId: data.auditChatId || ""
+  };
+}
 
 export default function TelegramSettings() {
   const { t } = useI18n();
-  const [config, setConfig] = React.useState(initialConfig);
+  const [config, setConfig] = React.useState(() => configFromResponse({}));
   const [token, setToken] = React.useState("");
   const [loading, setLoading] = React.useState(true);
   const [loaded, setLoaded] = React.useState(false);
@@ -25,7 +43,7 @@ export default function TelegramSettings() {
       })
       .then(data => {
         if (mounted) {
-          setConfig({ enabled: Boolean(data.enabled), tokenConfigured: Boolean(data.tokenConfigured), allowedUserIds: data.allowedUserIds || "", auditEnabled: Boolean(data.auditEnabled), auditChatId: data.auditChatId || "" });
+          setConfig(configFromResponse(data));
           setLoaded(true);
         }
       })
@@ -67,12 +85,18 @@ export default function TelegramSettings() {
     setConfig(current => ({ ...current, [field]: value }));
   };
 
+  const ids = allowedIds(config.allowedUserIds);
+  const updateName = (id, name) => {
+    setSaved(false);
+    setConfig(current => ({ ...current, allowedUserNames: { ...current.allowedUserNames, [id]: name } }));
+  };
+
   const save = async event => {
     event.preventDefault();
     setError("");
     setSaved(false);
     setSaving(true);
-    const payload = { enabled: config.enabled, allowedUserIds: config.allowedUserIds, auditEnabled: config.auditEnabled, auditChatId: config.auditChatId };
+    const payload = { enabled: config.enabled, allowedUserIds: config.allowedUserIds, allowedUserNames: namesForIds(ids, config.allowedUserNames), auditEnabled: config.auditEnabled, auditChatId: config.auditChatId };
     if (token.trim()) payload.token = token.trim();
     try {
       const response = await fetch("/settings/telegram/config", { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -81,7 +105,7 @@ export default function TelegramSettings() {
         throw new Error(result.error && result.error.message ? result.error.message : t("telegramSaveFailed"));
       }
       const result = await response.json();
-      setConfig({ enabled: Boolean(result.enabled), tokenConfigured: Boolean(result.tokenConfigured), allowedUserIds: result.allowedUserIds || "", auditEnabled: Boolean(result.auditEnabled), auditChatId: result.auditChatId || "" });
+      setConfig(configFromResponse(result));
       setToken("");
       setSaved(true);
     } catch (failure) {
@@ -116,11 +140,21 @@ export default function TelegramSettings() {
                 <input id="telegram-allowed-users" className="form-control" inputMode="text" value={config.allowedUserIds} onChange={event => update("allowedUserIds", event.target.value)} placeholder="123456789, 987654321" />
                 <small className="form-text text-muted">{t("telegramAllowedUsersHint")}</small>
               </div>
+              {ids.length > 0 && <fieldset>
+                <legend>{t("telegramDisplayNames")}</legend>
+                <p className="form-text text-muted">{t("telegramDisplayNamesHint")}</p>
+                {ids.map(id => <div key={id} className="form-group">
+                  <label htmlFor={`telegram-name-${id}`}>Telegram ID: {id}</label>
+                  <input id={`telegram-name-${id}`} className="form-control" type="text" maxLength={80} autoComplete="off"
+                    placeholder={t("telegramDisplayNamePlaceholder")} value={config.allowedUserNames[id] || ""}
+                    onChange={event => updateName(id, event.target.value)} />
+                </div>)}
+              </fieldset>}
               <div>
                 <label style={{ display: "flex", alignItems: "center", gap: "10px" }}><input type="checkbox" checked={config.auditEnabled} onChange={event => update("auditEnabled", event.target.checked)} /> <strong>{t("telegramAuditEnable")}</strong></label>
                 <label htmlFor="telegram-audit-chat">{t("telegramAuditChat")}</label>
                 <input id="telegram-audit-chat" className="form-control" inputMode="text" value={config.auditChatId} onChange={event => update("auditChatId", event.target.value)} placeholder="-1001234567890" />
-                <small className="form-text text-muted">{t("telegramAuditHint")}</small>
+                <small className="form-text text-muted">{t("telegramAuditHint")} {t("telegramAuditPrivacy")}</small>
               </div>
               <div><button className="btn btn-primary" type="submit" disabled={saving}>{saving ? t("telegramSaving") : t("save")}</button></div>
             </div>
