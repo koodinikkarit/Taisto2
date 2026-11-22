@@ -145,6 +145,28 @@ Tagijulkaisussa valmis `taisto-chrome-extension.zip` on saatavilla GitHub Releas
 
 Määritä lisäosassa Taiston osoite, esimerkiksi `http://localhost:1337`, ja **Asetukset → API-avaimet** -sivulla luotu REST API-avain. Selain pyytää verkkoyhteyden käyttöoikeuden. Avainta ei synkronoida: se pysyy selaimen istunnossa ja pitää syöttää uudelleen Chromen käynnistyttyä uudestaan. Ilman avainta kytkentöjä voi vaihtaa vain, jos anonyymit REST-kirjoitukset on erikseen sallittu määräajaksi. Nykyinen API-avain sallii laajasti REST-muutoksia eikä sitä ole rajattu kaavioihin. Sisäverkon HTTP-yhteys ei salaa API-avainta; käytä suojattua yhteyttä tai luotettua verkkoa. Onnistunut vaihtopyyntö kertoo komennon lähettämisestä. Lisäosa seuraa Taiston viimeksi tuntemaa tilaa, mutta rajapinta ei kerro tilan ikää, joten se ei takaa tuoretta laitevahvistusta.
 
+### Telegram
+
+Telegram-botilla voi tarkastella matriiseja ja suorittaa oletustiloja sekä näyttöryhmiä. Telegram-tuki on oletuksena pois käytöstä.
+
+1. Luo botti Telegramin [BotFatherilla](https://t.me/BotFather) ja kopioi sen token. Älä jaa tokenia.
+2. Avaa Taistossa **Asetukset → Telegram**, anna token ja ota botti käyttöön. Tallennettua tokenia ei näytetä uudelleen; tyhjä token-kenttä säilyttää aiemman tokenin.
+3. Odota, kunnes botin yhteystila on **Yhdistetty**. Lähetä botille Telegramissa yksityisviesti `/id` ja lisää sen palauttama numeerinen käyttäjätunniste sallittuihin tunnisteisiin asetussivulla. Useat tunnisteet erotetaan pilkuilla. Tyhjä lista estää muut komennot; `/id`-komennolla voi selvittää oman tunnisteen.
+4. Halutessasi ota audit-ilmoitukset käyttöön ja anna vastaanottavan keskustelun numeerinen chat ID. Varmista, että botti voi lähettää kyseiseen keskusteluun.
+
+Ohjaukset hyväksytään vain sallittujen käyttäjien yksityisviesteistä, ei ryhmäkeskusteluista. Komennot:
+
+- `/status [sivu]` — luettelee matriisit; ei näytä niiden yhteystilaa.
+- `/oletustilat [sivu]` — luettelee oletustilat ja niiden ID:t.
+- `/suorita ID` — suorittaa annetun oletustilan.
+- `/nayttoryhmat [sivu]` — luettelee näyttöryhmät ja niiden ID:t.
+- `/inputit RYHMA_ID [sivu]` — luettelee ryhmälle sallitut inputit ja niiden ID:t.
+- `/ryhma RYHMA_ID INPUT_ID` — vaihtaa ryhmän annettuun inputiin. Käytä listauksen input-ID:tä, ei porttinumeroa.
+
+Kytkentäkomennon hyväksyntä tarkoittaa, että komennot on asetettu jonoon; se ei takaa, että matriisi on vahvistanut tai toteuttanut kytkennän. Botti ohittaa käynnistyessä jonossa olevat viestit. Jos kytkentäkomento viivästyy yli kaksi minuuttia esimerkiksi verkkokatkon takia, sitä ei suoriteta. Lähetä komento uudelleen, jos haluat yhä tehdä vaihdon.
+
+Bottitoken tallennetaan selväkielisenä SQLite-tietokantaan eikä sitä näytetä asetussivulla. Telegram-asetuksia tai tokenia ei sisällytetä normaaliin JSON-vientiin, joten ne on asetettava uudelleen JSON-palautuksen jälkeen. Suojaa tietokantatiedosto ja sen varmuuskopiot sekä Taiston asetukset kirjautumisella. Audit-ilmoitukset lähetetään valittuun Telegram-keskusteluun, joten valitse vastaanottaja huolella.
+
 ### Audit-loki
 
 SQLite-tietokannan `audit_logs`-tauluun kirjataan muuttavat REST-pyynnöt, GraphQL-mutaatiot, API-avainasetusten muutokset, kirjautumisyritykset sekä käyttöliittymän WebSocketilla tekemät video- ja KVM-ohjaukset. Merkintä sisältää UTC-aikaleiman, toiminnon, kohteen, tekijän tai API-avaimen tunnisteen, IP-osoitteen ja onnistumistilan. Kun selaimessa on voimassa oleva käyttäjäistunto, myös anonyymisti sallitut REST-, GraphQL- ja WebSocket-toiminnot kirjataan kyseisen käyttäjän tekemiksi. Nimenomaisesti API-avaimella tehty pyyntö kirjataan edelleen API-avaimelle. API-avaimia, salasanoja ja Authorization-otsakkeita ei tallenneta.

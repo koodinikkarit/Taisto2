@@ -15,6 +15,7 @@ const COUNTERS = [
 let database = null;
 let sqliteFile = "";
 let activePasswordChecks = 0;
+const auditLogListeners = new Set();
 
 const values = collection => Object.keys(collection || {}).map(id => collection[id]);
 const mapById = rows => rows.reduce((result, row) => {
@@ -140,6 +141,21 @@ function migrateSchema(db) {
       CREATE TABLE auth_sessions (token_hash TEXT PRIMARY KEY, source TEXT NOT NULL, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL);
       CREATE INDEX idx_auth_sessions_user ON auth_sessions(source, user_id);
       INSERT INTO schema_migrations(version, applied_at) VALUES (7, datetime('now'));
+      COMMIT;
+    `);
+  }
+  if (version < 8) {
+    db.exec(`
+      BEGIN;
+      CREATE TABLE telegram_settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        enabled INTEGER NOT NULL DEFAULT 0,
+        bot_token TEXT NOT NULL DEFAULT '',
+        allowed_user_ids TEXT NOT NULL DEFAULT '',
+        audit_enabled INTEGER NOT NULL DEFAULT 0,
+        audit_chat_id TEXT NOT NULL DEFAULT ''
+      );
+      INSERT INTO schema_migrations(version, applied_at) VALUES (8, datetime('now'));
       COMMIT;
     `);
   }
@@ -303,6 +319,53 @@ export function exportDatabaseToJson(outputPath) {
 
 export function getSqlitePath() {
   return sqliteFile;
+}
+
+// This internal getter contains the bot token. Never return it directly over HTTP.
+export function getTelegramConfig() {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const row = database.prepare("SELECT enabled, bot_token, allowed_user_ids, audit_enabled, audit_chat_id FROM telegram_settings WHERE id = 1").get();
+  return row ? {
+    enabled: Boolean(row.enabled), botToken: row.bot_token, allowedUserIds: row.allowed_user_ids ? row.allowed_user_ids.split(", ") : [],
+    auditEnabled: Boolean(row.audit_enabled), auditChatId: row.audit_chat_id
+  } : { enabled: false, botToken: "", allowedUserIds: [], auditEnabled: false, auditChatId: "" };
+}
+
+export function saveTelegramConfig(input) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  if (!input || typeof input !== "object" || Array.isArray(input) ||
+      typeof input.enabled !== "boolean" || typeof input.auditEnabled !== "boolean" ||
+      typeof input.allowedUserIds !== "string" || typeof input.auditChatId !== "string" ||
+      (input.token !== undefined && typeof input.token !== "string")) {
+    throw new Error("Invalid Telegram settings");
+  }
+  if ((input.token || "").length > 256 || input.allowedUserIds.length > 4096 || input.auditChatId.length > 20) {
+    throw new Error("Telegram settings exceed the maximum length");
+  }
+  const token = (input.token || "").trim() || getTelegramConfig().botToken;
+  if (token && !/^[0-9]{5,15}:[A-Za-z0-9_-]{20,128}$/.test(token)) {
+    throw new Error("Invalid Telegram bot token");
+  }
+  const ids = input.allowedUserIds.trim() ? input.allowedUserIds.trim().split(/[\s,]+/) : [];
+  if (ids.some(id => !/^[1-9][0-9]{0,15}$/.test(id))) {
+    throw new Error("Allowed Telegram user IDs must be positive numeric IDs");
+  }
+  const allowedUserIds = [...new Set(ids)].join(", ");
+  const auditChatId = input.auditChatId.trim();
+  if (auditChatId && !/^-?[1-9][0-9]{0,15}$/.test(auditChatId)) {
+    throw new Error("Invalid Telegram audit chat ID");
+  }
+  if ((input.enabled || input.auditEnabled) && !token) {
+    throw new Error("Bot token is required");
+  }
+  if (input.auditEnabled && !auditChatId) throw new Error("Audit chat ID is required");
+  database.prepare(`INSERT INTO telegram_settings (id, enabled, bot_token, allowed_user_ids, audit_enabled, audit_chat_id)
+    VALUES (1, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET enabled = excluded.enabled,
+    bot_token = excluded.bot_token, allowed_user_ids = excluded.allowed_user_ids,
+    audit_enabled = excluded.audit_enabled, audit_chat_id = excluded.audit_chat_id`).run(
+      input.enabled ? 1 : 0, token, allowedUserIds, input.auditEnabled ? 1 : 0, auditChatId
+    );
+  return getTelegramConfig();
 }
 
 export function closeDatabaseStorage() {
@@ -488,6 +551,12 @@ export function revokeUserSessions(source, userId) {
   database.prepare("DELETE FROM auth_sessions WHERE source = ? AND user_id = ?").run(source, String(userId));
 }
 
+export function subscribeAuditLog(listener) {
+  if (typeof listener !== "function") throw new TypeError("Audit listener must be a function");
+  auditLogListeners.add(listener);
+  return () => auditLogListeners.delete(listener);
+}
+
 export function appendAuditLog(entry) {
   if (!database) throw new Error("SQLite storage has not been initialized");
   const details = typeof entry.details === "string" ? entry.details : JSON.stringify(entry.details || {});
@@ -511,6 +580,14 @@ export function appendAuditLog(entry) {
     details.slice(0, 8000)
   );
   purgeExpiredAuditLogs();
+  for (const listener of auditLogListeners) {
+    try {
+      const result = listener(entry);
+      if (result && typeof result.then === "function") result.catch(() => console.error("Audit log listener failed"));
+    } catch (_) {
+      console.error("Audit log listener failed");
+    }
+  }
   return Number(result.lastInsertRowid);
 }
 

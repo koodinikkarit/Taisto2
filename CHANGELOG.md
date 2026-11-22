@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Added an optional Telegram bot for allowlisted private-message control of default states and display groups, plus configurable audit notifications.
 - Added a Chrome extension for browsing diagrams, viewing display inputs, and switching sources. Tagged releases include an installable unpacked ZIP.
 - Added the official Taisto logo, an animated GIF, and retained the logo design alternatives.
 - Added a documented Docker update script that pulls the selected image and safely recreates the production container with its persistent database mount.

@@ -63,6 +63,9 @@ export default class extends React.Component {
 								<a className={this.props.active === "users" ? "nav-link active" : "nav-link"} href="/settings/users">{t("users")}</a>
 							</li>
 							<li className="nav-item">
+								<a className={this.props.active === "telegram" ? "nav-link active" : "nav-link"} href="/settings/telegram">{t("telegram")}</a>
+							</li>
+							<li className="nav-item">
 								<a className={this.props.active === "diagrams" ? "nav-link active" : "nav-link"} href="/settings/diagrams">{t("diagrams")}</a>
 							</li>
 							<li className="nav-item">

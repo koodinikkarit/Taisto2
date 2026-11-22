@@ -34,8 +34,14 @@ import {
 	createUser,
 	updateUser,
 	deleteUser,
-	recordUserLogin
+	recordUserLogin,
+	getTelegramConfig,
+	saveTelegramConfig,
+	appendAuditLog,
+	subscribeAuditLog
 } from "./backend/storage/SqliteStorage";
+import { createTelegramBot } from "./backend/telegram/bot";
+import { createTelegramService } from "./backend/telegram/service";
 import {
 	authenticateBasicHeaderAsync,
 	authenticateCredentialsAsync,
@@ -183,6 +189,15 @@ async function requireAdmin(req, res, next) {
 		req.auditActor = { type: "user", id: String(identity.id || ""), name: identity.username };
 		return next();
 	}
+	// These endpoints are JSON-only, even when a browser sends Accept: */*.
+	// An expired session must not look like a successful write in the audit log.
+	if (/^\/telegram\/(config|status)\/?$/i.test(req.path)) {
+		req.auditActor = identity
+			? { type: "user", id: String(identity.id || ""), name: identity.username }
+			: { type: "unauthenticated", id: "", name: "" };
+		return res.set("Cache-Control", "no-store").status(identity ? 403 : 401)
+			.json({ error: { message: identity ? "Admin access is required" : "Authentication is required" } });
+	}
 	if (!identity) return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
 	if (req.get("accept") && req.get("accept").includes("application/json")) return res.status(403).json({ error: { message: "Admin access is required" } });
 	return res.status(403).send("<!doctype html><html lang=\"fi\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Ei käyttöoikeutta</title><body style=\"font:16px system-ui;padding:40px\"><h1>Ei käyttöoikeutta</h1><p>Asetusten hallinta vaatii admin-oikeuden.</p><a href=\"/\">Palaa etusivulle</a></body></html>");
@@ -239,6 +254,37 @@ app.post("/logout", (req, res) => {
 
 app.use("/promode", requireAuthenticated);
 app.use("/settings", requireAdmin);
+
+function telegramPublicConfig(config) {
+	return {
+		enabled: config.enabled,
+		tokenConfigured: Boolean(config.botToken),
+		allowedUserIds: config.allowedUserIds.join(", "),
+		auditEnabled: config.auditEnabled,
+		auditChatId: config.auditChatId
+	};
+}
+
+app.get("/settings/telegram/config", (req, res) => {
+	res.set("Cache-Control", "no-store").json(telegramPublicConfig(getTelegramConfig()));
+});
+app.get("/settings/telegram/status", (req, res) => {
+	res.set("Cache-Control", "no-store").json(telegramBot.getStatus());
+});
+app.put("/settings/telegram/config", express.json({ limit: "8kb" }), (req, res) => {
+	try {
+		const config = saveTelegramConfig(req.body);
+		return res.set("Cache-Control", "no-store").json(telegramPublicConfig(config));
+	} catch (error) {
+		const safeErrors = new Set([
+			"Invalid Telegram settings", "Telegram settings exceed the maximum length", "Invalid Telegram bot token",
+			"Allowed Telegram user IDs must be positive numeric IDs", "Invalid Telegram audit chat ID",
+			"Bot token is required", "Audit chat ID is required"
+		]);
+		if (safeErrors.has(error.message)) return res.status(400).json({ error: { message: error.message } });
+		return res.status(500).json({ error: { message: "Could not save Telegram settings" } });
+	}
+});
 
 app.get("/settings/users/data", (req, res) => res.json({
 	users: listUsers(),
@@ -428,3 +474,14 @@ var server = app.listen(port || APP_PORT, () => {
 });
 
 createService(server);
+
+// Telegram is opt-in and runs independently of the web server. Its allowlist
+// and notification destination are checked against current settings at use.
+const telegramBot = createTelegramBot({
+	getConfig: getTelegramConfig,
+	service: createTelegramService(),
+	appendAuditLog
+});
+subscribeAuditLog(entry => telegramBot.sendAudit(entry));
+telegramBot.start();
+server.on("close", () => { void telegramBot.stop(); });

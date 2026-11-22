@@ -10,8 +10,11 @@ import {
 } from "../backend/storage/SqliteStorage";
 
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "taisto-audit-filter-test-"));
+const previousRetention = process.env.TAISTO_AUDIT_RETENTION_DAYS;
 
 try {
+  // Filtering, not retention, is under test: keep the dated fixtures available.
+  process.env.TAISTO_AUDIT_RETENTION_DAYS = "0";
   initializeDatabaseStorage({ sqlitePath: path.join(temporaryDirectory, "taisto.sqlite") });
   appendAuditLog({ createdAt: "2026-08-15T10:00:00.000Z", actorType: "user", actorName: "admin", action: "user.create", path: "/settings/users/data", method: "POST", statusCode: 201, success: true, ipAddress: "127.0.0.1" });
   appendAuditLog({ createdAt: "2026-08-16T10:00:00.000Z", actorType: "api_key", actorName: "companion", action: "con-groups.execute", path: "/rest/con-groups/1/execute", method: "POST", statusCode: 403, success: false, ipAddress: "10.0.0.5" });
@@ -25,6 +28,8 @@ try {
   assert.strictEqual(listAuditLogs({ to: "2026-08-15T23:59:59.999Z" }).total, 1);
   console.log("Audit log filter tests passed");
 } finally {
+  if (previousRetention === undefined) delete process.env.TAISTO_AUDIT_RETENTION_DAYS;
+  else process.env.TAISTO_AUDIT_RETENTION_DAYS = previousRetention;
   closeDatabaseStorage();
   fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 }

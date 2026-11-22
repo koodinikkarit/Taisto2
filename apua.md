@@ -25,6 +25,14 @@ Vaihtokomennon lähetyksen jälkeen lisäosa seuraa Taiston viimeksi tuntemaa ti
 
 Pura ZIP-tiedosto ja valitse Companionissa **Settings → Modules → Install module from local folder**. Moduulin asetuksiin annetaan Taisto-palvelimen osoite, portti ja Asetukset-sivulla luotu REST API-avain. Moduuli tukee yksittäisiä videokytkentöjä, output-ryhmien suorittamista sekä projektorin ohjausta.
 
+## Telegram
+
+Luo botti [BotFatherilla](https://t.me/BotFather), lisää sen token sivulla **Asetukset → Telegram** ja ota botti käyttöön. Odota yhteystilaksi **Yhdistetty**, lähetä botille yksityisviestinä `/id`, lisää saatu numeerinen käyttäjätunniste asetusten sallittujen listaan ja tallenna. Useat tunnisteet erotetaan pilkuilla. Tyhjä sallittujen lista estää muut komennot. Ohjauskomennot toimivat vain sallittujen käyttäjien yksityisviesteissä.
+
+`/status [sivu]` listaa matriisit (ei yhteystilaa), `/oletustilat [sivu]` listaa oletustilat ja `/suorita ID` suorittaa oletustilan. `/nayttoryhmat [sivu]` listaa ryhmät, `/inputit RYHMA_ID [sivu]` ryhmän sallitut input-ID:t ja `/ryhma RYHMA_ID INPUT_ID` vaihtaa ryhmän lähteen. Käytä listauksen input-ID:tä, ei porttinumeroa. Kytkentöjen hyväksyminen kertoo komentojen jonotuksesta, ei matriisin laitevahvistuksesta. Botti ohittaa käynnistyessä jonossa olevat viestit eikä tee yli kaksi minuuttia viivästyneitä vaihtoja.
+
+Audit-ilmoitukset voi ottaa erikseen käyttöön ja ohjata haluttuun keskusteluun chat ID:n avulla. Bottitoken säilytetään selväkielisenä SQLite-tietokannassa, mutta sitä ei näytetä asetuksissa. Telegram-asetukset eivät sisälly normaaliin JSON-vientiin, ja ne on määritettävä uudelleen JSON-palautuksen jälkeen. Suojaa tietokanta ja sen varmuuskopiot sekä asetussivu kirjautumisella; älä jaa tokenia.
+
 ## Audit-loki
 
 **Asetukset → Audit-loki** näyttää REST- ja käyttöliittymämuutokset, matriisin video- ja KVM-ohjaukset, API-avaimen nimen, lähdeosoitteen sekä pyynnön onnistumisen. Säilytysaika asetetaan palvelimen ympäristömuuttujalla `TAISTO_AUDIT_RETENTION_DAYS`; oletus on 90 päivää ja arvo `0` estää automaattisen poistamisen. Ajat näytetään selaimen paikallisessa ajassa. Salasanoja tai API-avainten sisältöä ei tallenneta lokiin.
@@ -77,6 +85,14 @@ After sending a switch command, the extension monitors the last state known to T
 [Download the Taisto Companion module (ZIP)](/downloads/taisto-companion.zip)
 
 Extract the ZIP and select **Settings → Modules → Install module from local folder** in Companion. Configure the Taisto server address, port and a REST API key created in Settings. The module supports individual video connections, output-group execution and projector control.
+
+## Telegram
+
+Create a bot with [BotFather](https://t.me/BotFather), enter its token under **Settings → Telegram**, and enable the bot. Wait for the status to show **Connected**, send `/id` to the bot in a private message, add the returned numeric user ID to the allowed users in settings, and save. Separate multiple IDs with commas. An empty allowlist blocks other commands. Control commands work only in private messages from allowed users.
+
+`/status [page]` lists matrices (not their connection status), `/oletustilat [page]` lists default states, and `/suorita ID` executes one. `/nayttoryhmat [page]` lists groups, `/inputit GROUP_ID [page]` lists their allowed input IDs, and `/ryhma GROUP_ID INPUT_ID` switches the group to an input. Use the input ID from the listing, not the port number. A successful command means switching requests were queued, not that the matrix confirmed them. The bot skips messages queued at startup and does not execute switching commands delayed by more than two minutes.
+
+Audit notifications can optionally be sent to a specified chat ID. The bot token is stored in plaintext in SQLite, but is not displayed in settings. Telegram settings are excluded from normal JSON exports and must be configured again after a JSON restore. Protect the database and its backups and secure settings with sign-in; never share the token.
 
 ## Audit log
 
