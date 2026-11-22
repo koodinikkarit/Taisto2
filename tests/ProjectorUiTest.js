@@ -22,7 +22,7 @@ function browserPath() {
 
 // This fixture executes inside the browser before the production application bundle.
 function fixture() {
-  localStorage.setItem("taisto-language", "en");
+  localStorage.setItem("taisto-language", "fi");
   window.io = () => ({ on() {}, emit() {} });
   const config = { enabled: false, host: "test-projector.invalid", port: 8001, path: "/cgi-bin/web.cgi",
     powerCategory: "4054", powerToggleCode: "15", powerOnCategory: "", powerOffCategory: "", powerOnCode: "", powerOffCode: "" };
@@ -46,6 +46,7 @@ function fixture() {
   const realTimeout = window.setTimeout.bind(window);
   window.setTimeout = (fn, ms, ...args) => realTimeout(fn, [2000, 5000, 10000].includes(ms) ? 180 : ms, ...args);
   const query = selector => document.querySelector(selector);
+  const findButton = label => [...document.querySelectorAll("main button")].find(b => b.textContent === label);
   const check = (value, msg) => { if (!value) throw new Error(msg); };
   const wait = async (fn, label) => {
     for (let i = 0; i < 300; i++) {
@@ -62,9 +63,15 @@ function fixture() {
       status.enabled = true;
       await wait(() => query("button[aria-pressed=true]")?.textContent === "Camera", "reported input label");
       check(query("button[aria-pressed=true]").disabled, "current input cannot be resent");
-      check([...document.querySelectorAll("button[aria-pressed]")].map(b => b.textContent).join("/") === "Video/Camera/Input B/Input C/Input D", "unlabelled inputs should retain defaults");
-      const power = [...document.querySelectorAll("main button")].find(b => b.textContent === "Toggle power");
-      check(power && commands.length === 0, "status polling must not send a command");
+      check([...document.querySelectorAll("button[aria-pressed]")].map(b => b.textContent).join("/") === "Video/Camera/Tulo B/Tulo C/Tulo D", "unlabelled inputs should retain defaults");
+      check(findButton("Sammuta") && !findButton("Käynnistä"), "powered-on projector offers to turn off");
+      status.powerOn = false;
+      await wait(() => findButton("Käynnistä") && !findButton("Sammuta"), "powered-off projector offers to turn on");
+      status.powerOn = null;
+      await wait(() => findButton("Vaihda virtatilaa"), "unknown power state keeps the neutral label");
+      status.powerOn = true;
+      const power = await wait(() => findButton("Sammuta"), "reported power is back on");
+      check(commands.length === 0, "status polling must not send a command");
       power.click();
       check(confirmations === 1 && commands.length === 0, "cancel must not change power");
       confirmPower = true; power.click(); power.click();

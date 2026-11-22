@@ -29,7 +29,7 @@ Pura ZIP-tiedosto ja valitse Companionissa **Settings → Modules → Install mo
 
 Ylläpitäjä ottaa tykin käyttöön kohdassa **Asetukset → Tykki**. Käytä Companionin projektoriasetuksista laitteen osoitetta, porttia ja ohjauspolkua. Osoitteen pitää toimia Taisto-palvelimelta.
 
-Kirjaudu sisään ja avaa yläpalkista **Tykki**. Näet laitteen ilmoittaman virran ja kuvalähteen. Voit vaihtaa tuloa, pysäyttää tai pimentää kuvan. **Vaihda virtatilaa** käynnistää sammutetun tykin tai sammuttaa käynnissä olevan. Tarkista tila ennen vahvistamista. Jos laitemallille on määritetty erilliset virtakoodit, käytössä ovat niitä vastaavat painikkeet. Selain ei lähetä ohjauskomentoja itsestään.
+Kirjaudu sisään ja avaa yläpalkista **Tykki**. Näet laitteen ilmoittaman virran ja kuvalähteen. Voit vaihtaa tuloa, pysäyttää tai pimentää kuvan. Virtapainikkeessa lukee tykin ilmoittaman tilan mukaan **Käynnistä** tai **Sammuta**. Jos tilaa ei tiedetä eikä erillisiä virtakoodeja ole määritetty, painikkeessa lukee **Vaihda virtatilaa**. Tarkista tila ennen vahvistamista. Selain ei lähetä ohjauskomentoja itsestään.
 
 ## Telegram
 
@@ -106,7 +106,7 @@ Extract the ZIP and select **Settings → Modules → Install module from local 
 
 An admin enables the device under **Settings → Projector**. Use the projector host, port and control path from Companion, and make sure the Taisto server can reach that address.
 
-Sign in and open **Projector** in the top navigation to see the reported power and source, switch inputs, freeze or blank the picture. **Toggle power** turns an off projector on and an on projector off. Check its state before confirming. Separate on/off buttons are available when model-specific codes are configured. Opening the page never sends a control command.
+Sign in and open **Projector** in the top navigation to see the reported power and source, switch inputs, freeze or blank the picture. The power button says **Turn on** or **Turn off** based on the state reported by the projector. If the state is unknown and no separate power codes are configured, it says **Toggle power**. Check the state before confirming. Opening the page never sends a control command.
 
 ## Telegram
 

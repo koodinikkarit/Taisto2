@@ -77,6 +77,7 @@ export function Projector() {
   const activeInput = inputs.find(([id]) => device && id === device.currentInput);
   const power = device?.powerOn;
   const showToggle = power === true ? !device?.canPowerOff : power === false ? !device?.canPowerOn : (!device?.canPowerOn || !device?.canPowerOff);
+  const toggleLabel = power === true ? "projectorTurnOff" : power === false ? "projectorTurnOn" : "projectorToggle";
   const settingsLink = role === "admin" && <Link to="/settings/projector">{t("projectorSettings")}</Link>;
   return <main className="taisto-runner-page">
     <header className="jumbotron taisto-runner-hero"><h1>{t("projector")}</h1><p>{t("projectorIntro")}</p></header>
@@ -92,7 +93,7 @@ export function Projector() {
       <div className="taisto-projector-actions">
         {device.canPowerOn && button("power_on", "projectorTurnOn", "projectorConfirmOn", power === true)}
         {device.canPowerOff && button("power_off", "projectorTurnOff", "projectorConfirmOff", power === false)}
-        {showToggle && button("power_toggle", "projectorToggle", "projectorConfirmToggle")}
+        {showToggle && button("power_toggle", toggleLabel, "projectorConfirmToggle")}
       </div>
       <div className="taisto-runner-active-input"><span>{t("currentActiveInputLabel")}</span><strong>{activeInput ? inputName(activeInput) : device.currentInput || t("projectorUnknown")}</strong></div>
       <div className="taisto-projector-actions" role="group" aria-label={t("projectorInput")}>
