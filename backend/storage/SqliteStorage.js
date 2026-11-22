@@ -181,6 +181,27 @@ function migrateSchema(db) {
       COMMIT;
     `);
   }
+  if (version < 11) {
+    db.exec(`
+      BEGIN;
+      CREATE TABLE projector_settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),
+        host TEXT NOT NULL DEFAULT '',
+        port INTEGER NOT NULL DEFAULT 8001 CHECK (port BETWEEN 1 AND 65535),
+        path TEXT NOT NULL DEFAULT '/cgi-bin/web.cgi',
+        power_category TEXT NOT NULL DEFAULT '4054',
+        power_toggle_code TEXT NOT NULL DEFAULT '15',
+        power_on_category TEXT NOT NULL DEFAULT '',
+        power_on_code TEXT NOT NULL DEFAULT '',
+        power_off_category TEXT NOT NULL DEFAULT '',
+        power_off_code TEXT NOT NULL DEFAULT ''
+      );
+      INSERT INTO projector_settings(id) VALUES (1);
+      INSERT INTO schema_migrations(version, applied_at) VALUES (11, datetime('now'));
+      COMMIT;
+    `);
+  }
 }
 
 function tableHasData(db) {
@@ -341,6 +362,24 @@ export function exportDatabaseToJson(outputPath) {
 
 export function getSqlitePath() {
   return sqliteFile;
+}
+
+export function getProjectorConfig() {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  const row = database.prepare(`SELECT enabled, host, port, path, power_category AS powerCategory, power_toggle_code AS powerToggleCode,
+    power_on_category AS powerOnCategory, power_on_code AS powerOnCode, power_off_category AS powerOffCategory,
+    power_off_code AS powerOffCode FROM projector_settings WHERE id = 1`).get();
+  return { ...row, enabled: Boolean(row.enabled) };
+}
+
+export function saveProjectorConfig({ enabled, host, port, path, powerCategory, powerToggleCode, powerOnCategory, powerOnCode, powerOffCategory, powerOffCode }) {
+  if (!database) throw new Error("SQLite storage has not been initialized");
+  database.prepare(`UPDATE projector_settings SET enabled = ?, host = ?, port = ?, path = ?,
+    power_category = ?, power_toggle_code = ?, power_on_category = ?, power_on_code = ?,
+    power_off_category = ?, power_off_code = ? WHERE id = 1`).run(
+    enabled ? 1 : 0, host, port, path, powerCategory, powerToggleCode, powerOnCategory, powerOnCode, powerOffCategory, powerOffCode
+  );
+  return getProjectorConfig();
 }
 
 export function getDriveBackupConfig() {

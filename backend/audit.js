@@ -57,7 +57,9 @@ export function auditHttpMutations({ getSessionIdentity } = {}) {
         const originalPath = (req.originalUrl || req.path || "").split("?")[0];
         const isGraphqlPath = /^\/api\/?$/i.test(originalPath);
         let action = null;
-        if (/^\/rest(?:\/|$)/i.test(originalPath)) action = restAction(req);
+        if (/^\/projector\/command\/?$/i.test(originalPath)) action = "projector.command";
+        else if (/^\/settings\/projector\/config\/?$/i.test(originalPath)) action = "projector.configure";
+        else if (/^\/rest(?:\/|$)/i.test(originalPath)) action = restAction(req);
         else if (isGraphqlPath) action = graphqlAction(req);
         else if (/^\/settings\/(?:api-key|users|telegram|drive-backup)(?:\/|$)/i.test(originalPath)) action = settingsAction(req);
         else if (/^\/login\/?$/i.test(originalPath)) action = "authentication.login";
@@ -73,7 +75,9 @@ export function auditHttpMutations({ getSessionIdentity } = {}) {
           id: "",
           name: "Taisto web client"
         });
-        const safeBody = action.startsWith("drive_backup.") ? {} : action === "telegram.settings_update"
+        const safeBody = action === "projector.command"
+          ? { command: typeof req.body?.command === "string" && /^(?:power_(?:toggle|on|off)|freeze|picture_blank|input_(?:video|[abcd]))$/.test(req.body.command) ? req.body.command : null }
+          : action === "projector.configure" || action.startsWith("drive_backup.") ? {} : action === "telegram.settings_update"
           ? { enabled: Boolean(req.body && req.body.enabled), auditEnabled: Boolean(req.body && req.body.auditEnabled), tokenProvided: Boolean(req.body && req.body.token) }
           : sanitize(req.body || {});
         if (isGraphqlPath && safeBody.query) {

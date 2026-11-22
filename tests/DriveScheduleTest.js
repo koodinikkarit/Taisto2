@@ -28,7 +28,7 @@ async function main() {
     store.saveTelegramConfig({ enabled: false, allowedUserIds: "42", allowedUserNames: {42: "Ohjaaja"}, auditEnabled: false, auditChatId: "" });
     store.closeDatabaseStorage();
     const db = new DatabaseSync(sqlitePath);
-    try { db.exec("DROP TABLE drive_backup; DELETE FROM schema_migrations WHERE version=10"); } finally { db.close(); }
+    try { db.exec("DROP TABLE projector_settings; DROP TABLE drive_backup; DELETE FROM schema_migrations WHERE version >= 10"); } finally { db.close(); }
     store.initializeDatabaseStorage({ sqlitePath });
     assert.equal(store.getTelegramConfig().allowedUserNames["42"], "Ohjaaja");
     let service = createDriveBackupService(options);

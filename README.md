@@ -140,6 +140,14 @@ git push origin v0.1.8
 - Paikallinen Bitfocus Companion -moduuli on hakemistossa `companion-module-taisto/`.
 - Ohjesivulta voi ladata valmiiksi rakennetun Companion-moduulin osoitteesta `/downloads/taisto-companion.zip`. Tagistä käynnistyvä GitHub Actions -julkaisutyö rakentaa ZIPin, julkaisee sen workflow-artifaktina ja sisällyttää saman paketin Docker-kuvaan.
 
+### Tykin hallinta
+
+Ylläpitäjä ottaa yhden tykin käyttöön kohdassa **Asetukset → Tykki**. Jos tykki on jo käytössä Companionissa, kopioi sen projektoriasetuksista laitteen osoite, portti (oletus `8001`) ja HTTP-ohjauspolku (oletus `/cgi-bin/web.cgi`). Yhteys lähtee Taisto-palvelimelta, joten esimerkiksi Dockerissa `localhost` tarkoittaa Taiston konttia, ei Companion-konetta. Tuki edellyttää samaa CGI-rajapintaa kuin Companion-moduuli; kyseessä ei ole PJLink-ohjaus.
+
+Kirjautunut käyttäjä tai ylläpitäjä avaa yläpalkista **Tykki**. Sivulla näkyvät laitteen ilmoittama virtatila ja aktiivinen tulo. Käytettävissä ovat Video- ja A–D-tulot, kuvan pysäytys ja pimennys sekä vahvistettava virtakomento. Oletuskoodi `4054/15` **vaihtaa** virtatilaa. Jos Companionin virtapainikkeille on määritetty mallikohtaiset komennot, kopioi niiden kategoria ja koodi vastaavalle toiminnolle tykin lisäasetuksiin. Jätä erilliset käynnistys- ja sammutuskoodit tyhjiksi, jos laitteessa on vain virtakytkin. Komennon lähetys ei vielä vahvista tilan muuttuneen.
+
+Tykin hallinta on oletuksena pois käytöstä eikä avaudu anonyyminä. Asetukset tallentuvat SQLiteen. Muutokset ja käyttökomennot löytyvät audit-lokista hakusanalla `projector`. Companion toimii edelleen itsenäisesti: sen asetukset ja suoraan tykille lähettämät komennot eivät siirry Taistoon. Paikalliset testit voi ajaa ilman laitetta komennolla `npm run test:projector`.
+
 ### Chrome-lisäosa
 
 Chrome-lisäosalla voi valita kaavion, tarkastella sen näyttöjen viimeksi tunnettua kytkentää ja vaihtaa näytön lähteen kaaviolle sallittujen inputtien joukosta. Lisäosalla ei muokata kaavioiden asetuksia.

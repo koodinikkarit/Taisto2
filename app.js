@@ -37,12 +37,16 @@ import {
 	recordUserLogin,
 	getTelegramConfig,
 	saveTelegramConfig,
+	getProjectorConfig,
+	saveProjectorConfig,
 	appendAuditLog,
 	subscribeAuditLog
 } from "./backend/storage/SqliteStorage";
 import { createTelegramBot } from "./backend/telegram/bot";
 import { createTelegramService } from "./backend/telegram/service";
 import { createDriveBackupService, BackupRequestError } from "./backend/drive/service";
+import { createProjectorService } from "./backend/projector/service";
+import { registerProjectorEndpoints } from "./backend/projector/routes";
 import {
 	authenticateBasicHeaderAsync,
 	authenticateCredentialsAsync,
@@ -74,7 +78,7 @@ process.argv.forEach(function(arg, index) {
 const APP_PORT = 80;
 
 function safeNext(value) {
-	return value && (value.startsWith("/promode") || value.startsWith("/settings")) ? value : "/";
+	return typeof value === "string" && (value.startsWith("/promode") || value.startsWith("/settings") || /^\/projector\/?(?:[?#]|$)/i.test(value)) ? value : "/";
 }
 
 function escapeHtml(value) {
@@ -185,8 +189,10 @@ async function requireAuthenticated(req, res, next) {
 async function requireAdmin(req, res, next) {
 	try {
 	const driveApi = /^\/drive-backup\/(config|run)\/?$/i.test(req.path);
+	const projectorApi = /^\/projector\/config\/?$/i.test(req.path);
 	if (!isAuthenticationRequired()) {
 		if (driveApi) return res.set("Cache-Control", "no-store").status(403).json({ error: { message: "Configure administrator authentication before using Drive backups" } });
+		if (projectorApi || /^\/projector\/?$/i.test(req.path)) return projectorSetupRequired(res, projectorApi);
 		return next();
 	}
 	const identity = await requestIdentity(req);
@@ -196,7 +202,7 @@ async function requireAdmin(req, res, next) {
 	}
 	// These endpoints are JSON-only, even when a browser sends Accept: */*.
 	// An expired session must not look like a successful write in the audit log.
-	if (driveApi || /^\/telegram\/(config|status)\/?$/i.test(req.path)) {
+	if (driveApi || projectorApi || /^\/telegram\/(config|status)\/?$/i.test(req.path)) {
 		req.auditActor = identity
 			? { type: "user", id: String(identity.id || ""), name: identity.username }
 			: { type: "unauthenticated", id: "", name: "" };
@@ -259,6 +265,28 @@ app.post("/logout", (req, res) => {
 
 app.use("/promode", requireAuthenticated);
 app.use("/settings", requireAdmin);
+
+function projectorSetupRequired(res, json) {
+	res.set("Cache-Control", "no-store").status(403);
+	return json ? res.json({ error: { message: "Configure authentication before using the projector" } })
+		: res.type("text").send("Tykin hallinta vaatii kirjautumisen. Määritä ensin Taiston ylläpitäjän tunnus.");
+}
+app.use("/projector", async (req, res, next) => {
+	const page = req.path === "/" && ["GET", "HEAD"].includes(req.method);
+	res.set("Cache-Control", "no-store");
+	if (!isAuthenticationRequired()) return projectorSetupRequired(res, !page);
+	if (page) return requireAuthenticated(req, res, next);
+	try {
+		const identity = await requestIdentity(req);
+		if (!identity) {
+			req.auditActor = { type: "unauthenticated", id: "", name: "" };
+			return res.status(401).json({ error: { message: "Authentication is required" } });
+		}
+		req.auditActor = { type: "user", id: String(identity.id || ""), name: identity.username };
+		return next();
+	} catch (error) { return credentialError(error, res, next); }
+});
+registerProjectorEndpoints(app, createProjectorService({ getConfig: getProjectorConfig, saveConfig: saveProjectorConfig }));
 
 const driveBackups = createDriveBackupService();
 app.use("/settings/drive-backup", (req, res, next) => {

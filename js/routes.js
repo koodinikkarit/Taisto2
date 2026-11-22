@@ -23,6 +23,7 @@ import ConGroupRunner from "./components/ConGroupRunner";
 import UserSettings from "./components/UserSettings";
 import TelegramSettings from "./components/TelegramSettings";
 import DriveBackupSettings from "./components/DriveBackupSettings";
+import { Projector, ProjectorSettings } from "./components/Projector";
 
 export default function Routes() {
   return (
@@ -33,6 +34,8 @@ export default function Routes() {
       <Route exact path="/promode" component={Promode} />
       <Route exact path="/oletustilat" component={DefaultStatesList} />
       <Route exact path="/output-groups" component={ConGroupRunner} />
+      <Route exact path="/projector" component={Projector} />
+      <Route exact path="/settings/projector" component={ProjectorSettings} />
       <Route exact path="/settings/matriisi/:slug" component={MatrixSettings} />
       <Route exact path="/settings/matriisit" component={MatrixList} />
       <Route exact path="/settings/timers" component={TimerList} />

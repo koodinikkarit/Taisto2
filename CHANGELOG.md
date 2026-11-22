@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Signed-in operators can control one projector from Taisto with the same HTTP commands as Companion and see its reported power and input. Admins configure the device in Settings; control commands are audited.
 - Added encrypted Google Drive backups of the full SQLite database with manual and daily runs, admin status, and an offline restore tool.
 - Telegram audit notifications show the actor and source IP when known. For Telegram commands, the audit log identifies the sender and indicates that Telegram does not provide their IP.
 - Admins can give each allowed Telegram ID an optional display name for future audit entries and notifications.

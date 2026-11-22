@@ -273,6 +273,15 @@ summary { cursor: pointer; color: var(--taisto-primary-dark); font-weight: 600; 
 .taisto-login:hover { color: #fff; background: rgba(255,255,255,.1); text-decoration: none; }
 .taisto-settings-page { max-width: 1040px; }
 .taisto-settings-intro { color: var(--taisto-muted); }
+.taisto-projector-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0; }
+.taisto-projector-actions .btn { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.taisto-projector-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 14px; margin: 12px 0; }
+.taisto-projector-fields label { margin: 0; font-weight: 600; }
+.taisto-projector-fields input { margin-top: 6px; }
+.taisto-projector-codes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 14px; }
+.taisto-projector-codes fieldset { min-width: 0; padding: 10px 14px; border: 1px solid var(--taisto-border); border-radius: 9px; }
+.taisto-projector-codes legend { width: auto; margin: 0; padding: 0 4px; font-size: 1rem; font-weight: 700; }
+.taisto-projector-codes label { display: block; font-size: .9rem; }
 .taisto-user-create { margin: 22px 0 28px; }
 .taisto-user-form, .taisto-user-edit { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; gap: 14px; }
 .taisto-user-form label, .taisto-user-edit label { margin: 0; font-weight: 600; }

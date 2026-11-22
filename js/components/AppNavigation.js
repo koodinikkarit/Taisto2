@@ -28,6 +28,7 @@ export default function AppNavigation() {
           {navLink("/output-groups", t("outputGroups"))}
           {navLink("/oletustilat", t("defaults"))}
           {navLink("/promode", "Promode")}
+          {auth.authenticated && ["admin", "user"].includes(auth.role) && navLink("/projector", t("projector"))}
           {(!auth.required || auth.role === "admin") && navLink("/settings", t("settings"))}
           {navLink("/apua", t("help"))}
         </ul>

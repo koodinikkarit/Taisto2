@@ -1,5 +1,5 @@
 -- Taisto SQLite schema snapshot
--- Schema version: 10
+-- Schema version: 11
 --
 -- The application runs incremental migrations from SqliteStorage.js automatically.
 -- This file documents the current complete schema and can initialize a new database.
@@ -208,6 +208,21 @@ CREATE TABLE IF NOT EXISTS drive_backup (
 );
 INSERT OR IGNORE INTO drive_backup(id) VALUES (1);
 
+CREATE TABLE IF NOT EXISTS projector_settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),
+  host TEXT NOT NULL DEFAULT '',
+  port INTEGER NOT NULL DEFAULT 8001 CHECK (port BETWEEN 1 AND 65535),
+  path TEXT NOT NULL DEFAULT '/cgi-bin/web.cgi',
+  power_category TEXT NOT NULL DEFAULT '4054',
+  power_toggle_code TEXT NOT NULL DEFAULT '15',
+  power_on_category TEXT NOT NULL DEFAULT '',
+  power_on_code TEXT NOT NULL DEFAULT '',
+  power_off_category TEXT NOT NULL DEFAULT '',
+  power_off_code TEXT NOT NULL DEFAULT ''
+);
+INSERT OR IGNORE INTO projector_settings(id) VALUES (1);
+
 CREATE INDEX IF NOT EXISTS idx_con_ports_matrix ON con_ports(matrix_id);
 CREATE INDEX IF NOT EXISTS idx_cpu_ports_matrix ON cpu_ports(matrix_id);
 CREATE INDEX IF NOT EXISTS idx_diagram_screens_diagram ON diagram_screens(diagram_id);
@@ -226,6 +241,7 @@ INSERT OR IGNORE INTO schema_migrations(version, applied_at) VALUES
   (7, datetime('now')),
   (8, datetime('now')),
   (9, datetime('now')),
-  (10, datetime('now'));
+  (10, datetime('now')),
+  (11, datetime('now'));
 
 COMMIT;

@@ -59,11 +59,11 @@ try {
   assert.deepStrictEqual(getTelegramConfig().allowedUserIds, ["123", "456"]);
   assert.deepStrictEqual(getTelegramConfig().allowedUserNames, names, "aliases persist across restarts");
   assert.strictEqual(getTelegramConfig().botToken, token, "settings persist across restarts");
-  // Model the last release by removing only the v9 addition in this disposable DB.
+  // Model a v8 database by reverting later schema changes in this disposable DB.
   // The migration must not discard the token, allowlist or notification settings.
   closeDatabaseStorage();
   const previous = new DatabaseSync(sqlitePath);
-  try { previous.exec("DROP TABLE drive_backup; ALTER TABLE telegram_settings DROP COLUMN allowed_user_names; DELETE FROM schema_migrations WHERE version >= 9;"); }
+  try { previous.exec("DROP TABLE projector_settings; DROP TABLE drive_backup; ALTER TABLE telegram_settings DROP COLUMN allowed_user_names; DELETE FROM schema_migrations WHERE version >= 9;"); }
   finally { previous.close(); }
   initializeDatabaseStorage({ sqlitePath });
   assert.deepStrictEqual(getTelegramConfig(), { ...saved, allowedUserNames: {} }, "v8 settings migrate with empty names");

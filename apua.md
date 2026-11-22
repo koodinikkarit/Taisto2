@@ -25,6 +25,12 @@ Vaihtokomennon lähetyksen jälkeen lisäosa seuraa Taiston viimeksi tuntemaa ti
 
 Pura ZIP-tiedosto ja valitse Companionissa **Settings → Modules → Install module from local folder**. Moduulin asetuksiin annetaan Taisto-palvelimen osoite, portti ja Asetukset-sivulla luotu REST API-avain. Moduuli tukee yksittäisiä videokytkentöjä, output-ryhmien suorittamista sekä projektorin ohjausta.
 
+## Tykki
+
+Ylläpitäjä ottaa tykin käyttöön kohdassa **Asetukset → Tykki**. Käytä Companionin projektoriasetuksista laitteen osoitetta, porttia ja ohjauspolkua. Osoitteen pitää toimia Taisto-palvelimelta.
+
+Kirjaudu sisään ja avaa yläpalkista **Tykki**. Näet laitteen ilmoittaman virran ja kuvalähteen. Voit vaihtaa tuloa, pysäyttää tai pimentää kuvan. **Vaihda virtatilaa** käynnistää sammutetun tykin tai sammuttaa käynnissä olevan. Tarkista tila ennen vahvistamista. Jos laitemallille on määritetty erilliset virtakoodit, käytössä ovat niitä vastaavat painikkeet. Selain ei lähetä ohjauskomentoja itsestään.
+
 ## Telegram
 
 Luo botti [BotFatherilla](https://t.me/BotFather), lisää sen token sivulla **Asetukset → Telegram** ja ota botti käyttöön. Odota yhteystilaksi **Yhdistetty**, lähetä botille yksityisviestinä `/id`, lisää saatu numeerinen käyttäjätunniste asetusten sallittujen listaan ja tallenna. Useat tunnisteet erotetaan pilkuilla. Tyhjä sallittujen lista estää muut komennot. Ohjauskomennot toimivat vain sallittujen käyttäjien yksityisviesteissä.
@@ -95,6 +101,12 @@ After sending a switch command, the extension monitors the last state known to T
 [Download the Taisto Companion module (ZIP)](/downloads/taisto-companion.zip)
 
 Extract the ZIP and select **Settings → Modules → Install module from local folder** in Companion. Configure the Taisto server address, port and a REST API key created in Settings. The module supports individual video connections, output-group execution and projector control.
+
+## Projector
+
+An admin enables the device under **Settings → Projector**. Use the projector host, port and control path from Companion, and make sure the Taisto server can reach that address.
+
+Sign in and open **Projector** in the top navigation to see the reported power and source, switch inputs, freeze or blank the picture. **Toggle power** turns an off projector on and an on projector off. Check its state before confirming. Separate on/off buttons are available when model-specific codes are configured. Opening the page never sends a control command.
 
 ## Telegram
 

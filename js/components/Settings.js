@@ -1,6 +1,7 @@
 import React from 'react';
 import Measure from './Measure';
 import { I18nContext } from "../i18n";
+import { AuthContext } from "./ProtectedApp";
 
 import PageLayout from "./PageLayout";
 
@@ -41,6 +42,9 @@ export default class extends React.Component {
 							<li className="nav-item">
 								<a className={this.props.active === "matriisit" ? "nav-link active" : "nav-link"} href="/settings/matriisit">{t("matrices")}</a>
 							</li>
+							<AuthContext.Consumer>{auth => auth.authenticated && auth.role === "admin" &&
+								<li className="nav-item"><a className={this.props.active === "projector" ? "nav-link active" : "nav-link"} href="/settings/projector">{t("projector")}</a></li>
+							}</AuthContext.Consumer>
 							<li className="nav-item">
 								<a className={this.props.active === "timers" ? "nav-link active" : "nav-link"} href="/settings/timers">{t("timers")}</a>
 							</li>

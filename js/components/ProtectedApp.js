@@ -10,7 +10,8 @@ export const useAuth = () => React.useContext(AuthContext);
 
 export default function ProtectedApp({ children }) {
   const location = useLocation();
-  const protectedPath = isPromodePath(location.pathname) || isSettingsPath(location.pathname);
+  const projectorPath = /^\/(settings\/)?projector\/?$/i.test(location.pathname);
+  const protectedPath = projectorPath || isPromodePath(location.pathname) || isSettingsPath(location.pathname);
   const [authorization, setAuthorization] = React.useState({ path: "", status: null });
 
   React.useEffect(() => {
@@ -22,8 +23,10 @@ export default function ProtectedApp({ children }) {
       .then(response => response.ok ? response.json() : Promise.reject(new Error("Authentication check failed")))
       .then(status => {
         if (!active) return;
+        if (projectorPath && !status.required) return window.location.replace("/");
         if (protectedPath && status.required && !status.authenticated) return redirectToLogin();
-        if (isSettingsPath(location.pathname) && status.required && status.role !== "admin") return window.location.replace("/");
+        if (projectorPath && !["user", "admin"].includes(status.role)) return window.location.replace("/");
+        if (isSettingsPath(location.pathname.toLowerCase()) && status.required && status.role !== "admin") return window.location.replace("/");
         setAuthorization({ path: location.pathname, status });
         clearTimeout(expirationTimer);
         if (status.expiresAt) expirationTimer = setTimeout(redirectToLogin, Math.max(0, status.expiresAt - Date.now()));
@@ -37,7 +40,7 @@ export default function ProtectedApp({ children }) {
       clearInterval(statusTimer);
       clearTimeout(expirationTimer);
     };
-  }, [location.pathname, location.search, location.hash, protectedPath]);
+  }, [location.pathname, location.search, location.hash, protectedPath, projectorPath]);
 
   if (protectedPath && (authorization.path !== location.pathname || !authorization.status)) {
     return <div className="taisto-auth-check" role="status" aria-live="polite">
